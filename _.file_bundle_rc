@@ -1,0 +1,8 @@
+entry = [
+    "./**/*.go",
+    "./**/*.md",
+    "./**/*.puml",
+]
+exclude = [".bundle.txt", "./script"]
+output = "memoria_nexus.bundle.txt"
+description = ""

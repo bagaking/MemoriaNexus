@@ -1,0 +1,50 @@
+@startuml
+!define Rectangle class
+
+package "用户账户管理" {
+  Rectangle User {
+    - id: UUID
+    - credentials: UserCredential
+    - details: UserDetails
+  }
+}
+
+package "内容管理" {
+  Rectangle StudyItem {
+    - topic: Topic
+    - content: String
+    - category: Category
+  }
+}
+
+package "记忆曲线算法模块" {
+  Rectangle MemoryCurve {
+    - calculateOptimalReviewTime(previousReview: DateTime): DateTime
+  }
+}
+
+package "计划调度器" {
+  Rectangle Scheduler {
+    - scheduleReviewTasks(user: User): null
+  }
+}
+
+package "提醒器" {
+  Rectangle Reminder {
+    - sendNotification(notification: NotificationService): null
+  }
+}
+
+package "分析和报告" {
+  Rectangle AnalyticsReport {
+    - generateProgressReport(user: User): Report
+  }
+}
+
+User --> MemoryCurve : 使用 >
+StudyItem --> Scheduler : 被计划 >
+Scheduler --> Reminder : 安排提醒 >
+Reminder --> User : 通知用户 >
+User --> AnalyticsReport : 查看报告 >
+
+@enduml
