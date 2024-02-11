@@ -1,0 +1,30 @@
+### 注册用户
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "bagaking",
+  "email": "bagaking@example.com",
+  "password": "strongpassword123",
+  "confirmPassword": "strongpassword123"
+}
+
+### 用户登录
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "bagaking",
+  "password": "strongpassword123"
+}
+
+### 刷新Token
+POST http://localhost:8080/api/v1/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {refresh_token}
+
+{}
+
+### 获取用户信息（需要认证）
+GET http://localhost:8080/api/v1/auth/user
+Authorization: Bearer {access_token}

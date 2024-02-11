@@ -29,9 +29,11 @@ Memoria Nexus is built on a robust technology stack ensuring high performance an
 - Backend: Go, PostgreSQL, Redis
 - Infrastructure: Docker, Kubernetes, CI/CD pipelines
 
+see [Code Structure](./doc/CODE_STRUCTURE.md)
+
 ## Contributions
 
-We welcome contributions from the community. If you wish to contribute to the project, please check out our [contribution guidelines](CONTRIBUTING.md).
+We welcome contributions from the community. If you wish to contribute to the project, please check out our [contribution guidelines](./doc/CONTRIBUTING.md).
 
 ## License
 
@@ -41,8 +43,7 @@ Memoria Nexus is licensed under the MIT License. See [LICENSE](LICENSE) for more
 
 Got questions or feedback? Reach out to us via:
 
-- Email: support@memorianexus.com
-- Twitter: [@MemoriaNexus](https://twitter.com/MemoriaNexus)
-- GitHub: [Memoria Nexus Repository](https://github.com/memorianexus)
+- Email: kinghand@foxmail.com
+- GitHub: [Memoria Nexus Repository](https://github.com/bagaking/memorianexus)
 
 > Learn smarter, not harder with Memoria Nexus - your nexus of memory and learning!

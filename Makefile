@@ -1,5 +1,5 @@
 # Define the docker-compose command
-DC := cd deployment/dev && docker-compose
+DC := cd development && docker-compose
 
 # Services names
 MYSQL_SERVICE := mysql
@@ -51,4 +51,7 @@ help:
 	@echo "  make db-migrate-down : Rollback database migrations"
 	@echo "  make compose-reset : Stop all services and remove data"
 
-.PHONY: default compose-up compose-down compose-logs db-migrate-up db-migrate-down compose-reset help bundle
+dev:
+	MEMORIA_NUXUS_ENV="dev" go run ./cmd
+
+.PHONY: default compose-up compose-down compose-logs db-migrate-up db-migrate-down compose-reset help bundle dev

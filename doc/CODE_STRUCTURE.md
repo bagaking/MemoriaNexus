@@ -13,9 +13,9 @@ Memoria Nexus is designed with modularity and a clean architecture in mind. Belo
 │   ├── app.prod.yaml               # 应用程序的主要配置文件 (生产环境)
 │   ├── log.dev.yaml                # 用于配置日志管理的配置文件 (开发环境)
 │   └── log.prod.yaml               # 用于配置日志管理的配置文件 (生产环境)
+├── development                     # docker-compose, dial 等
 ├── deployment                      # 部署相关的脚本和配置文件
-│   ├── Dockerfile                  # 用于构建Docker镜像的Dockerfile
-│   ├── db_migration.sh             # 数据库迁移脚本
+│   ├── Dockerfile                  # 数据库迁移脚本
 │   └── ci_cd.yaml                  # 持续集成和部署(CI/CD)的配置文件
 ├── doc                             # 存放文档的目录
 │   ├── CODE_STRUCTURE.md           # 代码结构说明文档

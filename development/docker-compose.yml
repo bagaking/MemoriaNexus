@@ -12,7 +12,7 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - mysql-data:/var/lib/mysql
-      - ../migration:/migration
+      - ../deployment/migration:/migration
     networks:
       - memorianexus-net
 

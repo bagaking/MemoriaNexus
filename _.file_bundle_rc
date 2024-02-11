@@ -2,6 +2,7 @@ entry = [
     "./**/*.go",
     "./**/*.md",
     "./**/*.puml",
+    "./**/*.sql",
 ]
 exclude = [".bundle.txt", "./script"]
 output = "memoria_nexus.bundle.txt"
