@@ -21,10 +21,10 @@ Content-Type: application/json
 ### 刷新Token
 POST http://localhost:8080/api/v1/auth/refresh
 Content-Type: application/json
-Authorization: Bearer {refresh_token}
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 {}
 
 ### 获取用户信息（需要认证）
 GET http://localhost:8080/api/v1/auth/user
-Authorization: Bearer {access_token}
+Authorization: Bearer {{ACCESS_TOKEN}}

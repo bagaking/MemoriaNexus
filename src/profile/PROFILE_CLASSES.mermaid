@@ -1,0 +1,62 @@
+classDiagram
+
+    class Profile {
+        +UUID id
+        +string username
+        +UserInfo userInfo
+        +SecuritySettings securitySettings
+        +NotificationSettings notificationSettings
+        +MemorizationSettings memorizationSettings
+        +Preference preference
+        +void updateProfileSettings()
+        +void getProfileSettings()
+    }
+
+    class UserInfo {
+        +string fullName
+        +string email
+        +string bio
+        +string avatarURL
+    }
+
+    class SecuritySettings {
+        +string passwordHash
+        +OAuthCredentials[] oauthProviders
+        +TwoFactorSettings twoFactorSettings
+    }
+
+    class NotificationSettings {
+        +bool emailNotifications
+        +bool pushNotifications
+    }
+
+    class MemorizationSettings {
+        +int reviewInterval
+        +int difficultyPreference
+        +string quizMode
+    }
+
+    class Preference {
+        +string theme
+        +string language
+    }
+
+    class OAuthCredentials {
+        +string provider
+        +string providerID
+    }
+
+    class TwoFactorSettings {
+        +bool isEnabled
+        +string secondaryEmail
+        +string phone
+        +string backupCodes[]
+    }
+
+    UserInfo "1" <-- "1" Profile : has
+    SecuritySettings "1" <-- "1" Profile : protects
+    NotificationSettings "1" <-- "1" Profile : notifies
+    MemorizationSettings "1" <-- "1" Profile : configures
+    Preference "1" <-- "1" Profile : prefers
+    OAuthCredentials "0..*" <-- "1" SecuritySettings : linked
+    TwoFactorSettings "1" <-- "1" SecuritySettings : requires

@@ -44,7 +44,7 @@ func (svr *Service) HandleRegister(c *gin.Context) {
 	}
 
 	// 实例化注册服务并进行注册
-	user, err := svr.Repo.Register(model.RegisterParams{
+	user, err := svr.Repo.Register(c, model.RegisterParams{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: string(hashedPassword),

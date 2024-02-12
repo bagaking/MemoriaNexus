@@ -1,0 +1,13 @@
+### Update Profile Settings
+PUT http://localhost:8080/api/v1/profile/settings
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "nickname": "new_nickname",
+  "avatar_url": "https://example.com/new_avatar.png"
+}
+
+### Get User Profile (Example URI and Method might differ based on actual API implementation)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer {{ACCESS_TOKEN}}

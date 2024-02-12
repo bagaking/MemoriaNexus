@@ -5,6 +5,7 @@ package gw
 import (
 	"github.com/bagaking/memorianexus/pkg/auth"
 	"github.com/bagaking/memorianexus/src/iam/passport"
+	"github.com/bagaking/memorianexus/src/profile"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,8 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 	profileGroup := router.Group("/profile")
 	profileGroup.Use(nwAuth)
 	{
-
+		svrProfile, _ := profile.Init(db)
+		svrProfile.ApplyMux(profileGroup)
 	}
 
 	coreGroup := router.Group("/core")

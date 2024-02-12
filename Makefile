@@ -44,6 +44,8 @@ db-migrate-up:
 db-migrate-down:
 	$(call run-migration,down)
 
+db-migrate-re: db-migrate-down db-migrate-up
+
 # Clean up environment including volumes
 compose-reset:
 	$(DC) down --volumes
@@ -61,4 +63,4 @@ help:
 dev:
 	MEMORIA_NUXUS_ENV="dev" go run ./cmd
 
-.PHONY: default compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down compose-reset help bundle dev
+.PHONY: default compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re compose-reset help bundle dev
