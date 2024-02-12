@@ -1,7 +1,7 @@
 package passport
 
 import (
-	"github.com/bagaking/memorianexus/src/profile/passport/model"
+	"github.com/bagaking/memorianexus/src/iam/passport/model"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"

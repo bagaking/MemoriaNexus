@@ -2,7 +2,7 @@ package passport
 
 import (
 	"github.com/bagaking/memorianexus/pkg/auth"
-	"github.com/bagaking/memorianexus/src/profile/passport/model"
+	"github.com/bagaking/memorianexus/src/iam/passport/model"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

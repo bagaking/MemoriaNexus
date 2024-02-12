@@ -7,8 +7,8 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-// jwtCustomClaims 包含JWT的声明
-type jwtCustomClaims struct {
+// JwtCustomClaims 包含JWT的声明
+type JwtCustomClaims struct {
 	UserID uint `json:"userId"`
 	jwt.StandardClaims
 }
@@ -30,7 +30,7 @@ func NewJWTService(secretKey, issuer string) *JWTService {
 // GenerateToken 生成JWT令牌
 func (s *JWTService) GenerateToken(userID uint) (string, error) {
 	// 设置JWT声明
-	claims := &jwtCustomClaims{
+	claims := &JwtCustomClaims{
 		userID, // 用户ID从数据库用户模型中带入
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(), // 举例：让令牌在72小时后过期
@@ -51,7 +51,7 @@ func (s *JWTService) GenerateToken(userID uint) (string, error) {
 // ValidateToken 验证JWT令牌
 func (s *JWTService) ValidateToken(tokenString string) (*jwt.Token, error) {
 	// 解析JWT令牌
-	token, err := jwt.ParseWithClaims(tokenString, &jwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// 在这里验证token方法
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -65,7 +65,7 @@ func (s *JWTService) ValidateToken(tokenString string) (*jwt.Token, error) {
 	}
 
 	// 返回验证通过的令牌
-	if _, ok := token.Claims.(*jwtCustomClaims); ok && token.Valid {
+	if _, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
 		return token, nil
 	} else {
 		return nil, errors.New("invalid token")

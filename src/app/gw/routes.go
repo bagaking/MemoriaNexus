@@ -4,7 +4,7 @@ package gw
 
 import (
 	"github.com/bagaking/memorianexus/pkg/auth"
-	"github.com/bagaking/memorianexus/src/profile/passport"
+	"github.com/bagaking/memorianexus/src/iam/passport"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +16,23 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 
 	// todo: 这些值应该从配置中安全获取，现在 MVP 一下
 	jwtService := auth.NewJWTService("my_secret_key", "MemoriaNexus")
+	nwAuth := jwtService.AuthMiddleware()
 
-	svrPassport, _ := passport.Init(db, jwtService)
-	svrPassport.ApplyMux(router.Group("/auth"))
+	authGroup := router.Group("/auth")
+	{
+		svrPassport, _ := passport.Init(db, jwtService)
+		svrPassport.ApplyMux(authGroup)
+	}
+
+	profileGroup := router.Group("/profile")
+	profileGroup.Use(nwAuth)
+	{
+
+	}
+
+	coreGroup := router.Group("/core")
+	coreGroup.Use(nwAuth)
+	{
+
+	}
 }
