@@ -31,13 +31,18 @@ compose-re: compose-down compose-up
 compose-logs:
 	$(DC) logs
 
-# Run database migrations
-db-migrate-up:
-	$(DC) exec $(MYSQL_SERVICE) sh -c 'mysql -u root -pexample memorianexus < $(MIGRATE_UP_PATH)'
+# Existing makefile content
+define run-migration
+    $(DC) exec $(MYSQL_SERVICE) bash /migrate.sh $(1)
+endef
+#$(DC) run -T --rm migrator
+#$(DC) run --rm -e MIGRATE_DIRECTION=down migrator
 
-# Rollback database migrations
+db-migrate-up:
+	$(call run-migration,up)
+
 db-migrate-down:
-	$(DC) exec $(MYSQL_SERVICE) sh -c 'mysql -u root -pexample memorianexus < $(MIGRATE_DOWN_PATH)'
+	$(call run-migration,down)
 
 # Clean up environment including volumes
 compose-reset:

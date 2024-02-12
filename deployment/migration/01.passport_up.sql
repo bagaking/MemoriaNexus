@@ -1,7 +1,7 @@
 -- Up migration scripts for [[Profile]] Module
 
 -- Creating the users table
--- migration/migrate_up.sql
+-- migration/passport_up.sql
 
 -- 创建 `users` 表，用于管理用户账号信息
 CREATE TABLE `users` (
