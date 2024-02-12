@@ -25,6 +25,8 @@ compose-up:
 compose-down:
 	$(DC) down
 
+compose-re: compose-down compose-up
+
 # Display logs
 compose-logs:
 	$(DC) logs
@@ -54,4 +56,4 @@ help:
 dev:
 	MEMORIA_NUXUS_ENV="dev" go run ./cmd
 
-.PHONY: default compose-up compose-down compose-logs db-migrate-up db-migrate-down compose-reset help bundle dev
+.PHONY: default compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down compose-reset help bundle dev
