@@ -8,6 +8,8 @@ entry = [
     "./**/*.http",
     "Makefile",
 ]
-exclude = [".bundle.txt", "./script"]
-output = "memoria_nexus.bundle.txt"
-description = ""
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

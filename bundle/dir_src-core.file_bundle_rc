@@ -1,0 +1,12 @@
+entry = [
+    "README.md",
+    "doc/PROJECT_STRUCTURE.md",
+    "pkg/**/*",
+    "src/app/**/*",
+    "src/core/**/*",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

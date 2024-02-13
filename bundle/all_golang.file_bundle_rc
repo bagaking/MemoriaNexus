@@ -1,0 +1,10 @@
+entry = [
+    "./doc/PROJECT_STRUCTURE.md",
+    "./**/*.go",
+    "go.mod",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

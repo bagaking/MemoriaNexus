@@ -1,0 +1,10 @@
+entry = [
+    "./**/*.md",
+    "./**/*.puml",
+    "./**/*.mermaid",
+    "./**/*.http",
+]
+
+exclude = [
+    ".bundle.txt"
+]

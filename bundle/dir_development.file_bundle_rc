@@ -1,0 +1,10 @@
+entry = [
+    "README.md",
+    "doc/PROJECT_STRUCTURE.md",
+    "development/**/*",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

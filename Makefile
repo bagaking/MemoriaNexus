@@ -10,6 +10,8 @@ MIGRATION_SERVICE := migration
 MIGRATE_UP_PATH := migration/migrate_up.sql
 MIGRATE_DOWN_PATH := migration/migrate_down.sql
 
+.PHONY: default help gen-doc bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app
+
 # Default to help
 default: help
 
@@ -23,9 +25,14 @@ help:
 	@echo "  make db-migrate-down : Rollback database migrations"
 	@echo "  make compose-reset : Stop all services and remove data"
 
+gen-doc:
+	@tree -I 'bundle*' --dirsfirst --noreport > ./doc/PROJECT_STRUCTURE.md
+
 # bundle, @see github.com/bagaking/file_bundle
-bundle:
-	file_bundle -v
+bundle: gen-doc
+	$(MAKE) -C bundle -f Makefile clean
+	$(MAKE) -f bundle/Makefile
+	#file_bundle -v -i ./bundle/_.file_bundle_rc -o ./bundle/_.bundle.txt
 
 # Start services
 compose-up:
@@ -60,7 +67,6 @@ db-migrate-re: db-migrate-down db-migrate-up
 compose-reset:
 	$(DC) down --volumes
 
-
 # Build the docker image for our go application
 build-app: bundle
 	$(DC) build app
@@ -74,4 +80,3 @@ dev:
 # Start the built go application
 build-dev: build-app compose-re dev
 
-.PHONY: default help bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app
