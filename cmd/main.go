@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/bagaking/memorianexus/internal/util"
 	"log"
 
 	"gorm.io/driver/mysql"
@@ -20,7 +21,19 @@ func dsn() string {
 	// 使用docker-compose环境变量来设置数据库DSN
 	username := "user"
 	password := "password"
+
+	// todo: using config
 	host := "localhost"
+	switch util.Env() {
+	case util.RuntimeENVDev:
+		host = "mysql"
+	case util.RuntimeENVProd:
+		host = "mysql"
+	case util.RuntimeENVLocal:
+		fallthrough
+	default:
+	}
+
 	port := "3306"
 	dbname := "memorianexus"
 	charset := "utf8mb4"

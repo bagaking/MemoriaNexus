@@ -13,7 +13,17 @@ MIGRATE_DOWN_PATH := migration/migrate_down.sql
 # Default to help
 default: help
 
-# bundle
+# Show help
+help:
+	@echo "Available commands:"
+	@echo "  make compose-up : Start all services with docker-compose"
+	@echo "  make compose-down : Stop all services and remove containers"
+	@echo "  make compose-logs : Fetch logs for all services"
+	@echo "  make db-migrate-up : Perform database migrations"
+	@echo "  make db-migrate-down : Rollback database migrations"
+	@echo "  make compose-reset : Stop all services and remove data"
+
+# bundle, @see github.com/bagaking/file_bundle
 bundle:
 	file_bundle -v
 
@@ -50,17 +60,18 @@ db-migrate-re: db-migrate-down db-migrate-up
 compose-reset:
 	$(DC) down --volumes
 
-# Show help
-help:
-	@echo "Available commands:"
-	@echo "  make compose-up : Start all services with docker-compose"
-	@echo "  make compose-down : Stop all services and remove containers"
-	@echo "  make compose-logs : Fetch logs for all services"
-	@echo "  make db-migrate-up : Perform database migrations"
-	@echo "  make db-migrate-down : Rollback database migrations"
-	@echo "  make compose-reset : Stop all services and remove data"
+
+# Build the docker image for our go application
+build-app: bundle
+	$(DC) build app
 
 dev:
-	MEMORIA_NUXUS_ENV="dev" go run ./cmd
+	$(DC) up -d app
+	@echo Starting app service...
+	$(DC) exec -d app /app/memorianexus
+	@echo App service has been started in the background.
 
-.PHONY: default compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re compose-reset help bundle dev
+# Start the built go application
+build-dev: build-app compose-re dev
+
+.PHONY: default help bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app

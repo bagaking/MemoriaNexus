@@ -1,5 +1,5 @@
 ### 注册用户
-POST http://localhost:8080/api/v1/auth/register
+POST http://0.0.0.0:8080/api/v1/auth/register
 Content-Type: application/json
 
 {

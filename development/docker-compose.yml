@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile
+    environment:
+      - MEMORIA_NEXUS_ENV=dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - memorianexus-net
+    entrypoint: [ "/bin/sh", "-c" ] # 覆盖 Dockerfile 的 ENTRYPOINT/CMD
+    command: [ "echo 'The app service is started but actual command will be executed manually.' && tail -f /dev/null" ] # 保持容器运行，但不执行应用
+
   mysql:
     image: mysql:latest
     ports:
