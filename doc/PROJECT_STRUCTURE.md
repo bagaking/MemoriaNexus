@@ -22,6 +22,8 @@
 │   │   └── profile.http
 │   └── docker-compose.yml
 ├── doc
+│   ├── design
+│   │   └── PRODUCT_DESIGN.md
 │   ├── API_SPEC.md
 │   ├── CODE_STRUCTURE.md
 │   ├── CONTRIBUTING.md

@@ -1,6 +1,7 @@
 entry = [
     "README.md",
     "doc/PROJECT_STRUCTURE.md",
+    "doc/design/**/*.md",
     "pkg/**/*",
     "src/app/**/*",
     "src/core/**/*",
