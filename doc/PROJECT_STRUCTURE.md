@@ -1,3 +1,4 @@
+```
 .
 ├── cmd
 │   └── main.go
@@ -23,7 +24,7 @@
 │   └── docker-compose.yml
 ├── doc
 │   ├── design
-│   │   └── PRODUCT_DESIGN.md
+│   │   └── CURVE_USAGE_DESIGN.md
 │   ├── API_SPEC.md
 │   ├── CODE_STRUCTURE.md
 │   ├── CONTRIBUTING.md
@@ -48,6 +49,7 @@
 │   │   └── oauth.go
 │   └── memcurve
 │       ├── calculator.go
+│       ├── calculator_test.go
 │       └── curvemodel.go
 ├── script
 │   └── setup_project.sh
@@ -62,13 +64,16 @@
 │   │   │   └── types.go
 │   │   ├── interfaces
 │   │   │   └── port.go
+│   │   ├── model
+│   │   │   └── repo.go
 │   │   ├── reminder
 │   │   │   ├── service.go
 │   │   │   └── types.go
 │   │   ├── review
 │   │   │   ├── scheduler.go
 │   │   │   └── session.go
-│   │   └── handlers.go
+│   │   ├── handlers.go
+│   │   └── init.go
 │   ├── iam
 │   │   ├── passport
 │   │   │   ├── model
@@ -95,3 +100,4 @@
 ├── README.md
 ├── go.mod
 └── go.sum
+```
