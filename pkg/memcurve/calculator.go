@@ -128,7 +128,6 @@ func (calc *ReviewCalculator) adjustIntervalWithConfidence(
 	setInterval time.Duration, realInterval time.Duration,
 	confidence float64,
 ) time.Duration {
-
 	// 防止除以 0 的情况，使用初始遗忘值
 	if calc.userFactors.ForgettingSpeed == 0 {
 		calc.userFactors.ForgettingSpeed = 1
@@ -154,8 +153,8 @@ func calcIntervalByForgettingSpeed(duration time.Duration, forgettingSpeed float
 func adjustoFrgettingSpeedWithConfidence(
 	forgettingSpeed float64,
 	setInterval time.Duration, realInterval time.Duration,
-	confidence float64) float64 {
-
+	confidence float64,
+) float64 {
 	forgettingSpeed = clamp(forgettingSpeed, 0.2, 5.0)
 
 	// 换算当前遗忘速度下的设定间隔

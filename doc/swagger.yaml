@@ -1,0 +1,326 @@
+definitions:
+  profile.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  profile.ReqUpdateProfile:
+    properties:
+      email:
+        type: string
+      nickname:
+        type: string
+    type: object
+  profile.ReqUpdateUserSettingsAdvance:
+    properties:
+      email_notifications:
+        type: boolean
+      language:
+        type: string
+      push_notifications:
+        type: boolean
+      theme:
+        type: string
+    type: object
+  profile.ReqUpdateUserSettingsMemorization:
+    properties:
+      difficulty_preference:
+        type: integer
+      quiz_mode:
+        type: string
+      review_interval:
+        type: integer
+    type: object
+  profile.RespGetPoints:
+    properties:
+      cash:
+        type: integer
+      gem:
+        type: integer
+      vip_score:
+        type: integer
+    type: object
+  profile.RespGetProfile:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+    type: object
+  profile.RespSettingsAdvance:
+    properties:
+      email_notifications:
+        type: boolean
+      language:
+        type: string
+      push_notifications:
+        type: boolean
+      theme:
+        type: string
+    type: object
+  profile.RespSettingsMemorization:
+    properties:
+      difficulty_preference:
+        type: integer
+      quiz_mode:
+        type: string
+      review_interval:
+        description: Definitions should match with ProfileMemorizationSetting
+        type: integer
+    type: object
+  profile.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /profile/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the profile information for the user who made the request.
+      parameters:
+      - description: 带有 Bearer 的 Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user profile
+          schema:
+            $ref: '#/definitions/profile.RespGetProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the current user's profile
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      description: Updates the profile information for the user who made the request.
+      parameters:
+      - description: 带有 Bearer 的 Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User profile update info
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/profile.ReqUpdateProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated user profile
+          schema:
+            $ref: '#/definitions/profile.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user profile
+      tags:
+      - profile
+  /profile/points:
+    get:
+      description: Retrieves points information for the current user.
+      parameters:
+      - description: 带有 Bearer 的 Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user points
+          schema:
+            $ref: '#/definitions/profile.RespGetPoints'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user points
+      tags:
+      - profile
+  /profile/settings/advance:
+    get:
+      description: Retrieves advanced settings information for the current user.
+      parameters:
+      - description: 带有 Bearer 的 Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user advanced settings
+          schema:
+            $ref: '#/definitions/profile.RespSettingsAdvance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user advanced settings
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      description: Updates advanced settings for the authenticated user.
+      parameters:
+      - description: User advanced settings update info
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/profile.ReqUpdateUserSettingsAdvance'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated user advanced settings
+          schema:
+            $ref: '#/definitions/profile.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user advanced settings
+      tags:
+      - profile
+  /profile/settings/memorization:
+    get:
+      description: Retrieves settings information for the user who made the request.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user settings
+          schema:
+            $ref: '#/definitions/profile.RespSettingsMemorization'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user settings
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      description: Updates the settings for the user who made the request.
+      parameters:
+      - description: 带有 Bearer 的 Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User settings update info
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/profile.ReqUpdateUserSettingsMemorization'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated user settings
+          schema:
+            $ref: '#/definitions/profile.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/profile.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user settings
+      tags:
+      - profile
+swagger: "2.0"

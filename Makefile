@@ -1,5 +1,5 @@
 # Define the docker-compose command
-DC := cd development && docker-compose
+DC := cd dev_memorianexus && docker-compose
 
 # Services names
 MYSQL_SERVICE := mysql
@@ -10,7 +10,7 @@ MIGRATION_SERVICE := migration
 MIGRATE_UP_PATH := migration/migrate_up.sql
 MIGRATE_DOWN_PATH := migration/migrate_down.sql
 
-.PHONY: default help gen-doc bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app
+.PHONY: default help gen-docs bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app
 
 # Default to help
 default: help
@@ -27,9 +27,11 @@ help:
 
 gen-doc:
 	@tree -I 'bundle*' --dirsfirst --noreport > ./doc/PROJECT_STRUCTURE.md
+	# Generate API Documentation
+	swag init -g cmd/main.go -o doc/
 
 # bundle, @see github.com/bagaking/file_bundle
-bundle: gen-doc
+bundle: gen-docs
 	$(MAKE) -C bundle -f Makefile clean
 	$(MAKE) -f bundle/Makefile
 	#file_bundle -v -i ./bundle/_.file_bundle_rc -o ./bundle/_.bundle.txt
@@ -78,5 +80,12 @@ dev:
 	@echo App service has been started in the background.
 
 # Start the built go application
-build-dev: build-app compose-re dev
+build-dev: gen-doc build-app compose-re dev
 
+# Connect to the app container and follow the logs
+dev-logs:
+	tail -f ./dev_memorianexus/logs/memorianexus.log -n 1000
+	#$(DC) exec app tail -f /app/memorianexus.log
+
+dev-shell:
+	$(DC) exec app /bin/sh

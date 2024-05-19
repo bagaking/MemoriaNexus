@@ -1,7 +1,10 @@
 entry = [
     "README.md",
     "doc/PROJECT_STRUCTURE.md",
-    "dev_memorianexus/**/*",
+    "doc/API_SPEC.md",
+    "src/module/**/*",
+    "src/modle/**/*",
+    "src/deployment/**/*.sql",
 ]
 
 exclude = [

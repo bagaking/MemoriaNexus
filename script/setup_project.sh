@@ -12,7 +12,7 @@ mkdir -p cmd \
          src/core/handlers \
          src/core/review \
          src/core/reminder \
-         src/core/analytics \
+         src/core/analytic \
          src/core/interfaces \
          src/profile/handlers \
          src/profile/passport \
@@ -61,8 +61,8 @@ declare -A go_files=(
     [src/core/review/session.go]="review:Review session management logic"
     [src/core/reminder/service.go]="reminder:Reminder service implementation"
     [src/core/reminder/types.go]="reminder:Types related to reminders"
-    [src/core/analytics/reporter.go]="analytics:Analytics reporting logic"
-    [src/core/analytics/types.go]="analytics:Types related to analytics"
+    [src/core/analytic/reporter.go]="analytics:Analytics reporting logic"
+    [src/core/analytic/types.go]="analytics:Types related to analytics"
     [src/core/interfaces/port.go]="interfaces:Port definitions for internal and external communication"
     [src/profile/handlers.go]="handlers:User profile handling logic"
     [src/profile/passport/model/account.go]="passport:Account management logic"

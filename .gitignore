@@ -22,3 +22,9 @@
 go.work
 
 .idea
+
+# for dev_memorianexus
+dev*/logs
+dev*/*data
+bundle/*.txt
+*.bundle.txt

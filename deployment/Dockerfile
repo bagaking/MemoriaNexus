@@ -1,6 +1,6 @@
 # This assumes you're using a multi-stage build with Go
 # Start from the official Golang image to build our source code.
-FROM golang:1.21 as builder
+FROM golang:1.22 as builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app

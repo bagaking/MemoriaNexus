@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile
+    environment:
+      - MEMORIA_NEXUS_ENV=dev
+    ports:
+      - "${MemoriaNexus_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs  # 将宿主机当前目录下的 logs 文件夹映射到容器的/app/logs目录
+    networks:
+      - memorianexus-net
+    entrypoint: [ "/bin/sh", "-c" ] # 覆盖 Dockerfile 的 ENTRYPOINT/CMD
+    command: [ "echo 'The app service is started but actual command will be executed manually.' && tail -f /dev/null" ] # 保持容器运行，但不执行应用
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - "${MemoriaNexus_MYSQL_PORT:-60306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: example_password
+      MYSQL_DATABASE: memorianexus
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ../deployment/migration:/migration
+      - ../deployment/migration/migrate.sh:/migrate.sh
+    networks:
+      - memorianexus-net
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+
+  redis:
+    image: redis:latest
+    ports:
+      - "${MemoriaNexus_REDIS_PORT:-60379}:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - memorianexus-net
+
+networks:
+  memorianexus-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
