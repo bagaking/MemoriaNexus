@@ -3,6 +3,8 @@
 package gw
 
 import (
+	"github.com/bagaking/memorianexus/src/module/item"
+	"github.com/bagaking/memorianexus/src/module/system"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
@@ -15,11 +17,9 @@ import (
 	"github.com/bagaking/memorianexus/src/module/analytic"
 	"github.com/bagaking/memorianexus/src/module/book"
 	"github.com/bagaking/memorianexus/src/module/dungeon"
-	"github.com/bagaking/memorianexus/src/module/item"
 	"github.com/bagaking/memorianexus/src/module/nft"
 	"github.com/bagaking/memorianexus/src/module/operation"
 	"github.com/bagaking/memorianexus/src/module/profile"
-	"github.com/bagaking/memorianexus/src/module/system"
 	"github.com/bagaking/memorianexus/src/module/trade"
 )
 
@@ -35,17 +35,17 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 	svrProfile := profile.NewService(db)
 	svrProfile.ApplyMux(router.Group("/profile"))
 
-	// 系统操作路由组
-	svrSystem, _ := system.Init(db)
-	svrSystem.ApplyMux(router.Group("/system"))
+	// 学习材料管理路由组
+	svrItems := item.NewService(db)
+	svrItems.ApplyMux(router.Group("/items"))
 
 	// 册子管理路由组
 	svrBooks, _ := book.Init(db)
-	svrBooks.ApplyMux(router.Group("/book"))
+	svrBooks.ApplyMux(router.Group("/books"))
 
-	// 学习材料管理路由组
-	svrItems, _ := item.Init(db)
-	svrItems.ApplyMux(router.Group("/item"))
+	// 系统操作路由组
+	svrSystem, _ := system.Init(db)
+	svrSystem.ApplyMux(router.Group("/system"))
 
 	// 复习计划管理路由组
 	svrDungeon, _ := dungeon.Init(db)
@@ -57,11 +57,11 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 
 	// NFT管理路由组
 	svrNfts, _ := nft.Init(db)
-	svrNfts.ApplyMux(router.Group("/nft"))
+	svrNfts.ApplyMux(router.Group("/nfts"))
 
 	// NFT交易路由组
 	svrTrades, _ := trade.Init(db)
-	svrTrades.ApplyMux(router.Group("/trade"))
+	svrTrades.ApplyMux(router.Group("/trades"))
 
 	// 成就系统路由组
 	svrAchievements, _ := achievement.Init(db)

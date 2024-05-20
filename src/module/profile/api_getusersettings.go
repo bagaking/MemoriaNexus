@@ -3,10 +3,9 @@ package profile
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/khgame/ranger_iam/pkg/authcli"
-
+	"github.com/bagaking/memorianexus/internal/util"
 	"github.com/bagaking/memorianexus/src/model"
+	"github.com/gin-gonic/gin"
 )
 
 // RespSettingsMemorization defines the structure for the user settings response.
@@ -32,12 +31,12 @@ type RespSettingsAdvance struct {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} RespSettingsMemorization "Successfully retrieved user settings"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [get]
 func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -70,14 +69,13 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 // @Tags profile
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "带有 Bearer 的 Token"
 // @Success 200 {object} RespSettingsAdvance "Successfully retrieved user advanced settings"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [get]
 func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khgame/ranger_iam/pkg/authcli"
 
+	"github.com/bagaking/memorianexus/internal/util"
 	"github.com/bagaking/memorianexus/src/model"
 )
 
 // RespGetPoints defines the structure for the user profile API response.
 type RespGetPoints struct {
-	Cash     uint64 `json:"cash"`
-	Gem      uint64 `json:"gem"`
-	VIPScore uint64 `json:"vip_score"`
+	Cash     util.UInt64 `json:"cash"`
+	Gem      util.UInt64 `json:"gem"`
+	VIPScore util.UInt64 `json:"vip_score"`
 }
 
 // GetUserPoints retrieves the points for the authenticated user.
@@ -22,14 +22,13 @@ type RespGetPoints struct {
 // @Tags profile
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "带有 Bearer 的 Token"
 // @Success 200 {object} RespGetPoints "Successfully retrieved user points"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/points [get]
 func (svr *Service) GetUserPoints(c *gin.Context) {
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

@@ -10,6 +10,8 @@
 │   ├── migration
 │   │   ├── 01.profile_down.sql
 │   │   ├── 01.profile_up.sql
+│   │   ├── 02.book_item_down.sql
+│   │   ├── 02.book_item_up.sql
 │   │   └── migrate.sh
 │   ├── Dockerfile
 │   └── ci_cd.yaml
@@ -22,7 +24,7 @@
 │   │   └── memorianexus.log
 │   ├── mysql-data
 │   │   ├── #innodb_redo
-│   │   │   ├── #ib_redo10_tmp
+│   │   │   ├── #ib_redo10
 │   │   │   ├── #ib_redo11_tmp
 │   │   │   ├── #ib_redo12_tmp
 │   │   │   ├── #ib_redo13_tmp
@@ -53,7 +55,7 @@
 │   │   │   ├── #ib_redo38_tmp
 │   │   │   ├── #ib_redo39_tmp
 │   │   │   ├── #ib_redo40_tmp
-│   │   │   └── #ib_redo9
+│   │   │   └── #ib_redo41_tmp
 │   │   ├── #innodb_temp
 │   │   │   ├── temp_1.ibt
 │   │   │   ├── temp_10.ibt
@@ -66,10 +68,16 @@
 │   │   │   ├── temp_8.ibt
 │   │   │   └── temp_9.ibt
 │   │   ├── memorianexus
-│   │   │   ├── profile.ibd
+│   │   │   ├── book_items.ibd
+│   │   │   ├── book_tags.ibd
+│   │   │   ├── books.ibd
+│   │   │   ├── item_tags.ibd
+│   │   │   ├── items.ibd
+│   │   │   ├── profile_advance_settings.ibd
+│   │   │   ├── profile_memorization_settings.ibd
 │   │   │   ├── profile_points.ibd
-│   │   │   ├── profile_settings_advance.ibd
-│   │   │   └── profile_settings_memorization.ibd
+│   │   │   ├── profiles.ibd
+│   │   │   └── tags.ibd
 │   │   ├── mysql
 │   │   │   ├── general_log.CSM
 │   │   │   ├── general_log.CSV
@@ -199,6 +207,26 @@
 │   │   ├── binlog.000002
 │   │   ├── binlog.000003
 │   │   ├── binlog.000004
+│   │   ├── binlog.000005
+│   │   ├── binlog.000006
+│   │   ├── binlog.000007
+│   │   ├── binlog.000008
+│   │   ├── binlog.000009
+│   │   ├── binlog.000010
+│   │   ├── binlog.000011
+│   │   ├── binlog.000012
+│   │   ├── binlog.000013
+│   │   ├── binlog.000014
+│   │   ├── binlog.000015
+│   │   ├── binlog.000016
+│   │   ├── binlog.000017
+│   │   ├── binlog.000018
+│   │   ├── binlog.000019
+│   │   ├── binlog.000020
+│   │   ├── binlog.000021
+│   │   ├── binlog.000022
+│   │   ├── binlog.000023
+│   │   ├── binlog.000024
 │   │   ├── binlog.index
 │   │   ├── ca-key.pem
 │   │   ├── ca.pem
@@ -241,6 +269,7 @@
 │   │   └── unit
 │   │       └── calculator_test.go
 │   └── util
+│       ├── id.go
 │       ├── idgen.go
 │       └── util.go
 ├── pkg
@@ -272,8 +301,11 @@
 │   │   ├── error_handler.go
 │   │   └── routes.go
 │   ├── model
+│   │   ├── book.go
+│   │   ├── item.go
 │   │   ├── profile.go
-│   │   └── profile_points.go
+│   │   ├── profile_points.go
+│   │   └── tag.go
 │   └── module
 │       ├── achievement
 │       │   └── init.go
@@ -284,6 +316,10 @@
 │       ├── dungeon
 │       │   └── init.go
 │       ├── item
+│       │   ├── api_item.go
+│       │   ├── api_itemcreate.go
+│       │   ├── api_items.go
+│       │   ├── api_itemupdate.go
 │       │   └── init.go
 │       ├── nft
 │       │   └── init.go
@@ -298,8 +334,9 @@
 │       │   └── init.go
 │       ├── system
 │       │   └── init.go
-│       └── trade
-│           └── init.go
+│       ├── trade
+│       │   └── init.go
+│       └── common.go
 ├── LICENSE
 ├── MODULES.puml
 ├── Makefile

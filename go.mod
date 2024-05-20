@@ -8,7 +8,7 @@ require (
 	github.com/bagaking/goulp v0.0.0-20210614001606-65f3376ba826
 	github.com/gin-gonic/gin v1.9.1
 	github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a
-	github.com/khicago/got v0.0.0-20230107064458-cbde7bbdb6c1
+	github.com/khicago/got v0.0.0-20240520140129-635733602f45
 	github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0

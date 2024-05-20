@@ -62,6 +62,8 @@ github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a h1:jLJF3jHK1dEaQ
 github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a/go.mod h1:MErA1ZBhUk9wwwff1ni/VjS61Em5Ogb6zrrUX+xHcjw=
 github.com/khicago/got v0.0.0-20230107064458-cbde7bbdb6c1 h1:1rRHzZzA+nI4oHOrNWwvGDYxK8lBdRT7Y/0NbLRUJUQ=
 github.com/khicago/got v0.0.0-20230107064458-cbde7bbdb6c1/go.mod h1:23rzkvU/VYF9PPBT9hMXdz1FUlI7gAPsv3xG9krp2o0=
+github.com/khicago/got v0.0.0-20240520140129-635733602f45 h1:MKNrtYUU1Ble4+m0mLiia/Kp9I/O9LtSL0ryeSpcuFI=
+github.com/khicago/got v0.0.0-20240520140129-635733602f45/go.mod h1:23rzkvU/VYF9PPBT9hMXdz1FUlI7gAPsv3xG9krp2o0=
 github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6 h1:rtA26tT0ggG/veBxkhHwcqdUml5F/o8Cnc5Ov0FQLQ4=
 github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6/go.mod h1:Xkg7IeaDuUdIGXfCYmJqMnxXznPAaRC50pGoyc4DcGQ=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=

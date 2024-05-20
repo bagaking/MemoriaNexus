@@ -6,14 +6,14 @@ import (
 )
 
 type Service struct {
-	// db *model.db
+	db *gorm.DB
 }
 
 var svr *Service
 
 func Init(db *gorm.DB) (*Service, error) {
 	svr = &Service{
-		// db: model.NewRepo(db),
+		db: db,
 	}
 	return svr, nil
 }

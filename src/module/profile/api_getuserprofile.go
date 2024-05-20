@@ -4,19 +4,20 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bagaking/memorianexus/internal/util"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
-	"github.com/khgame/ranger_iam/pkg/authcli"
 	"gorm.io/gorm"
 )
 
 // RespGetProfile defines the structure for the user profile API response.
 type RespGetProfile struct {
-	ID        uint64 `json:"id"`
-	Nickname  string `json:"nickname"`
-	Email     string `json:"email"`
-	AvatarURL string `json:"avatar_url"`
+	ID        util.UInt64 `json:"id"`
+	Nickname  string      `json:"nickname"`
+	Email     string      `json:"email"`
+	AvatarURL string      `json:"avatar_url"`
 	// Include other fields as appropriate.
 }
 
@@ -41,16 +42,15 @@ func mapProfileToResponse(profile *model.Profile) *RespGetProfile {
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "带有 Bearer 的 Token"
 // @Success 200 {object} RespGetProfile "Successfully retrieved user profile"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/me [get]
 func (svr *Service) GetUserProfile(c *gin.Context) {
 	log := wlog.ByCtx(c)
 	// Extract the user ID from the context.
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

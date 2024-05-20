@@ -4,6 +4,233 @@
         "contact": {}
     },
     "paths": {
+        "/items": {
+            "get": {
+                "description": "Get a list of items for the user with optional filters for book and type and support for pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Get a list of items with optional filters",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Book ID",
+                        "name": "book_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Type of item",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved items",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Item"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new item in the system with optional book affiliations and tags.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Create a new item",
+                "parameters": [
+                    {
+                        "description": "Item creation data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/item.ReqCreateItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created item with books and tags",
+                        "schema": {
+                            "$ref": "#/definitions/model.Item"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request if too many books or tags, or bad data",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{id}": {
+            "get": {
+                "description": "Get detailed information about an item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Get an item by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved item",
+                        "schema": {
+                            "$ref": "#/definitions/model.Item"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an item's type, content, or associated tags.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Update an item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Item update data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/item.ReqUpdateItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated item",
+                        "schema": {
+                            "$ref": "#/definitions/module.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request with invalid item ID or update data",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error with failing to update the item",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an item from the system by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Delete an item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted item",
+                        "schema": {
+                            "$ref": "#/definitions/module.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/module.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/me": {
             "get": {
                 "security": [
@@ -22,15 +249,6 @@
                     "profile"
                 ],
                 "summary": "Get the current user's profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "带有 Bearer 的 Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved user profile",
@@ -41,19 +259,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -77,13 +295,6 @@
                 "summary": "Update user profile",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "带有 Bearer 的 Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "User profile update info",
                         "name": "profile",
                         "in": "body",
@@ -97,25 +308,25 @@
                     "200": {
                         "description": "Successfully updated user profile",
                         "schema": {
-                            "$ref": "#/definitions/profile.SuccessResponse"
+                            "$ref": "#/definitions/module.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -136,15 +347,6 @@
                     "profile"
                 ],
                 "summary": "Get user points",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "带有 Bearer 的 Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved user points",
@@ -155,19 +357,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -188,15 +390,6 @@
                     "profile"
                 ],
                 "summary": "Get user advanced settings",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "带有 Bearer 的 Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved user advanced settings",
@@ -207,19 +400,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -256,25 +449,25 @@
                     "200": {
                         "description": "Successfully updated user advanced settings",
                         "schema": {
-                            "$ref": "#/definitions/profile.SuccessResponse"
+                            "$ref": "#/definitions/module.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -305,19 +498,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -341,13 +534,6 @@
                 "summary": "Update user settings",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "带有 Bearer 的 Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "User settings update info",
                         "name": "settings",
                         "in": "body",
@@ -361,25 +547,25 @@
                     "200": {
                         "description": "Successfully updated user settings",
                         "schema": {
-                            "$ref": "#/definitions/profile.SuccessResponse"
+                            "$ref": "#/definitions/module.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/profile.ErrorResponse"
+                            "$ref": "#/definitions/module.ErrorResponse"
                         }
                     }
                 }
@@ -387,7 +573,82 @@
         }
     },
     "definitions": {
-        "profile.ErrorResponse": {
+        "item.ReqCreateItem": {
+            "type": "object",
+            "properties": {
+                "book_ids": {
+                    "description": "用于接收一个或多个 BookID",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "content": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "新增字段，用于接收一组 Tag 名称",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "item.ReqUpdateItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "新增字段",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Item": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "module.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "module.SuccessResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -497,14 +758,6 @@
                 "review_interval": {
                     "description": "Definitions should match with ProfileMemorizationSetting",
                     "type": "integer"
-                }
-            }
-        },
-        "profile.SuccessResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
                 }
             }
         }

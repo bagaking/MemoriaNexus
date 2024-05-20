@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/util"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -12,7 +14,7 @@ import (
 
 // Profile 定义了用户个人信息的模型
 type Profile struct {
-	ID uint64 `gorm:"primaryKey;autoIncrement:false"`
+	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -31,7 +33,7 @@ type Profile struct {
 
 // ProfileMemorizationSetting 定义了用户记忆设置的模型
 type ProfileMemorizationSetting struct {
-	ID uint64 `gorm:"primaryKey;autoIncrement:false"`
+	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	ReviewInterval       uint   `gorm:"type:int unsigned"`
 	DifficultyPreference uint8  `gorm:"type:tinyint unsigned"`
@@ -40,7 +42,7 @@ type ProfileMemorizationSetting struct {
 
 // ProfileAdvanceSetting 定义了用户高级设置的模型
 type ProfileAdvanceSetting struct {
-	ID uint64 `gorm:"primaryKey;autoIncrement:false"`
+	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	Theme              string `gorm:"theme,size:255;default:'light'"`
 	Language           string `gorm:"language,size:255;default:'en'"`
@@ -52,7 +54,7 @@ type ProfileAdvanceSetting struct {
 func (p *Profile) BeforeCreate(tx *gorm.DB) (err error) {
 	// 确保UserID不为0
 	if p.ID <= 0 {
-		return errors.New("user ID must be larger than zero")
+		return errors.New("user UInt64 must be larger than zero")
 	}
 	return
 }
@@ -92,7 +94,7 @@ func (p *Profile) UpdateProfile(db *gorm.DB, updateData *Profile) error {
 }
 
 // EnsureLoadProfile 从数据库中加载用户个人信息
-func EnsureLoadProfile(db *gorm.DB, uid uint64) (*Profile, error) {
+func EnsureLoadProfile(db *gorm.DB, uid util.UInt64) (*Profile, error) {
 	p := &Profile{
 		ID: uid,
 	}
@@ -159,7 +161,7 @@ func (p *Profile) EnsureLoadProfileSettingsAdvance(db *gorm.DB) (*ProfileAdvance
 func (p *Profile) SaveProfileSettingsMemorization(db *gorm.DB) error {
 	if p.settingsMemorization.ID != p.ID {
 		// 确保settingsMemorization的ID与Profile的ID匹配
-		return errors.New("profile ID does not match with settingsMemorization ID")
+		return errors.New("profile UInt64 does not match with settingsMemorization UInt64")
 	}
 
 	result := db.Clauses(clause.OnConflict{
@@ -174,7 +176,7 @@ func (p *Profile) SaveProfileSettingsMemorization(db *gorm.DB) error {
 func (p *Profile) SaveProfileSettingsAdvance(db *gorm.DB) error {
 	if p.settingsAdvance.ID != p.ID {
 		// 确保settingsAdvance的ID与Profile的ID匹配
-		return errors.New("profile ID does not match with settingsAdvance ID")
+		return errors.New("profile UInt64 does not match with settingsAdvance UInt64")
 	}
 
 	result := db.Clauses(clause.OnConflict{

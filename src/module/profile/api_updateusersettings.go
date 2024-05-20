@@ -3,11 +3,13 @@ package profile
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/khgame/ranger_iam/pkg/authcli"
+	"github.com/bagaking/memorianexus/internal/util"
+
+	"github.com/bagaking/memorianexus/src/module"
 
 	"github.com/bagaking/memorianexus/src/model"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 // ReqUpdateUserSettingsMemorization defines the request format for updating user settings.
@@ -32,15 +34,14 @@ type ReqUpdateUserSettingsAdvance struct {
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "带有 Bearer 的 Token"
 // @Param settings body ReqUpdateUserSettingsMemorization true "User settings update info"
-// @Success 200 {object} SuccessResponse "Successfully updated user settings"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Success 200 {object} module.SuccessResponse "Successfully updated user settings"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [put]
 func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -79,7 +80,7 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SuccessResponse{Message: "Settings updated successfully"})
+	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Settings updated successfully"})
 }
 
 // UpdateUserSettingsAdvance updates the advanced settings for the current user.
@@ -90,13 +91,13 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param settings body ReqUpdateUserSettingsAdvance true "User advanced settings update info"
-// @Success 200 {object} SuccessResponse "Successfully updated user advanced settings"
-// @Failure 400 {object} ErrorResponse "Bad Request"
-// @Failure 404 {object} ErrorResponse "Not Found"
-// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Success 200 {object} module.SuccessResponse "Successfully updated user advanced settings"
+// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Failure 404 {object} module.ErrorResponse "Not Found"
+// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [put]
 func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
-	userID, exists := authcli.GetUIDFromGinCtx(c)
+	userID, exists := util.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -138,5 +139,5 @@ func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SuccessResponse{Message: "Advanced settings updated successfully"})
+	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Advanced settings updated successfully"})
 }

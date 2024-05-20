@@ -6,16 +6,13 @@ import (
 )
 
 type Service struct {
-	// db *model.db
+	db *gorm.DB
+	// Other service dependencies would be added here
 }
 
-var svr *Service
-
-func Init(db *gorm.DB) (*Service, error) {
-	svr = &Service{
-		// db: model.NewRepo(db),
-	}
-	return svr, nil
+// NewService creates a new service instance with dependencies wired in.
+func NewService(repo *gorm.DB) *Service {
+	return &Service{db: repo}
 }
 
 func (svr *Service) ApplyMux(group gin.IRouter) {
@@ -24,19 +21,4 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.GET("/:id", svr.GetItem)
 	group.PUT("/:id", svr.UpdateItem)
 	group.DELETE("/:id", svr.DeleteItem)
-}
-
-func (svr *Service) CreateItem(context *gin.Context) {
-}
-
-func (svr *Service) GetItems(context *gin.Context) {
-}
-
-func (svr *Service) GetItem(context *gin.Context) {
-}
-
-func (svr *Service) UpdateItem(context *gin.Context) {
-}
-
-func (svr *Service) DeleteItem(context *gin.Context) {
 }

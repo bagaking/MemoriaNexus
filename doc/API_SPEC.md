@@ -16,6 +16,14 @@ Memoria Nexus 利用艾宾浩斯遗忘曲线（间隔重复法）优化学习记
 
 > DB: MySQL, Cache: Redis, AuthZ: RangeIAM
 
+## 一些细节
+
+### Book Item Tag 之间的关系
+
+Item 和 Book 是 n 对 m 关系，但是他们都同时只会属于一个 user。
+item 和 book 都支持添加任意多个 tag。
+tag 是全局的，可以对应到任意多个 book 或者 item。
+
 # API 设计 (实现见 src/module) 
 
 - 用户账户服务
@@ -31,41 +39,43 @@ Memoria Nexus 利用艾宾浩斯遗忘曲线（间隔重复法）优化学习记
     - POST /api/v1/system/announcements/markAsRead：标记公告为已读
     - GET /api/v1/system/configs：获取全局配置
 - 册子管理
-    - POST /api/v1/book：创建册子
-    - GET /api/v1/book：获取册子列表
-    - GET /api/v1/book/:id：获取册子详情
-    - PUT /api/v1/book/:id：更新册子信息
-    - DELETE /api/v1/book/:id：删除册子
+    - POST /api/v1/books：创建册子
+    - GET /api/v1/books：获取册子列表
+    - GET /api/v1/books/:id：获取册子详情
+    - PUT /api/v1/books/:id：更新册子信息
+    - DELETE /api/v1/books/:id：删除册子
 - 学习材料管理
-    - POST /api/v1/item：创建学习材料
-    - GET /api/v1/item：获取学习材料列表
-    - GET /api/v1/item/:id：获取学习材料详情
-    - PUT /api/v1/item/:id：更新学习材料信息
-    - DELETE /api/v1/item/:id：删除学习材料
+    - POST /api/v1/items：创建学习材料
+    - GET /api/v1/items：获取学习材料列表
+    - GET /api/v1/items/:id：获取学习材料详情
+    - PUT /api/v1/items/:id：更新学习材料信息
+    - DELETE /api/v1/items/:id：删除学习材料
 - 复习计划管理
     - GET /api/v1/dungeon/schedules：获取复习计划列表
     - GET /api/v1/dungeon/schedules/:id：获取复习计划详情
     - POST /api/v1/dungeon/schedules：创建复习计划
     - PUT /api/v1/dungeon/schedules/:id：更新复习计划
     - DELETE /api/v1/dungeon/schedules/:id：删除复习计划
-    - GET /api/v1/dungeon/instances：获取复习实例
-    - GET /api/v1/dungeon/instances/:id：获取复习实例详情
+    - GET /api/v1/dungeon/instances：获取复习即时副本
+    - GET /api/v1/dungeon/instances/:id：获取复习即时副本详情
 - NFT管理
-    - GET /api/v1/nft：获取用户 NFT
-    - GET /api/v1/nft/:id：获取 NFT 详情
-    - GET /api/v1/nft/shop：查看商店
-    - POST /api/v1/nft/draw：抽卡
+    - GET /api/v1/nft/nfts：获取用户 NFT
+    - GET /api/v1/nft/nfts/:id：获取 NFT 详情
+    - POST /api/v1/nft/draw_card：以抽卡的方式创建 nft
+    - GET /api/v1/nft/shops：查看所有商店
+    - GET /api/v1/nft/shops/:id：查看某个商店
+    - POST /api/v1/nft/transfer：赠予
 - NFT交易管理
-    - GET /api/v1/trade：获取市场交易
-    - POST /api/v1/trade：创建交易
-    - GET /api/v1/trade/:id：获取交易详情
-    - DELETE /api/v1/trade/:id：取消交易
-    - POST /api/v1/trade/:id/purchase：购买交易
+    - GET /api/v1/nft/trades：获取市场交易对
+    - POST /api/v1/nft/trades：创建交易对
+    - GET /api/v1/nft/trades/:id：获取交易详情
+    - DELETE /api/v1/nft/trades/:id：取消交易
+    - POST /api/v1/nft/trades/:id/buy：创建购买订单 (会直接生效、因此就是购买)
 - 成就系统
     - GET /api/v1/achievements：获取所有成就
     - GET /api/v1/achievements/:id：获取成就详情
 - 运营管理
-    - GET /api/v1/operation/task：当前任务获取
-    - GET /api/v1/operation/task/:id：获取任务详情
-    - GET /api/v1/operation/activity：获取活动
-    - GET /api/v1/operation/activity/:id：获取活动详情
+    - GET /api/v1/operation/tasks：当前任务获取
+    - GET /api/v1/operation/tasks/:id：获取任务详情
+    - GET /api/v1/operation/activities：获取活动
+    - GET /api/v1/operation/activities/:id：获取活动详情
