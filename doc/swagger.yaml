@@ -1,4 +1,41 @@
 definitions:
+  book.ReqCreateBook:
+    properties:
+      description:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  book.RespBook:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  book.RespBooks:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/book.RespBook'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+    type: object
   item.ReqCreateItem:
     properties:
       book_ids:
@@ -125,6 +162,124 @@ definitions:
 info:
   contact: {}
 paths:
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of books for the user.
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of books
+          schema:
+            $ref: '#/definitions/book.RespBooks'
+      summary: Get list of books with pagination
+      tags:
+      - book
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的书册，可选地关联标签
+      parameters:
+      - description: 书册创建数据
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/book.ReqCreateBook'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 成功创建书册
+          schema:
+            $ref: '#/definitions/book.RespBook'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/module.ErrorResponse'
+      summary: 创建书册
+      tags:
+      - book
+  /books/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a book from the system by ID.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted book
+          schema:
+            type: string
+      summary: Delete a book
+      tags:
+      - book
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved book
+          schema:
+            $ref: '#/definitions/book.RespBook'
+      summary: Get a book by ID
+      tags:
+      - book
+    put:
+      consumes:
+      - application/json
+      description: Update information for an existing book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book update data
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/book.ReqCreateBook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated book
+          schema:
+            type: string
+      summary: Update book information
+      tags:
+      - book
   /items:
     get:
       consumes:

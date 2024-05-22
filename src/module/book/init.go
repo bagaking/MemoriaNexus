@@ -6,14 +6,14 @@ import (
 )
 
 type Service struct {
-	// db *model.db
+	db *gorm.DB
 }
 
 var svr *Service
 
 func Init(db *gorm.DB) (*Service, error) {
 	svr = &Service{
-		// db: model.NewRepo(db),
+		db: db,
 	}
 	return svr, nil
 }
@@ -24,19 +24,4 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.GET("/:id", svr.GetBook)
 	group.PUT("/:id", svr.UpdateBook)
 	group.DELETE("/:id", svr.DeleteBook)
-}
-
-func (svr *Service) CreateBook(context *gin.Context) {
-}
-
-func (svr *Service) GetBooks(context *gin.Context) {
-}
-
-func (svr *Service) GetBook(context *gin.Context) {
-}
-
-func (svr *Service) UpdateBook(context *gin.Context) {
-}
-
-func (svr *Service) DeleteBook(context *gin.Context) {
 }

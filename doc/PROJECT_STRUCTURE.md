@@ -227,6 +227,8 @@
 │   │   ├── binlog.000022
 │   │   ├── binlog.000023
 │   │   ├── binlog.000024
+│   │   ├── binlog.000025
+│   │   ├── binlog.000026
 │   │   ├── binlog.index
 │   │   ├── ca-key.pem
 │   │   ├── ca.pem
@@ -312,7 +314,12 @@
 │       ├── analytic
 │       │   └── init.go
 │       ├── book
-│       │   └── init.go
+│       │   ├── api_createbook.go
+│       │   ├── api_getbooks.go
+│       │   ├── api_updatebook.go
+│       │   ├── dto.go
+│       │   ├── init.go
+│       │   └── util.go
 │       ├── dungeon
 │       │   └── init.go
 │       ├── item
@@ -320,7 +327,8 @@
 │       │   ├── api_itemcreate.go
 │       │   ├── api_items.go
 │       │   ├── api_itemupdate.go
-│       │   └── init.go
+│       │   ├── init.go
+│       │   └── util.go
 │       ├── nft
 │       │   └── init.go
 │       ├── operation
@@ -333,8 +341,6 @@
 │       │   ├── api_updateusersettings.go
 │       │   └── init.go
 │       ├── system
-│       │   └── init.go
-│       ├── trade
 │       │   └── init.go
 │       └── common.go
 ├── LICENSE

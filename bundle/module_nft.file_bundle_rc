@@ -2,10 +2,8 @@ entry = [
     "doc/API_SPEC.md",
     "src/gw/**/*.go",
     "src/deployment/**/*.sql",
-    "src/model/**/book*.go",
-    "src/model/**/tag*.go",
-    "src/module/book/*.go",
-    "src/module/item/*.go",
+    "src/model/**/item*.go",
+    "src/module/nft/*.go",
 ]
 
 exclude = [

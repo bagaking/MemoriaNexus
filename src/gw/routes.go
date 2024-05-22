@@ -3,13 +3,11 @@
 package gw
 
 import (
-	"github.com/bagaking/memorianexus/src/module/item"
-	"github.com/bagaking/memorianexus/src/module/system"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/khgame/ranger_iam/pkg/authcli"
 
@@ -17,10 +15,11 @@ import (
 	"github.com/bagaking/memorianexus/src/module/analytic"
 	"github.com/bagaking/memorianexus/src/module/book"
 	"github.com/bagaking/memorianexus/src/module/dungeon"
+	"github.com/bagaking/memorianexus/src/module/item"
 	"github.com/bagaking/memorianexus/src/module/nft"
 	"github.com/bagaking/memorianexus/src/module/operation"
 	"github.com/bagaking/memorianexus/src/module/profile"
-	"github.com/bagaking/memorianexus/src/module/trade"
+	"github.com/bagaking/memorianexus/src/module/system"
 )
 
 // RegisterRoutes - routers all in one
@@ -57,11 +56,7 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 
 	// NFT管理路由组
 	svrNfts, _ := nft.Init(db)
-	svrNfts.ApplyMux(router.Group("/nfts"))
-
-	// NFT交易路由组
-	svrTrades, _ := trade.Init(db)
-	svrTrades.ApplyMux(router.Group("/trades"))
+	svrNfts.ApplyMux(router.Group("/nft"))
 
 	// 成就系统路由组
 	svrAchievements, _ := achievement.Init(db)
