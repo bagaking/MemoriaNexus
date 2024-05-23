@@ -5,15 +5,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 )
 
 // RespGetPoints defines the structure for the user profile API response.
 type RespGetPoints struct {
-	Cash     util.UInt64 `json:"cash"`
-	Gem      util.UInt64 `json:"gem"`
-	VIPScore util.UInt64 `json:"vip_score"`
+	Cash     utils.UInt64 `json:"cash"`
+	Gem      utils.UInt64 `json:"gem"`
+	VIPScore utils.UInt64 `json:"vip_score"`
 }
 
 // GetUserPoints retrieves the points for the authenticated user.
@@ -28,7 +28,7 @@ type RespGetPoints struct {
 // @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/points [get]
 func (svr *Service) GetUserPoints(c *gin.Context) {
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

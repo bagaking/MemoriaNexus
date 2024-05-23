@@ -3,7 +3,7 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
 )
@@ -36,7 +36,7 @@ type RespSettingsAdvance struct {
 // @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [get]
 func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -75,7 +75,7 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 // @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [get]
 func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

@@ -1,13 +1,14 @@
 package book
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/bagaking/goulp/wlog"
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/irr"
-	"net/http"
-	"strconv"
 )
 
 // UpdateBook handles updating a book's information.
@@ -22,7 +23,7 @@ import (
 // @Router /books/{id} [put]
 func (svr *Service) UpdateBook(c *gin.Context) {
 	log := wlog.ByCtx(c, "UpdateBook")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -77,7 +78,7 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 // @Router /books/{id} [delete]
 func (svr *Service) DeleteBook(c *gin.Context) {
 	log := wlog.ByCtx(c, "DeleteBook")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

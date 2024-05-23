@@ -3,6 +3,7 @@ entry = [
     "src/module/profile/*.go",
     "src/model/**/*.go",
     "src/deployment/**/*.sql",
+    "src/utils/*.go",
 ]
 
 exclude = [

@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/bagaking/memorianexus/doc"
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/gw"
 )
 
@@ -31,12 +31,12 @@ func dsn() string {
 
 	// todo: using config
 	host := "localhost"
-	switch util.Env() {
-	case util.RuntimeENVDev:
+	switch utils.Env() {
+	case utils.RuntimeENVDev:
 		host = "mysql"
-	case util.RuntimeENVProd:
+	case utils.RuntimeENVProd:
 		host = "mysql"
-	case util.RuntimeENVLocal:
+	case utils.RuntimeENVLocal:
 		fallthrough
 	default:
 	}

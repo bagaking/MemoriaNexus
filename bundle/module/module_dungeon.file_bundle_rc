@@ -1,0 +1,15 @@
+entry = [
+    "doc/API_SPEC.md",
+    "src/gw/**/*.go",
+    "src/utils/*.go",
+    "src/deployment/**/*.sql",
+    "src/model/**/item*",
+    "src/module/item/init.go",
+    "src/module/item/item.go",
+    "src/module/dungeon/*.go",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

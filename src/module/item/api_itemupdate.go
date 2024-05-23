@@ -1,10 +1,11 @@
 package item
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/bagaking/goulp/wlog"
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module"
 	"github.com/gin-gonic/gin"
@@ -30,20 +31,20 @@ type ReqUpdateItem struct {
 // @Router /items/{id} [put]
 func (svr *Service) UpdateItem(c *gin.Context) {
 	log := wlog.ByCtx(c, "UpdateItem")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GinHandleError(c, log, http.StatusUnauthorized, errors.New("user not authenticated"), "User not authenticated")
 		return
 	}
 
-	id, err := util.ParseIDFromString(c.Param("id"))
+	id, err := utils.ParseIDFromString(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, module.ErrorResponse{Message: "Invalid item ID"})
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid item ID")
 		return
 	}
 	var req ReqUpdateItem
 	if err = c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, module.ErrorResponse{Message: err.Error()})
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid request data")
 		return
 	}
 
@@ -58,21 +59,22 @@ func (svr *Service) UpdateItem(c *gin.Context) {
 			Type:    req.Type,
 			Content: req.Content,
 		}).Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update item")
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	if err = updateItemTagsRef(c, tx, id, req.Tags); err != nil {
-		log.WithError(err).Error("update item tags failed")
+	// 更新 Item 的 tags
+	if err = model.UpdateItemTagsRef(c, tx, id, req.Tags); err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update item tags")
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
+		return
 	}
 
 	// 提交事务
 	if err = tx.Commit().Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to commit transaction")
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
 		return
 	}
 

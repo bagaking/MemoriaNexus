@@ -9,5 +9,6 @@ type (
 	// SuccessResponse defines the response structure for a successful operation.
 	SuccessResponse struct {
 		Message string `json:"message"`
+		Data    any    `json:"data,omitempty"`
 	}
 )

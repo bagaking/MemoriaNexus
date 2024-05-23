@@ -54,7 +54,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "创建一个新的书册，可选地关联标签",
+                "description": "Creates a new book and optionally associates tags with it",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,10 +64,10 @@ const docTemplate = `{
                 "tags": [
                     "book"
                 ],
-                "summary": "创建书册",
+                "summary": "Create a book",
                 "parameters": [
                     {
-                        "description": "书册创建数据",
+                        "description": "Book creation data",
                         "name": "book",
                         "in": "body",
                         "required": true,
@@ -78,13 +78,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "成功创建书册",
+                        "description": "Successfully created book",
                         "schema": {
                             "$ref": "#/definitions/book.RespBook"
                         }
                     },
                     "400": {
-                        "description": "参数错误",
+                        "description": "Invalid parameters",
                         "schema": {
                             "$ref": "#/definitions/module.ErrorResponse"
                         }
@@ -242,10 +242,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved items",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Item"
-                            }
+                            "$ref": "#/definitions/item.RespItems"
                         }
                     },
                     "400": {
@@ -297,7 +294,7 @@ const docTemplate = `{
         },
         "/items/{id}": {
             "get": {
-                "description": "Get detailed information about an item.",
+                "description": "Get detailed information about an item, including its tags.",
                 "consumes": [
                     "application/json"
                 ],
@@ -319,9 +316,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved item",
+                        "description": "Successfully retrieved item with tags",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/item.ItemDTO"
                         }
                     },
                     "400": {
@@ -819,6 +816,35 @@ const docTemplate = `{
                 }
             }
         },
+        "item.ItemDTO": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "item.ReqCreateItem": {
             "type": "object",
             "properties": {
@@ -862,6 +888,26 @@ const docTemplate = `{
                 }
             }
         },
+        "item.RespItems": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/item.ItemDTO"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Item": {
             "type": "object",
             "properties": {
@@ -897,6 +943,7 @@ const docTemplate = `{
         "module.SuccessResponse": {
             "type": "object",
             "properties": {
+                "data": {},
                 "message": {
                     "type": "string"
                 }

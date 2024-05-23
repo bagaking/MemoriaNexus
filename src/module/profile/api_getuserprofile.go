@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/src/model"
@@ -14,10 +14,10 @@ import (
 
 // RespGetProfile defines the structure for the user profile API response.
 type RespGetProfile struct {
-	ID        util.UInt64 `json:"id"`
-	Nickname  string      `json:"nickname"`
-	Email     string      `json:"email"`
-	AvatarURL string      `json:"avatar_url"`
+	ID        utils.UInt64 `json:"id"`
+	Nickname  string       `json:"nickname"`
+	Email     string       `json:"email"`
+	AvatarURL string       `json:"avatar_url"`
 	// Include other fields as appropriate.
 }
 
@@ -50,7 +50,7 @@ func mapProfileToResponse(profile *model.Profile) *RespGetProfile {
 func (svr *Service) GetUserProfile(c *gin.Context) {
 	log := wlog.ByCtx(c)
 	// Extract the user ID from the context.
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

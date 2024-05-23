@@ -1,20 +1,22 @@
 package item
 
 import (
+	"errors"
 	"net/http"
 
-	"github.com/bagaking/goulp/wlog"
-	"github.com/bagaking/memorianexus/internal/util"
-	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module"
+
+	"github.com/bagaking/goulp/wlog"
+	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
 )
 
 type ReqCreateItem struct {
-	Type    string        `json:"type,omitempty"`
-	Content string        `json:"content,omitempty"`
-	BookIDs []util.UInt64 `json:"book_ids,omitempty"` // 用于接收一个或多个 BookID
-	Tags    []string      `json:"tags,omitempty"`     // 新增字段，用于接收一组 Tag 名称
+	Type    string         `json:"type,omitempty"`
+	Content string         `json:"content,omitempty"`
+	BookIDs []utils.UInt64 `json:"book_ids,omitempty"` // 用于接收一个或多个 BookID
+	Tags    []string       `json:"tags,omitempty"`     // 新增字段，用于接收一组 Tag 名称
 }
 
 const (
@@ -34,33 +36,32 @@ const (
 // @Router /items [post]
 func (svr *Service) CreateItem(c *gin.Context) {
 	log := wlog.ByCtx(c, "CreateItem")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GinHandleError(c, log, http.StatusUnauthorized, errors.New("user not authenticated"), "User not authenticated")
 		return
 	}
 
 	var req ReqCreateItem
-
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, module.ErrorResponse{Message: err.Error()})
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid request data")
 		return
 	}
 
 	// 检查 BookIDs 和 Tags 数量是否超出限制
 	if len(req.BookIDs) > MaxBooksOncePerItem {
-		c.JSON(http.StatusBadRequest, module.ErrorResponse{Message: "Too many books"})
+		utils.GinHandleError(c, log, http.StatusBadRequest, errors.New("too many books"), "Too many books")
 		return
 	}
 	if len(req.Tags) > MaxTagsOncePerItem {
-		c.JSON(http.StatusBadRequest, module.ErrorResponse{Message: "Too many tags"})
+		utils.GinHandleError(c, log, http.StatusBadRequest, errors.New("too many tags"), "Too many tags")
 		return
 	}
 
-	id, err := util.GenIDU64(c)
+	id, err := utils.GenIDU64(c)
 	if err != nil {
-		log.WithError(err).Error("generate id failed")
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: "generate id failed"})
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to generate ID")
+		return
 	}
 
 	// 创建 Item 实例
@@ -74,9 +75,8 @@ func (svr *Service) CreateItem(c *gin.Context) {
 	// 创建 Item 并开始数据库事务
 	tx := svr.db.Begin()
 	if err = tx.Create(item).Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to create item")
 		tx.Rollback()
-		log.WithError(err).Error("create item failed")
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
 		return
 	}
 
@@ -88,26 +88,37 @@ func (svr *Service) CreateItem(c *gin.Context) {
 			BookID: bookID,
 		}
 		if err = svr.db.Create(itemBook).Error; err != nil {
-			log.WithError(err).Error("create book link failed")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to create book link")
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
 			return
 		}
 	}
 
-	if err = updateItemTagsRef(c, tx, item.ID, req.Tags); err != nil {
-		log.WithError(err).Error("update item tags failed")
+	// 更新 Item 的 tags
+	if err = model.UpdateItemTagsRef(c, tx, id, req.Tags); err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update item tags")
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
+		return
 	}
 
 	// 提交事务
 	if err = tx.Commit().Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to commit transaction")
 		tx.Rollback()
-		log.WithError(err).Error("create item failed")
-		c.JSON(http.StatusInternalServerError, module.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, item)
+	// 创建 DTO 并返回
+	dto := ItemDTO{
+		ID:        item.ID,
+		UserID:    item.UserID,
+		Type:      item.Type,
+		Content:   item.Content,
+		Tags:      req.Tags,
+		CreatedAt: item.CreatedAt,
+		UpdatedAt: item.UpdatedAt,
+	}
+
+	// 返回成功响应
+	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Item created", Data: dto})
 }

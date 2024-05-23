@@ -229,6 +229,12 @@
 │   │   ├── binlog.000024
 │   │   ├── binlog.000025
 │   │   ├── binlog.000026
+│   │   ├── binlog.000027
+│   │   ├── binlog.000028
+│   │   ├── binlog.000029
+│   │   ├── binlog.000030
+│   │   ├── binlog.000031
+│   │   ├── binlog.000032
 │   │   ├── binlog.index
 │   │   ├── ca-key.pem
 │   │   ├── ca.pem
@@ -270,7 +276,9 @@
 │   │   │   └── api_test.go
 │   │   └── unit
 │   │       └── calculator_test.go
-│   └── util
+│   └── utils
+│       ├── batch.go
+│       ├── gin_handle_error.go
 │       ├── id.go
 │       ├── idgen.go
 │       └── util.go

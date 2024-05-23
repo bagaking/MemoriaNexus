@@ -2,14 +2,15 @@ package book
 
 import (
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/bagaking/goulp/wlog"
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/got/util/typer"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
 )
 
 // GetBooks handles retrieving a list of books with pagination.
@@ -24,7 +25,7 @@ import (
 // @Router /books [get]
 func (svr *Service) GetBooks(c *gin.Context) {
 	log := wlog.ByCtx(c, "GetBooks")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -94,7 +95,7 @@ func (svr *Service) GetBooks(c *gin.Context) {
 // @Router /books/{id} [get]
 func (svr *Service) GetBook(c *gin.Context) {
 	log := wlog.ByCtx(c, "GetBook")
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

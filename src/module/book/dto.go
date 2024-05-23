@@ -1,8 +1,9 @@
 package book
 
 import (
-	"github.com/bagaking/memorianexus/internal/util"
 	"time"
+
+	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 // ReqCreateBook 定义创建书册的请求体
@@ -13,12 +14,12 @@ type ReqCreateBook struct {
 }
 
 type RespBook struct {
-	ID          util.UInt64 `json:"id"`
-	UserID      util.UInt64 `json:"user_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          utils.UInt64 `json:"id"`
+	UserID      utils.UInt64 `json:"user_id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
 }
 
 type RespBooks struct {

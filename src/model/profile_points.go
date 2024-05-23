@@ -5,15 +5,15 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 // ProfilePoints 定义了用户积分信息的模型
 type ProfilePoints struct {
-	ID        util.UInt64    `gorm:"primaryKey;autoIncrement:false"` // 与用户ID一致
-	Cash      util.UInt64    `gorm:"default:0"`                      // 现金
-	Gem       util.UInt64    `gorm:"default:0"`                      // 宝石
-	VipScore  util.UInt64    `gorm:"default:0"`                      // VIP 积分
+	ID        utils.UInt64   `gorm:"primaryKey;autoIncrement:false"` // 与用户ID一致
+	Cash      utils.UInt64   `gorm:"default:0"`                      // 现金
+	Gem       utils.UInt64   `gorm:"default:0"`                      // 宝石
+	VipScore  utils.UInt64   `gorm:"default:0"`                      // VIP 积分
 	CreatedAt time.Time      // 记录的创建时间
 	UpdatedAt time.Time      // 记录的更新时间
 	DeletedAt gorm.DeletedAt `gorm:"index"` // 记录的删除时间
@@ -33,7 +33,7 @@ func (p *Profile) EnsureLoadProfilePoints(db *gorm.DB) (*ProfilePoints, error) {
 }
 
 // EnsureLoadProfilePoints 从数据库中加载用户积分信息
-func EnsureLoadProfilePoints(db *gorm.DB, uid util.UInt64) (*ProfilePoints, error) {
+func EnsureLoadProfilePoints(db *gorm.DB, uid utils.UInt64) (*ProfilePoints, error) {
 	points := &ProfilePoints{ID: uid}
 	result := db.FirstOrInit(points, points)
 	if result.Error != nil {

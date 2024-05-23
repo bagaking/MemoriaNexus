@@ -3,7 +3,7 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/memorianexus/src/module"
 
@@ -33,7 +33,7 @@ type ReqUpdateProfile struct {
 // @Failure 500 {object} module.ErrorResponse "Internal Server Error"
 // @Router /profile/me [put]
 func (svr *Service) UpdateUserProfile(c *gin.Context) {
-	userID, exists := util.GetUIDFromGinCtx(c)
+	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

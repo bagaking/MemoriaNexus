@@ -25,7 +25,7 @@ help:
 	@echo "  make db-migrate-down : Rollback database migrations"
 	@echo "  make compose-reset : Stop all services and remove data"
 
-gen-doc:
+gen-docs:
 	@tree -I 'bundle*' --dirsfirst --noreport > ./doc/PROJECT_STRUCTURE.md
 	# Generate API Documentation
 	swag init -g cmd/main.go -o doc/
@@ -80,7 +80,7 @@ dev:
 	@echo App service has been started in the background.
 
 # Start the built go application
-build-dev: gen-doc build-app compose-re dev
+build-dev: build-app compose-re dev
 
 # Connect to the app container and follow the logs
 dev-logs:

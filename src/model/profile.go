@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bagaking/memorianexus/internal/util"
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -14,7 +14,7 @@ import (
 
 // Profile 定义了用户个人信息的模型
 type Profile struct {
-	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -33,7 +33,7 @@ type Profile struct {
 
 // ProfileMemorizationSetting 定义了用户记忆设置的模型
 type ProfileMemorizationSetting struct {
-	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	ReviewInterval       uint   `gorm:"type:int unsigned"`
 	DifficultyPreference uint8  `gorm:"type:tinyint unsigned"`
@@ -42,7 +42,7 @@ type ProfileMemorizationSetting struct {
 
 // ProfileAdvanceSetting 定义了用户高级设置的模型
 type ProfileAdvanceSetting struct {
-	ID util.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
 	Theme              string `gorm:"theme,size:255;default:'light'"`
 	Language           string `gorm:"language,size:255;default:'en'"`
@@ -94,7 +94,7 @@ func (p *Profile) UpdateProfile(db *gorm.DB, updateData *Profile) error {
 }
 
 // EnsureLoadProfile 从数据库中加载用户个人信息
-func EnsureLoadProfile(db *gorm.DB, uid util.UInt64) (*Profile, error) {
+func EnsureLoadProfile(db *gorm.DB, uid utils.UInt64) (*Profile, error) {
 	p := &Profile{
 		ID: uid,
 	}

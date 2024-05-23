@@ -36,6 +36,25 @@ definitions:
       page:
         type: integer
     type: object
+  item.ItemDTO:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
   item.ReqCreateItem:
     properties:
       book_ids:
@@ -65,6 +84,19 @@ definitions:
       type:
         type: string
     type: object
+  item.RespItems:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/item.ItemDTO'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
   model.Item:
     properties:
       content:
@@ -88,6 +120,7 @@ definitions:
     type: object
   module.SuccessResponse:
     properties:
+      data: {}
       message:
         type: string
     type: object
@@ -191,9 +224,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: 创建一个新的书册，可选地关联标签
+      description: Creates a new book and optionally associates tags with it
       parameters:
-      - description: 书册创建数据
+      - description: Book creation data
         in: body
         name: book
         required: true
@@ -203,14 +236,14 @@ paths:
       - application/json
       responses:
         "201":
-          description: 成功创建书册
+          description: Successfully created book
           schema:
             $ref: '#/definitions/book.RespBook'
         "400":
-          description: 参数错误
+          description: Invalid parameters
           schema:
             $ref: '#/definitions/module.ErrorResponse'
-      summary: 创建书册
+      summary: Create a book
       tags:
       - book
   /books/{id}:
@@ -313,9 +346,7 @@ paths:
         "200":
           description: Successfully retrieved items
           schema:
-            items:
-              $ref: '#/definitions/model.Item'
-            type: array
+            $ref: '#/definitions/item.RespItems'
         "400":
           description: Bad Request
           schema:
@@ -377,7 +408,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get detailed information about an item.
+      description: Get detailed information about an item, including its tags.
       parameters:
       - description: Item ID
         in: path
@@ -388,9 +419,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully retrieved item
+          description: Successfully retrieved item with tags
           schema:
-            $ref: '#/definitions/model.Item'
+            $ref: '#/definitions/item.ItemDTO'
         "400":
           description: Bad Request
           schema:
