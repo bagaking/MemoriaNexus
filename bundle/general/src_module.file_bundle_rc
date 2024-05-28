@@ -1,0 +1,13 @@
+entry = [
+    "README.md",
+    "deployment/**/*.sql",
+    "doc/API_SPEC.md",
+    "doc/DESIGN.md",
+    "src/module/**/*",
+    "src/model/**/*",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

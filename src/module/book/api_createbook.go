@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bagaking/memorianexus/src/module/dto"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
-	"github.com/bagaking/memorianexus/src/module"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -16,12 +17,12 @@ import (
 // CreateBook handles the request to create a new book.
 // @Summary Create a book
 // @Description Creates a new book and optionally associates tags with it
-// @Tags book
+// @TagNames book
 // @Accept json
 // @Produce json
-// @Param book body ReqCreateBook true "Book creation data"
+// @Param book body dto.RespBookCreate true "Book creation data"
 // @Success 201 {object} RespBook "Successfully created book"
-// @Failure 400 {object} module.ErrorResponse "Invalid parameters"
+// @Failure 400 {object} utils.ErrorResponse "Invalid parameters"
 // @Router /books [post]
 func (svr *Service) CreateBook(c *gin.Context) {
 	log := wlog.ByCtx(c, "CreateBook")
@@ -66,8 +67,9 @@ func (svr *Service) CreateBook(c *gin.Context) {
 
 	// Create the book record in the database
 	if err = tx.Create(book).Error; err != nil {
+		tx.Rollback()
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			c.JSON(http.StatusConflict, module.ErrorResponse{Message: "Book already exists"})
+			utils.GinHandleError(c, log, http.StatusConflict, err, "Book already exists")
 		} else {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to create book")
 		}
@@ -75,25 +77,24 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	}
 
 	// Update tags associated with the book
+	// todo: should not using one tx
 	if err = model.UpdateBookTagsRef(c, tx, book.ID, req.Tags); err != nil {
+		tx.Rollback()
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update book tags")
 		return
 	}
 
 	// Commit the transaction
 	if err = tx.Commit().Error; err != nil {
+		tx.Rollback()
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to commit transaction")
 		return
 	}
 
 	// Construct the response
-	resp := RespBook{
-		ID:          book.ID,
-		UserID:      book.UserID,
-		Title:       book.Title,
-		Description: book.Description,
-		CreatedAt:   book.CreatedAt,
-		UpdatedAt:   book.UpdatedAt,
+	resp := dto.RespBookCreate{
+		Message: "book created",
+		Data:    new(dto.Book).FromModel(book),
 	}
 
 	// Send the response

@@ -1,0 +1,17 @@
+entry = [
+    "README.md",
+    "doc/API_SPEC.md",
+    "doc/DESIGN.md",
+    "doc/*.json",
+    
+    "src/module/**/init.go",
+    "src/def/**/*",
+    "src/gw/**/*",
+    
+    "dev_memorianexus/dial/**/*",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

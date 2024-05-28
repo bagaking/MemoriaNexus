@@ -60,8 +60,6 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a h1:jLJF3jHK1dEaQY5QUtsdInvEHtPGmlG8cbKzNlOTmvA=
 github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a/go.mod h1:MErA1ZBhUk9wwwff1ni/VjS61Em5Ogb6zrrUX+xHcjw=
-github.com/khicago/got v0.0.0-20230107064458-cbde7bbdb6c1 h1:1rRHzZzA+nI4oHOrNWwvGDYxK8lBdRT7Y/0NbLRUJUQ=
-github.com/khicago/got v0.0.0-20230107064458-cbde7bbdb6c1/go.mod h1:23rzkvU/VYF9PPBT9hMXdz1FUlI7gAPsv3xG9krp2o0=
 github.com/khicago/got v0.0.0-20240520140129-635733602f45 h1:MKNrtYUU1Ble4+m0mLiia/Kp9I/O9LtSL0ryeSpcuFI=
 github.com/khicago/got v0.0.0-20240520140129-635733602f45/go.mod h1:23rzkvU/VYF9PPBT9hMXdz1FUlI7gAPsv3xG9krp2o0=
 github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6 h1:rtA26tT0ggG/veBxkhHwcqdUml5F/o8Cnc5Ov0FQLQ4=

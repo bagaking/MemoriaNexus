@@ -6,6 +6,7 @@ toolchain go1.22.3
 
 require (
 	github.com/bagaking/goulp v0.0.0-20210614001606-65f3376ba826
+	github.com/bytedance/sonic v1.11.6
 	github.com/gin-gonic/gin v1.9.1
 	github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a
 	github.com/khicago/got v0.0.0-20240520140129-635733602f45
@@ -23,7 +24,6 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/bytedance/gopkg v0.0.0-20221122125632-68358b8ecec6 // indirect
-	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect

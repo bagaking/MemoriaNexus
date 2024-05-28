@@ -1,0 +1,72 @@
+### 创建一个新的册子
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming",
+  "description": "A comprehensive guide to Go programming language.",
+  "tags": ["programming", "go", "backend"]
+}
+
+> {% client.global.set("BOOK_ID", response.body.id) %}
+
+### 获取所有册子
+GET http://localhost:8080/api/v1/books
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 获取某个册子的详细信息
+GET http://localhost:8080/api/v1/books/{{BOOK_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 更新册子信息
+PUT http://localhost:8080/api/v1/books/{{BOOK_ID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Advanced Go Programming",
+  "description": "An advanced guide to Go programming language.",
+  "tags": ["programming", "go", "advanced"]
+}
+
+### 删除某个册子
+DELETE http://localhost:8080/api/v1/books/{{BOOK_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 创建一个新的学习材料
+POST http://localhost:8080/api/v1/items
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "content": "What is a goroutine?",
+  "type": "flashcard",
+  "book_ids": [{{BOOK_ID}}],
+  "tags": ["concurrency", "goroutine"]
+}
+
+> {% client.global.set("ITEM_ID", response.body.data.id) %}
+
+### 获取所有学习材料
+GET http://localhost:8080/api/v1/items
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 获取某个学习材料的详细信息
+GET http://localhost:8080/api/v1/items/{{ITEM_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 更新学习材料信息
+PUT http://localhost:8080/api/v1/items/{{ITEM_ID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "content": "Explain goroutines in Go.",
+  "type": "flashcard",
+  "tags": ["concurrency", "goroutine", "advanced"]
+}
+
+### 删除某个学习材料
+DELETE http://localhost:8080/api/v1/items/{{ITEM_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}

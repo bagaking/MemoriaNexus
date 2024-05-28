@@ -18,6 +18,7 @@ type Profile struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	Nickname  string `gorm:"nickname,size:255"`

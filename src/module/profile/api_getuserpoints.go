@@ -19,13 +19,13 @@ type RespGetPoints struct {
 // GetUserPoints retrieves the points for the authenticated user.
 // @Summary Get user points
 // @Description Retrieves points information for the current user.
-// @Tags profile
+// @TagNames profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} RespGetPoints "Successfully retrieved user points"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/points [get]
 func (svr *Service) GetUserPoints(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)

@@ -1,5 +1,5 @@
 ### 注册用户
-POST http://0.0.0.0:8080/api/v1/auth/register
+POST http://0.0.0.0:18080/api/v1/auth/register
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 用户登录
-POST http://localhost:8080/api/v1/auth/login
+POST http://localhost:18080/api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -18,13 +18,15 @@ Content-Type: application/json
   "password": "strongpassword123"
 }
 
+> {% client.global.set("ACCESS_TOKEN", response.body.token) %}
+
 ### 刷新Token
-POST http://localhost:8080/api/v1/auth/refresh
+POST http://localhost:18080/api/v1/auth/refresh
 Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 {}
 
 ### 获取用户信息（需要认证）
-GET http://localhost:8080/api/v1/auth/user
+GET http://localhost:18080/api/v1/auth/user
 Authorization: Bearer {{ACCESS_TOKEN}}

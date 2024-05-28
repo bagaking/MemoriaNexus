@@ -3,9 +3,9 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/memorianexus/src/module/dto"
 
-	"github.com/bagaking/memorianexus/src/module"
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -22,15 +22,15 @@ type ReqUpdateProfile struct {
 // UpdateUserProfile handles a request to update the current user's profile information.
 // @Summary Update user profile
 // @Description Updates the profile information for the user who made the request.
-// @Tags profile
+// @TagNames profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param profile body ReqUpdateProfile true "User profile update info"
-// @Success 200 {object} module.SuccessResponse "Successfully updated user profile"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Success 200 {object} dto.SuccessResponse "Successfully updated user profile"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/me [put]
 func (svr *Service) UpdateUserProfile(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)
@@ -58,5 +58,5 @@ func (svr *Service) UpdateUserProfile(c *gin.Context) {
 	}
 
 	// Respond with a generic success message.
-	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Profile updated successfully"})
+	c.JSON(http.StatusOK, dto.SuccessResponse{Message: "Profile updated successfully"})
 }

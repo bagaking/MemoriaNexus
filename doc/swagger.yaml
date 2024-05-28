@@ -36,13 +36,139 @@ definitions:
       page:
         type: integer
     type: object
-  item.ItemDTO:
+  def.DifficultyLevel:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 17
+    - 18
+    - 19
+    - 33
+    - 34
+    - 35
+    - 49
+    - 50
+    - 51
+    - 65
+    - 66
+    - 67
+    - 68
+    type: integer
+    x-enum-varnames:
+    - NoviceNormal
+    - NoviceAdvanced
+    - NoviceChallenge
+    - AmateurNormal
+    - AmateurAdvanced
+    - AmateurChallenge
+    - ProfessionalNormal
+    - ProfessionalAdvanced
+    - ProfessionalChallenge
+    - ExpertNormal
+    - ExpertAdvanced
+    - ExpertChallenge
+    - MasterNormal
+    - MasterAdvanced
+    - MasterChallenge
+    - MasterExtreme
+  def.DungeonType:
+    enum:
+    - 1
+    - 2
+    - 33
+    type: integer
+    x-enum-comments:
+      DungeonTypeCampaign: 战役地牢
+      DungeonTypeEndless: 无尽地牢
+      DungeonTypeInstance: 即时副本 (随机地牢)
+    x-enum-varnames:
+    - DungeonTypeCampaign
+    - DungeonTypeEndless
+    - DungeonTypeInstance
+  def.ImportanceLevel:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 17
+    - 18
+    - 19
+    - 20
+    - 33
+    - 34
+    - 35
+    - 36
+    type: integer
+    x-enum-varnames:
+    - DomainGeneral
+    - DomainKey
+    - DomainEssential
+    - AreaGeneral
+    - AreaKey
+    - AreaEssential
+    - AreaMasterPiece
+    - GlobalGeneral
+    - GlobalKey
+    - GlobalEssential
+    - GlobalMasterPiece
+  dto.Book:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.Item:
     properties:
       content:
         type: string
       created_at:
         type: string
+      creator_id:
+        type: integer
+      difficulty:
+        $ref: '#/definitions/def.DifficultyLevel'
       id:
+        type: integer
+      importance:
+        $ref: '#/definitions/def.ImportanceLevel'
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.Monster:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      difficulty:
+        $ref: '#/definitions/def.DifficultyLevel'
+      dungeonID:
+        type: integer
+      id:
+        type: integer
+      importance:
+        $ref: '#/definitions/def.ImportanceLevel'
+      monsterSource:
+        $ref: '#/definitions/model.MonsterSource'
+      monsterSourceEntityID:
         type: integer
       tags:
         items:
@@ -52,8 +178,208 @@ definitions:
         type: string
       updated_at:
         type: string
-      user_id:
+      visibility:
+        description: 显影程度，根据复习次数变化
         type: integer
+    type: object
+  dto.RespBookCreate:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Book'
+      message:
+        type: string
+    type: object
+  dto.RespItemCreate:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Item'
+      message:
+        type: string
+    type: object
+  dto.RespItemDelete:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Item'
+      message:
+        type: string
+    type: object
+  dto.RespItemGet:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Item'
+      message:
+        type: string
+    type: object
+  dto.RespItemList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Item'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.RespItemUpdate:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Item'
+      message:
+        type: string
+    type: object
+  dto.RespMonsterList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Monster'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  dungeon.ReqAddDungeonBooks:
+    properties:
+      books:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqAddDungeonItems:
+    properties:
+      items:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqAddDungeonTags:
+    properties:
+      tags:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqCreateDungeon:
+    properties:
+      books:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      items:
+        items:
+          type: integer
+        type: array
+      rule:
+        type: string
+      tag_ids:
+        items:
+          type: integer
+        type: array
+      tag_names:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/def.DungeonType'
+    type: object
+  dungeon.ReqRemoveDungeonBooks:
+    properties:
+      books:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqRemoveDungeonItems:
+    properties:
+      items:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqRemoveDungeonTags:
+    properties:
+      tags:
+        items:
+          type: integer
+        type: array
+    type: object
+  dungeon.ReqReportMonsterResult:
+    properties:
+      monster_id:
+        type: integer
+      result:
+        description: '"unknown", "familiar", "remembered"'
+        type: string
+    type: object
+  dungeon.ReqUpdateDungeon:
+    properties:
+      description:
+        type: string
+      rule:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/def.DungeonType'
+    type: object
+  dungeon.RespDungeonResults:
+    properties:
+      today_difficulty:
+        type: integer
+      total_monsters:
+        type: integer
+    type: object
+  dungeon.RespUpdatedDungeon:
+    properties:
+      books:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          type: integer
+        type: array
+      rule:
+        type: string
+      tag_ids:
+        items:
+          type: integer
+        type: array
+      tag_names:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/def.DungeonType'
+      updated_at:
+        type: string
     type: object
   item.ReqCreateItem:
     properties:
@@ -84,46 +410,16 @@ definitions:
       type:
         type: string
     type: object
-  item.RespItems:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/item.ItemDTO'
-        type: array
-      limit:
-        type: integer
-      page:
-        type: integer
-      total:
-        type: integer
-    type: object
-  model.Item:
-    properties:
-      content:
-        type: string
-      createdAt:
-        type: string
-      id:
-        type: integer
-      type:
-        type: string
-      updatedAt:
-        type: string
-      user_id:
-        example: "0"
-        type: string
-    type: object
-  module.ErrorResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  module.SuccessResponse:
-    properties:
-      data: {}
-      message:
-        type: string
-    type: object
+  model.MonsterSource:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - MonsterSourceItem
+    - MonsterSourceBook
+    - MonsterSourceTag
   profile.ReqUpdateProfile:
     properties:
       email:
@@ -192,6 +488,13 @@ definitions:
         description: Definitions should match with ProfileMemorizationSetting
         type: integer
     type: object
+  utils.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -219,8 +522,6 @@ paths:
           schema:
             $ref: '#/definitions/book.RespBooks'
       summary: Get list of books with pagination
-      tags:
-      - book
     post:
       consumes:
       - application/json
@@ -231,7 +532,7 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/book.ReqCreateBook'
+          $ref: '#/definitions/dto.RespBookCreate'
       produces:
       - application/json
       responses:
@@ -242,10 +543,8 @@ paths:
         "400":
           description: Invalid parameters
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Create a book
-      tags:
-      - book
   /books/{id}:
     delete:
       consumes:
@@ -265,8 +564,6 @@ paths:
           schema:
             type: string
       summary: Delete a book
-      tags:
-      - book
     get:
       consumes:
       - application/json
@@ -285,8 +582,6 @@ paths:
           schema:
             $ref: '#/definitions/book.RespBook'
       summary: Get a book by ID
-      tags:
-      - book
     put:
       consumes:
       - application/json
@@ -311,8 +606,609 @@ paths:
           schema:
             type: string
       summary: Update book information
-      tags:
-      - book
+  /dungeon/campaigns/{id}/monsters:
+    get:
+      description: 获取复习计划的所有Monsters
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Sort by field (familiarity, difficulty, importance)
+        in: query
+        name: sort_by
+        required: true
+        type: string
+      - description: Offset for pagination
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: Limit for pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RespMonsterList'
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all the monsters of a specific campaign dungeon
+  /dungeon/campaigns/{id}/next_monsters:
+    get:
+      description: 获取复习计划的后n个Monsters
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Number of monsters to fetch
+        in: query
+        name: count
+        required: true
+        type: integer
+      - description: Sort by field (familiarity, difficulty, importance)
+        in: query
+        name: sort_by
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespMonsterList'
+            type: array
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the next n monsters of a specific dungeon
+  /dungeon/campaigns/{id}/report_result:
+    post:
+      consumes:
+      - application/json
+      description: 上报复习计划的Monster结果
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: UserMonster result data
+        in: body
+        name: result
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqReportMonsterResult'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or UserMonster not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Report the result of a specific monster
+  /dungeon/campaigns/{id}/results:
+    get:
+      description: 获取复习计划的结果
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dungeon.RespDungeonResults'
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the results of a specific dungeon
+  /dungeon/dungeons:
+    get:
+      description: 获取复习计划列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the list of dungeon campaigns
+    post:
+      consumes:
+      - application/json
+      description: 创建新的复习计划
+      parameters:
+      - description: Dungeon campaign data
+        in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqCreateDungeon'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Create a new dungeon campaign
+  /dungeon/dungeons/{id}:
+    delete:
+      description: 删除复习计划
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Delete a specific dungeon campaign
+    get:
+      description: 获取复习计划详情
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the details of a specific dungeon campaign
+    put:
+      consumes:
+      - application/json
+      description: 更新复习计划
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon campaign data
+        in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqUpdateDungeon'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Update a specific dungeon campaign
+  /dungeon/dungeons/{id}/books:
+    delete:
+      consumes:
+      - application/json
+      description: 删除复习计划的 Books
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon books data
+        in: body
+        name: books
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqRemoveDungeonBooks'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Book not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Remove books from a specific dungeon
+    get:
+      description: 获取复习计划的 Books
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: integer
+            type: array
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the books of a specific dungeon
+    post:
+      consumes:
+      - application/json
+      description: 添加复习计划的 Books
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon books data
+        in: body
+        name: books
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqAddDungeonBooks'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Book not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Add books to a specific dungeon
+  /dungeon/dungeons/{id}/items:
+    delete:
+      consumes:
+      - application/json
+      description: 删除复习计划的 Items
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon items data
+        in: body
+        name: items
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqRemoveDungeonItems'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Remove items from a specific dungeon
+    get:
+      description: 获取复习计划的 Items
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: integer
+            type: array
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the items of a specific dungeon
+    post:
+      consumes:
+      - application/json
+      description: 添加复习计划的 Items
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon items data
+        in: body
+        name: items
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqAddDungeonItems'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Add items to a specific dungeon
+  /dungeon/dungeons/{id}/tags:
+    delete:
+      consumes:
+      - application/json
+      description: 删除复习计划的 TagNames
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon tags data
+        in: body
+        name: tags
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqRemoveDungeonTags'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Tag not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Remove tags from a specific dungeon
+    get:
+      description: 获取复习计划的 TagNames
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: integer
+            type: array
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get the tags of a specific dungeon
+    post:
+      consumes:
+      - application/json
+      description: 添加复习计划的 TagNames
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dungeon tags data
+        in: body
+        name: tags
+        required: true
+        schema:
+          $ref: '#/definitions/dungeon.ReqAddDungeonTags'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Dungeon or Tag not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Add tags to a specific dungeon
+  /dungeon/endless/{id}/monsters:
+    get:
+      description: 获取复习计划的所有Monsters及其关联的 Items, Books, TagNames
+      parameters:
+      - description: Dungeon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Sort by field (familiarity, difficulty, importance)
+        in: query
+        name: sort_by
+        required: true
+        type: string
+      - description: Offset for pagination
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: Limit for pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RespMonsterList'
+        "404":
+          description: Dungeon not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all the monsters of a specific endless dungeon with associations
   /items:
     get:
       consumes:
@@ -346,14 +1242,12 @@ paths:
         "200":
           description: Successfully retrieved items
           schema:
-            $ref: '#/definitions/item.RespItems'
+            $ref: '#/definitions/dto.RespItemList'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get a list of items with optional filters
-      tags:
-      - item
     post:
       consumes:
       - application/json
@@ -372,14 +1266,12 @@ paths:
         "201":
           description: Successfully created item with books and tags
           schema:
-            $ref: '#/definitions/model.Item'
+            $ref: '#/definitions/dto.RespItemCreate'
         "400":
           description: Bad Request if too many books or tags, or bad data
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Create a new item
-      tags:
-      - item
   /items/{id}:
     delete:
       consumes:
@@ -397,14 +1289,12 @@ paths:
         "200":
           description: Successfully deleted item
           schema:
-            $ref: '#/definitions/module.SuccessResponse'
+            $ref: '#/definitions/dto.RespItemDelete'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Delete an item
-      tags:
-      - item
     get:
       consumes:
       - application/json
@@ -421,14 +1311,12 @@ paths:
         "200":
           description: Successfully retrieved item with tags
           schema:
-            $ref: '#/definitions/item.ItemDTO'
+            $ref: '#/definitions/dto.RespItemGet'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get an item by ID
-      tags:
-      - item
     put:
       consumes:
       - application/json
@@ -451,18 +1339,16 @@ paths:
         "200":
           description: Successfully updated item
           schema:
-            $ref: '#/definitions/module.SuccessResponse'
+            $ref: '#/definitions/dto.RespItemUpdate'
         "400":
           description: Bad Request with invalid item ID or update data
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error with failing to update the item
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Update an item
-      tags:
-      - item
   /profile/me:
     get:
       consumes:
@@ -478,20 +1364,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get the current user's profile
-      tags:
-      - profile
     put:
       consumes:
       - application/json
@@ -509,24 +1393,22 @@ paths:
         "200":
           description: Successfully updated user profile
           schema:
-            $ref: '#/definitions/module.SuccessResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update user profile
-      tags:
-      - profile
   /profile/points:
     get:
       description: Retrieves points information for the current user.
@@ -540,20 +1422,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get user points
-      tags:
-      - profile
   /profile/settings/advance:
     get:
       description: Retrieves advanced settings information for the current user.
@@ -567,20 +1447,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get user advanced settings
-      tags:
-      - profile
     put:
       consumes:
       - application/json
@@ -598,24 +1476,22 @@ paths:
         "200":
           description: Successfully updated user advanced settings
           schema:
-            $ref: '#/definitions/module.SuccessResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update user advanced settings
-      tags:
-      - profile
   /profile/settings/memorization:
     get:
       description: Retrieves settings information for the user who made the request.
@@ -629,20 +1505,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get user settings
-      tags:
-      - profile
     put:
       consumes:
       - application/json
@@ -660,22 +1534,20 @@ paths:
         "200":
           description: Successfully updated user settings
           schema:
-            $ref: '#/definitions/module.SuccessResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/module.ErrorResponse'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update user settings
-      tags:
-      - profile
 swagger: "2.0"

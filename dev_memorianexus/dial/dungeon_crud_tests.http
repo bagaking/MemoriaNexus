@@ -1,0 +1,105 @@
+### 创建一个新的 Book
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming Basics. {{$timestamp}}",
+  "description": "A book about Go programming basics. {{$timestamp}}"
+}
+
+> {% client.global.set("BOOK_ID", response.body.data.id) %}
+
+### 创建一个新的 Item
+POST http://localhost:8080/api/v1/items
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "content": "#Go {{$timestamp}}\n variables are statically typed and declared using the var keyword. \n#{{$random.alphabetic(12)}}",
+  "type": "flashcard",
+  "book_id": {{BOOK_ID}},
+  "tags": ["tag1", "test_tag"]
+}
+
+> {% client.global.set("ITEM_ID", response.body.data.id) %}
+
+### 创建一个新的复习计划
+POST http://localhost:8080/api/v1/dungeon/dungeons
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming Dungeon",
+  "description": "A dungeon to review Go programming concepts.",
+  "type": "campaign",
+  "rule": "no rule",
+  "books": [{{BOOK_ID}}],
+  "items": [{{ITEM_ID}}]
+}
+
+> {% client.global.set("DUNGEON_ID", response.body.data.id) %}
+
+### 创建一个新的复习计划 (用 tag 关联所有)
+POST http://localhost:8080/api/v1/dungeon/dungeons
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming Dungeon",
+  "description": "A dungeon to review Go programming concepts.",
+  "type": "campaign",
+  "rule": "no rule",
+  "books": [{{BOOK_ID}}],
+  "items": [{{ITEM_ID}}],
+  "tag_names": ["gogo", "test_tag"]
+}
+
+> {% client.global.set("DUNGEON_ID", response.body.data.id) %}
+
+### 获取所有复习计划
+GET http://localhost:8080/api/v1/dungeon/dungeons
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 获取某个复习计划的详细信息
+GET http://localhost:8080/api/v1/dungeon/dungeons/{{DUNGEON_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 更新复习计划信息
+PUT http://localhost:8080/api/v1/dungeon/dungeons/{{DUNGEON_ID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "updated title {{$timestamp}}",
+  "description": "An advanced dungeon to review Go programming concepts. {{$timestamp}}",
+  "type": 1
+}
+
+### 获取复习计划的所有 Monsters
+GET http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/monsters?sort_by=importance&offset=0&limit=10
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+> {% client.global.set("MONSTER_ID", response.body.data[0].id) %}
+
+### 获取复习计划的后 n 个 Monsters
+GET http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/next_monsters?count=5&sort_by=familiarity
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 上报复习计划的 Monster 结果
+POST http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/report_result
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "monster_id": {{MONSTER_ID}},
+  "result": "remembered"
+}
+
+### 获取复习计划的结果
+GET http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/results
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 删除某个复习计划
+DELETE http://localhost:8080/api/v1/dungeon/dungeons/{{DUNGEON_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}

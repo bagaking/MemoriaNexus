@@ -7,17 +7,35 @@ import (
 	"sync"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/bagaking/goulp/wlog"
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
-	"gorm.io/gorm"
+
+	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 // Tag represents a tag entity with unique name.
-type Tag struct {
-	ID   utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
-	Name string       `gorm:"unique;not null"`
+type (
+	Tag struct {
+		ID   utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+		Name string       `gorm:"unique;not null"`
+	}
+
+	ITagAssociate interface {
+		Associate(entityID, tagID utils.UInt64) ITagAssociate
+		Type() TagRefType
+	}
+)
+
+// BeforeCreate 钩子
+func (t *Tag) BeforeCreate(tx *gorm.DB) (err error) {
+	// 确保UserID不为0
+	if t.ID <= 0 {
+		return errors.New("user UInt64 must be larger than zero")
+	}
+	return
 }
 
 // TagRefType defines the type of tag reference, such as book or item.
@@ -39,6 +57,34 @@ var (
 	defaultMaxGoroutines = 10
 	defaultTimeout       = 20 * time.Second
 )
+
+func (ty TagRefType) CreateAssociate(entityID, tagID utils.UInt64) ITagAssociate {
+	switch ty {
+	case BookTagRef:
+		return BookTag{}.Associate(entityID, tagID)
+	case ItemTagRef:
+		return ItemTag{}.Associate(entityID, tagID)
+	}
+	return nil
+}
+
+// FindTagsByName fetches tag IDs associated with an entity.
+func FindTagsByName(tx *gorm.DB, names []string) ([]Tag, error) {
+	var tags []Tag
+	if err := tx.Where("name in (?)", names).Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
+// FindTagsIDByName fetches tag IDs associated with an entity.
+func FindTagsIDByName(tx *gorm.DB, names []string) ([]utils.UInt64, error) {
+	var tagIDs []utils.UInt64
+	if err := tx.Model(&Tag{}).Where("name in (?)", names).Pluck("id", &tagIDs).Error; err != nil {
+		return nil, err
+	}
+	return tagIDs, nil
+}
 
 // FindOrUpdateTagByName finds a tag by name, or creates it if not found.
 func FindOrUpdateTagByName(ctx context.Context, tx *gorm.DB, tagName string, id utils.UInt64) (*Tag, error) {
@@ -63,33 +109,33 @@ func FindOrUpdateTagByName(ctx context.Context, tx *gorm.DB, tagName string, id 
 		return nil, irr.Wrap(err, "create tag failed")
 	}
 
-	log.Infof("new tag %v created, id_set= %d", tag, id)
+	log.Infof("new tag %+v created, id_set= %d", tag, id)
 	return tag, nil
 }
 
 // UpdateBookTagsRef updates the tags associated with a book.
 func UpdateBookTagsRef(ctx context.Context, tx *gorm.DB, bookID utils.UInt64, tags []string) error {
-	return updateTagsRef(ctx, tx, BookTagRef, bookID, tags)
+	return updateTagsRef[BookTag](ctx, tx, bookID, tags)
 }
 
 // UpdateItemTagsRef updates the tags associated with an item.
 func UpdateItemTagsRef(ctx context.Context, tx *gorm.DB, itemID utils.UInt64, tags []string) error {
-	return updateTagsRef(ctx, tx, ItemTagRef, itemID, tags)
+	return updateTagsRef[ItemTag](ctx, tx, itemID, tags)
 }
 
 // GetBookTagNames updates the tags associated with a book.
 func GetBookTagNames(ctx context.Context, tx *gorm.DB, bookID utils.UInt64) ([]string, error) {
-	return getTagsByEntityID(ctx, tx, BookTagRef, bookID)
+	return getTagNamesByEntityID(ctx, tx, BookTagRef, bookID)
 }
 
 // GetItemTagNames updates the tags associated with an item.
 func GetItemTagNames(ctx context.Context, tx *gorm.DB, itemID utils.UInt64) ([]string, error) {
-	return getTagsByEntityID(ctx, tx, ItemTagRef, itemID)
+	return getTagNamesByEntityID(ctx, tx, ItemTagRef, itemID)
 }
 
-// getTagsByEntityID 根据实体ID获取关联的标签列表.
-func getTagsByEntityID(ctx context.Context, tx *gorm.DB, entityType TagRefType, entityID utils.UInt64) ([]string, error) {
-	existingTagIDs, err := fetchTagIDs(tx, entityType, entityID)
+// getTagNamesByEntityID 根据实体ID获取关联的标签列表.
+func getTagNamesByEntityID(ctx context.Context, tx *gorm.DB, entityType TagRefType, entityID utils.UInt64) ([]string, error) {
+	existingTagIDs, err := fetchTagIDsByEntity(tx, entityType, entityID)
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch existing tag IDs")
 	}
@@ -99,29 +145,28 @@ func getTagsByEntityID(ctx context.Context, tx *gorm.DB, entityType TagRefType, 
 		return nil, irr.Wrap(err, "failed to get tags")
 	}
 
-	tagNames := make([]string, len(tags))
-	for i, tag := range tags {
-		tagNames[i] = tag.Name
+	tagNames := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		tagNames = append(tagNames, tag.Name)
 	}
 
 	return tagNames, nil
 }
 
-// updateTagsRef updates the tags associated with an entity (book or item).
-func updateTagsRef(ctx context.Context, tx *gorm.DB, entityType TagRefType, entityID utils.UInt64, tags []string) error {
+func updateTagsRef[T ITagAssociate](ctx context.Context, tx *gorm.DB, entityID utils.UInt64, tags []string) error {
 	log := wlog.ByCtx(ctx, "updateTagsRef")
 	tagIDs, err := utils.MGenIDU64(ctx, len(tags))
 	if err != nil {
 		return irr.Wrap(err, "failed to generate IDs for tags")
 	}
 
-	// Fetch and map existing tags
-	existingTagMap, err := getExistingTagMap(ctx, tx, entityType, entityID)
+	model := typer.ZeroVal[T]()
+	existingTagMap, err := getExistingTagMap(ctx, tx, model.Type(), entityID)
 	if err != nil {
 		return err
 	}
 
-	var tagsToAssociate []any
+	var tagsToAssociate []T
 	for i, tagName := range tags {
 		tagID, exists := existingTagMap[tagName]
 		if !exists {
@@ -134,27 +179,27 @@ func updateTagsRef(ctx context.Context, tx *gorm.DB, entityType TagRefType, enti
 			}
 			tagID = tag.ID
 		}
-
-		tagsToAssociate = append(tagsToAssociate, createTagAssoc(entityType, entityID, tagID))
+		tagsToAssociate = append(tagsToAssociate, model.Associate(entityID, tagID).(T))
 	}
-
-	// Identify and remove obsolete tags
-	if err = removeObsoleteTags(ctx, tx, entityType, entityID, existingTagMap, tags); err != nil {
+	// 删除旧的关联
+	if err = removeObsoleteTags(ctx, tx, model.Type(), entityID, existingTagMap, tags); err != nil {
 		return err
 	}
-
-	// Create new tag associations
-	if err = tx.Create(&tagsToAssociate).Error; err != nil {
-		return irr.Wrap(err, "failed to associate new tags with entity")
+	// 插入新的关联
+	if len(tagsToAssociate) > 0 {
+		if err = tx.Create(&tagsToAssociate).Error; err != nil {
+			log.Warnf("failed to associate book tags %#v to tags %#v", tagsToAssociate, tags)
+			return irr.Wrap(err, "failed to associate new tags with book")
+		}
 	}
 
-	log.Infof("Tags updated successfully for entity %d of type %d", entityID, entityType)
+	log.Infof("TagNames updated successfully for entity %d of type %d", entityID, model.Type())
 	return nil
 }
 
 // getExistingTagMap retrieves existing tags and constructs a map for quick lookup.
 func getExistingTagMap(ctx context.Context, tx *gorm.DB, entityType TagRefType, entityID utils.UInt64) (map[string]utils.UInt64, error) {
-	existingTagIDs, err := fetchTagIDs(tx, entityType, entityID)
+	existingTagIDs, err := fetchTagIDsByEntity(tx, entityType, entityID)
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch existing tag IDs")
 	}
@@ -170,18 +215,6 @@ func getExistingTagMap(ctx context.Context, tx *gorm.DB, entityType TagRefType, 
 	}
 
 	return existingTagMap, nil
-}
-
-// createTagAssoc creates a tag association struct based on entity type.
-func createTagAssoc(entityType TagRefType, entityID, tagID utils.UInt64) interface{} {
-	switch entityType {
-	case BookTagRef:
-		return BookTag{BookID: entityID, TagID: tagID}
-	case ItemTagRef:
-		return ItemTag{ItemID: entityID, TagID: tagID}
-	default:
-		return nil
-	}
 }
 
 // removeObsoleteTags identifies and removes tags that are no longer associated with the entity.
@@ -207,8 +240,8 @@ func removeObsoleteTags(ctx context.Context, tx *gorm.DB, entityType TagRefType,
 	return irr.Wrap(err, "failed to delete obsolete tags")
 }
 
-// fetchTagIDs fetches tag IDs associated with an entity.
-func fetchTagIDs(tx *gorm.DB, entityType TagRefType, entityID utils.UInt64) ([]utils.UInt64, error) {
+// fetchTagIDsByEntity fetches tag IDs associated with an entity.
+func fetchTagIDsByEntity(tx *gorm.DB, entityType TagRefType, entityID utils.UInt64) ([]utils.UInt64, error) {
 	var tagIDs []utils.UInt64
 	switch entityType {
 	case BookTagRef:

@@ -82,6 +82,9 @@ dev:
 # Start the built go application
 build-dev: build-app compose-re dev
 
+# build, start, follow the log
+watch: build-dev dev-logs
+
 # Connect to the app container and follow the logs
 dev-logs:
 	tail -f ./dev_memorianexus/logs/memorianexus.log -n 1000

@@ -38,14 +38,14 @@ func mapProfileToResponse(profile *model.Profile) *RespGetProfile {
 // GetUserProfile handles a request to retrieve a user's profile information.
 // @Summary Get the current user's profile
 // @Description Retrieves the profile information for the user who made the request.
-// @Tags profile
+// @TagNames profile
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {object} RespGetProfile "Successfully retrieved user profile"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/me [get]
 func (svr *Service) GetUserProfile(c *gin.Context) {
 	log := wlog.ByCtx(c)

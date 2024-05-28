@@ -4,12 +4,12 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/bagaking/memorianexus/src/module"
-
 	"github.com/bagaking/goulp/wlog"
+	"github.com/gin-gonic/gin"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
-	"github.com/gin-gonic/gin"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
 type ReqCreateItem struct {
@@ -21,18 +21,18 @@ type ReqCreateItem struct {
 
 const (
 	MaxBooksOncePerItem = 10 // 设定每个 Item 可以关联的最大 Books 数量
-	MaxTagsOncePerItem  = 5  // 设定每个 Item 可以拥有的最大 Tags 数量
+	MaxTagsOncePerItem  = 5  // 设定每个 Item 可以拥有的最大 TagNames 数量
 )
 
 // CreateItem handles creating a new item with optional book affiliations and tags.
 // @Summary Create a new item
 // @Description Create a new item in the system with optional book affiliations and tags.
-// @Tags item
+// @TagNames item
 // @Accept json
 // @Produce json
 // @Param item body ReqCreateItem true "Item creation data"
-// @Success 201 {object} model.Item "Successfully created item with books and tags"
-// @Failure 400 {object} module.ErrorResponse "Bad Request if too many books or tags, or bad data"
+// @Success 201 {object} dto.RespItemCreate "Successfully created item with books and tags"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request if too many books or tags, or bad data"
 // @Router /items [post]
 func (svr *Service) CreateItem(c *gin.Context) {
 	log := wlog.ByCtx(c, "CreateItem")
@@ -48,7 +48,7 @@ func (svr *Service) CreateItem(c *gin.Context) {
 		return
 	}
 
-	// 检查 BookIDs 和 Tags 数量是否超出限制
+	// 检查 BookIDs 和 TagNames 数量是否超出限制
 	if len(req.BookIDs) > MaxBooksOncePerItem {
 		utils.GinHandleError(c, log, http.StatusBadRequest, errors.New("too many books"), "Too many books")
 		return
@@ -66,10 +66,10 @@ func (svr *Service) CreateItem(c *gin.Context) {
 
 	// 创建 Item 实例
 	item := &model.Item{
-		ID:      id,
-		UserID:  userID,
-		Type:    req.Type,
-		Content: req.Content,
+		ID:        id,
+		CreatorID: userID,
+		Type:      req.Type,
+		Content:   req.Content,
 	}
 
 	// 创建 Item 并开始数据库事务
@@ -108,17 +108,9 @@ func (svr *Service) CreateItem(c *gin.Context) {
 		return
 	}
 
-	// 创建 DTO 并返回
-	dto := ItemDTO{
-		ID:        item.ID,
-		UserID:    item.UserID,
-		Type:      item.Type,
-		Content:   item.Content,
-		Tags:      req.Tags,
-		CreatedAt: item.CreatedAt,
-		UpdatedAt: item.UpdatedAt,
-	}
-
 	// 返回成功响应
-	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Item created", Data: dto})
+	c.JSON(http.StatusOK, dto.RespItemCreate{
+		Message: "item created",
+		Data:    (&dto.Item{}).FromModel(item, req.Tags...),
+	})
 }

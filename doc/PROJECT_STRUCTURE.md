@@ -12,22 +12,23 @@
 │   │   ├── 01.profile_up.sql
 │   │   ├── 02.book_item_down.sql
 │   │   ├── 02.book_item_up.sql
+│   │   ├── 03.dungeon_down.sql
+│   │   ├── 03.dungeon_up.sql
 │   │   └── migrate.sh
 │   ├── Dockerfile
 │   └── ci_cd.yaml
 ├── dev_memorianexus
 │   ├── dial
 │   │   ├── auth.http
+│   │   ├── create_some_item_and_book.http
+│   │   ├── dungeon_crud_tests.http
 │   │   ├── http-client.env.json
 │   │   └── profile.http
 │   ├── logs
 │   │   └── memorianexus.log
 │   ├── mysql-data
 │   │   ├── #innodb_redo
-│   │   │   ├── #ib_redo10
-│   │   │   ├── #ib_redo11_tmp
-│   │   │   ├── #ib_redo12_tmp
-│   │   │   ├── #ib_redo13_tmp
+│   │   │   ├── #ib_redo13
 │   │   │   ├── #ib_redo14_tmp
 │   │   │   ├── #ib_redo15_tmp
 │   │   │   ├── #ib_redo16_tmp
@@ -55,7 +56,10 @@
 │   │   │   ├── #ib_redo38_tmp
 │   │   │   ├── #ib_redo39_tmp
 │   │   │   ├── #ib_redo40_tmp
-│   │   │   └── #ib_redo41_tmp
+│   │   │   ├── #ib_redo41_tmp
+│   │   │   ├── #ib_redo42_tmp
+│   │   │   ├── #ib_redo43_tmp
+│   │   │   └── #ib_redo44_tmp
 │   │   ├── #innodb_temp
 │   │   │   ├── temp_1.ibt
 │   │   │   ├── temp_10.ibt
@@ -71,8 +75,13 @@
 │   │   │   ├── book_items.ibd
 │   │   │   ├── book_tags.ibd
 │   │   │   ├── books.ibd
+│   │   │   ├── dungeon_books.ibd
+│   │   │   ├── dungeon_monsters.ibd
+│   │   │   ├── dungeon_tags.ibd
+│   │   │   ├── dungeons.ibd
 │   │   │   ├── item_tags.ibd
 │   │   │   ├── items.ibd
+│   │   │   ├── monsters.ibd
 │   │   │   ├── profile_advance_settings.ibd
 │   │   │   ├── profile_memorization_settings.ibd
 │   │   │   ├── profile_points.ibd
@@ -235,6 +244,66 @@
 │   │   ├── binlog.000030
 │   │   ├── binlog.000031
 │   │   ├── binlog.000032
+│   │   ├── binlog.000033
+│   │   ├── binlog.000034
+│   │   ├── binlog.000035
+│   │   ├── binlog.000036
+│   │   ├── binlog.000037
+│   │   ├── binlog.000038
+│   │   ├── binlog.000039
+│   │   ├── binlog.000040
+│   │   ├── binlog.000041
+│   │   ├── binlog.000042
+│   │   ├── binlog.000043
+│   │   ├── binlog.000044
+│   │   ├── binlog.000045
+│   │   ├── binlog.000046
+│   │   ├── binlog.000047
+│   │   ├── binlog.000048
+│   │   ├── binlog.000049
+│   │   ├── binlog.000050
+│   │   ├── binlog.000051
+│   │   ├── binlog.000052
+│   │   ├── binlog.000053
+│   │   ├── binlog.000054
+│   │   ├── binlog.000055
+│   │   ├── binlog.000056
+│   │   ├── binlog.000057
+│   │   ├── binlog.000058
+│   │   ├── binlog.000059
+│   │   ├── binlog.000060
+│   │   ├── binlog.000061
+│   │   ├── binlog.000062
+│   │   ├── binlog.000063
+│   │   ├── binlog.000064
+│   │   ├── binlog.000065
+│   │   ├── binlog.000066
+│   │   ├── binlog.000067
+│   │   ├── binlog.000068
+│   │   ├── binlog.000069
+│   │   ├── binlog.000070
+│   │   ├── binlog.000071
+│   │   ├── binlog.000072
+│   │   ├── binlog.000073
+│   │   ├── binlog.000074
+│   │   ├── binlog.000075
+│   │   ├── binlog.000076
+│   │   ├── binlog.000077
+│   │   ├── binlog.000078
+│   │   ├── binlog.000079
+│   │   ├── binlog.000080
+│   │   ├── binlog.000081
+│   │   ├── binlog.000082
+│   │   ├── binlog.000083
+│   │   ├── binlog.000084
+│   │   ├── binlog.000085
+│   │   ├── binlog.000086
+│   │   ├── binlog.000087
+│   │   ├── binlog.000088
+│   │   ├── binlog.000089
+│   │   ├── binlog.000090
+│   │   ├── binlog.000091
+│   │   ├── binlog.000092
 │   │   ├── binlog.index
 │   │   ├── ca-key.pem
 │   │   ├── ca.pem
@@ -260,8 +329,7 @@
 │   │   └── CURVE_USAGE_DESIGN.md
 │   ├── API_SPEC.md
 │   ├── CODE_STRUCTURE.md
-│   ├── CONTRIBUTING.md
-│   ├── DEPENDENCIES.md
+│   ├── DESIGN.md
 │   ├── PROJECT_STRUCTURE.md
 │   ├── docs.go
 │   ├── swagger.json
@@ -279,8 +347,9 @@
 │   └── utils
 │       ├── batch.go
 │       ├── gin_handle_error.go
-│       ├── id.go
 │       ├── idgen.go
+│       ├── percentage.go
+│       ├── uint64.go
 │       └── util.go
 ├── pkg
 │   └── memcurve
@@ -307,12 +376,17 @@
 │   │   │   └── session.go
 │   │   ├── handlers.go
 │   │   └── init.go
+│   ├── def
+│   │   ├── difficulty_level.go
+│   │   ├── dungeon_type.go
+│   │   └── importance_level.go
 │   ├── gw
-│   │   ├── error_handler.go
 │   │   └── routes.go
 │   ├── model
 │   │   ├── book.go
+│   │   ├── dungeon.go
 │   │   ├── item.go
+│   │   ├── monster.go
 │   │   ├── profile.go
 │   │   ├── profile_points.go
 │   │   └── tag.go
@@ -328,15 +402,27 @@
 │       │   ├── dto.go
 │       │   ├── init.go
 │       │   └── util.go
+│       ├── dto
+│       │   ├── book.go
+│       │   ├── common.go
+│       │   ├── general.go
+│       │   ├── item.go
+│       │   └── monster.go
 │       ├── dungeon
-│       │   └── init.go
+│       │   ├── api_dungeon.go
+│       │   ├── api_dungeon_append.go
+│       │   ├── api_dungeon_contents.go
+│       │   ├── api_dungeon_monsters.go
+│       │   ├── api_endless.go
+│       │   ├── dto.go
+│       │   ├── init.go
+│       │   └── util.go
 │       ├── item
 │       │   ├── api_item.go
 │       │   ├── api_itemcreate.go
 │       │   ├── api_items.go
 │       │   ├── api_itemupdate.go
-│       │   ├── init.go
-│       │   └── util.go
+│       │   └── init.go
 │       ├── nft
 │       │   └── init.go
 │       ├── operation
@@ -348,9 +434,8 @@
 │       │   ├── api_updateuserprofile.go
 │       │   ├── api_updateusersettings.go
 │       │   └── init.go
-│       ├── system
-│       │   └── init.go
-│       └── common.go
+│       └── system
+│           └── init.go
 ├── LICENSE
 ├── MODULES.puml
 ├── Makefile

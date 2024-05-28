@@ -27,13 +27,13 @@ type RespSettingsAdvance struct {
 // GetUserSettingsMemorization handles a request to get the current user's settings.
 // @Summary Get user settings
 // @Description Retrieves settings information for the user who made the request.
-// @Tags profile
+// @TagNames profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} RespSettingsMemorization "Successfully retrieved user settings"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [get]
 func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)
@@ -66,13 +66,13 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 // GetUserSettingsAdvance retrieves advanced settings for the authenticated user.
 // @Summary Get user advanced settings
 // @Description Retrieves advanced settings information for the current user.
-// @Tags profile
+// @TagNames profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} RespSettingsAdvance "Successfully retrieved user advanced settings"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [get]
 func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)

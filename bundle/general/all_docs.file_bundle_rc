@@ -3,6 +3,7 @@ entry = [
     "./**/*.puml",
     "./**/*.mermaid",
     "./**/*.http",
+    "./doc/**/*",
 ]
 
 exclude = [

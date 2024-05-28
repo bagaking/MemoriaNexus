@@ -24,9 +24,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "book"
-                ],
                 "summary": "Get list of books with pagination",
                 "parameters": [
                     {
@@ -61,9 +58,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "book"
-                ],
                 "summary": "Create a book",
                 "parameters": [
                     {
@@ -72,7 +66,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/book.ReqCreateBook"
+                            "$ref": "#/definitions/dto.RespBookCreate"
                         }
                     }
                 ],
@@ -86,7 +80,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -100,9 +94,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "book"
                 ],
                 "summary": "Get a book by ID",
                 "parameters": [
@@ -130,9 +121,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "book"
                 ],
                 "summary": "Update book information",
                 "parameters": [
@@ -170,9 +158,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "book"
-                ],
                 "summary": "Delete a book",
                 "parameters": [
                     {
@@ -193,6 +178,912 @@ const docTemplate = `{
                 }
             }
         },
+        "/dungeon/campaigns/{id}/monsters": {
+            "get": {
+                "description": "获取复习计划的所有Monsters",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all the monsters of a specific campaign dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (familiarity, difficulty, importance)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit for pagination",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RespMonsterList"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/campaigns/{id}/next_monsters": {
+            "get": {
+                "description": "获取复习计划的后n个Monsters",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the next n monsters of a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of monsters to fetch",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (familiarity, difficulty, importance)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.RespMonsterList"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/campaigns/{id}/report_result": {
+            "post": {
+                "description": "上报复习计划的Monster结果",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Report the result of a specific monster",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UserMonster result data",
+                        "name": "result",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqReportMonsterResult"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or UserMonster not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/campaigns/{id}/results": {
+            "get": {
+                "description": "获取复习计划的结果",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the results of a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.RespDungeonResults"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/dungeons": {
+            "get": {
+                "description": "获取复习计划列表",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the list of dungeon campaigns",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的复习计划",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new dungeon campaign",
+                "parameters": [
+                    {
+                        "description": "Dungeon campaign data",
+                        "name": "campaign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqCreateDungeon"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/dungeons/{id}": {
+            "get": {
+                "description": "获取复习计划详情",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the details of a specific dungeon campaign",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新复习计划",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a specific dungeon campaign",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon campaign data",
+                        "name": "campaign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqUpdateDungeon"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除复习计划",
+                "summary": "Delete a specific dungeon campaign",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/dungeons/{id}/books": {
+            "get": {
+                "description": "获取复习计划的 Books",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the books of a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "添加复习计划的 Books",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add books to a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon books data",
+                        "name": "books",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqAddDungeonBooks"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Book not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除复习计划的 Books",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Remove books from a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon books data",
+                        "name": "books",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqRemoveDungeonBooks"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Book not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/dungeons/{id}/items": {
+            "get": {
+                "description": "获取复习计划的 Items",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the items of a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "添加复习计划的 Items",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add items to a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon items data",
+                        "name": "items",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqAddDungeonItems"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Item not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除复习计划的 Items",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Remove items from a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon items data",
+                        "name": "items",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqRemoveDungeonItems"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Item not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/dungeons/{id}/tags": {
+            "get": {
+                "description": "获取复习计划的 TagNames",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the tags of a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "添加复习计划的 TagNames",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add tags to a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon tags data",
+                        "name": "tags",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqAddDungeonTags"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Tag not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除复习计划的 TagNames",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Remove tags from a specific dungeon",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dungeon tags data",
+                        "name": "tags",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dungeon.ReqRemoveDungeonTags"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon or Tag not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dungeon/endless/{id}/monsters": {
+            "get": {
+                "description": "获取复习计划的所有Monsters及其关联的 Items, Books, TagNames",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all the monsters of a specific endless dungeon with associations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dungeon ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (familiarity, difficulty, importance)",
+                        "name": "sort_by",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit for pagination",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RespMonsterList"
+                        }
+                    },
+                    "404": {
+                        "description": "Dungeon not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/items": {
             "get": {
                 "description": "Get a list of items for the user with optional filters for book and type and support for pagination.",
@@ -201,9 +1092,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "item"
                 ],
                 "summary": "Get a list of items with optional filters",
                 "parameters": [
@@ -242,13 +1130,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved items",
                         "schema": {
-                            "$ref": "#/definitions/item.RespItems"
+                            "$ref": "#/definitions/dto.RespItemList"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -260,9 +1148,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "item"
                 ],
                 "summary": "Create a new item",
                 "parameters": [
@@ -280,13 +1165,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Successfully created item with books and tags",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/dto.RespItemCreate"
                         }
                     },
                     "400": {
                         "description": "Bad Request if too many books or tags, or bad data",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -300,9 +1185,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "item"
                 ],
                 "summary": "Get an item by ID",
                 "parameters": [
@@ -318,13 +1200,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved item with tags",
                         "schema": {
-                            "$ref": "#/definitions/item.ItemDTO"
+                            "$ref": "#/definitions/dto.RespItemGet"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -336,9 +1218,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "item"
                 ],
                 "summary": "Update an item",
                 "parameters": [
@@ -363,19 +1242,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated item",
                         "schema": {
-                            "$ref": "#/definitions/module.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespItemUpdate"
                         }
                     },
                     "400": {
                         "description": "Bad Request with invalid item ID or update data",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error with failing to update the item",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -387,9 +1266,6 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
-                ],
-                "tags": [
-                    "item"
                 ],
                 "summary": "Delete an item",
                 "parameters": [
@@ -405,13 +1281,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully deleted item",
                         "schema": {
-                            "$ref": "#/definitions/module.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespItemDelete"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -431,9 +1307,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Get the current user's profile",
                 "responses": {
                     "200": {
@@ -445,19 +1318,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -475,9 +1348,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Update user profile",
                 "parameters": [
                     {
@@ -494,25 +1364,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated user profile",
                         "schema": {
-                            "$ref": "#/definitions/module.SuccessResponse"
+                            "$ref": "#/definitions/dto.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -529,9 +1399,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Get user points",
                 "responses": {
                     "200": {
@@ -543,19 +1410,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -572,9 +1439,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Get user advanced settings",
                 "responses": {
                     "200": {
@@ -586,19 +1450,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -616,9 +1480,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Update user advanced settings",
                 "parameters": [
                     {
@@ -635,25 +1496,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated user advanced settings",
                         "schema": {
-                            "$ref": "#/definitions/module.SuccessResponse"
+                            "$ref": "#/definitions/dto.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -670,9 +1531,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Get user settings",
                 "responses": {
                     "200": {
@@ -684,19 +1542,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -714,9 +1572,6 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "profile"
-                ],
                 "summary": "Update user settings",
                 "parameters": [
                     {
@@ -733,25 +1588,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated user settings",
                         "schema": {
-                            "$ref": "#/definitions/module.SuccessResponse"
+                            "$ref": "#/definitions/dto.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/module.ErrorResponse"
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -816,7 +1671,116 @@ const docTemplate = `{
                 }
             }
         },
-        "item.ItemDTO": {
+        "def.DifficultyLevel": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                17,
+                18,
+                19,
+                33,
+                34,
+                35,
+                49,
+                50,
+                51,
+                65,
+                66,
+                67,
+                68
+            ],
+            "x-enum-varnames": [
+                "NoviceNormal",
+                "NoviceAdvanced",
+                "NoviceChallenge",
+                "AmateurNormal",
+                "AmateurAdvanced",
+                "AmateurChallenge",
+                "ProfessionalNormal",
+                "ProfessionalAdvanced",
+                "ProfessionalChallenge",
+                "ExpertNormal",
+                "ExpertAdvanced",
+                "ExpertChallenge",
+                "MasterNormal",
+                "MasterAdvanced",
+                "MasterChallenge",
+                "MasterExtreme"
+            ]
+        },
+        "def.DungeonType": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                33
+            ],
+            "x-enum-comments": {
+                "DungeonTypeCampaign": "战役地牢",
+                "DungeonTypeEndless": "无尽地牢",
+                "DungeonTypeInstance": "即时副本 (随机地牢)"
+            },
+            "x-enum-varnames": [
+                "DungeonTypeCampaign",
+                "DungeonTypeEndless",
+                "DungeonTypeInstance"
+            ]
+        },
+        "def.ImportanceLevel": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                17,
+                18,
+                19,
+                20,
+                33,
+                34,
+                35,
+                36
+            ],
+            "x-enum-varnames": [
+                "DomainGeneral",
+                "DomainKey",
+                "DomainEssential",
+                "AreaGeneral",
+                "AreaKey",
+                "AreaEssential",
+                "AreaMasterPiece",
+                "GlobalGeneral",
+                "GlobalKey",
+                "GlobalEssential",
+                "GlobalMasterPiece"
+            ]
+        },
+        "dto.Book": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.Item": {
             "type": "object",
             "properties": {
                 "content": {
@@ -825,7 +1789,60 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "creator_id": {
+                    "type": "integer"
+                },
+                "difficulty": {
+                    "$ref": "#/definitions/def.DifficultyLevel"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "importance": {
+                    "$ref": "#/definitions/def.ImportanceLevel"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Monster": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "integer"
+                },
+                "difficulty": {
+                    "$ref": "#/definitions/def.DifficultyLevel"
+                },
+                "dungeonID": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "importance": {
+                    "$ref": "#/definitions/def.ImportanceLevel"
+                },
+                "monsterSource": {
+                    "$ref": "#/definitions/model.MonsterSource"
+                },
+                "monsterSourceEntityID": {
                     "type": "integer"
                 },
                 "tags": {
@@ -840,8 +1857,316 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
-                "user_id": {
+                "visibility": {
+                    "description": "显影程度，根据复习次数变化",
                     "type": "integer"
+                }
+            }
+        },
+        "dto.RespBookCreate": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Book"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespItemCreate": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Item"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespItemDelete": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Item"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespItemGet": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Item"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespItemList": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Item"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RespItemUpdate": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Item"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespMonsterList": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Monster"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dungeon.ReqAddDungeonBooks": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqAddDungeonItems": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqAddDungeonTags": {
+            "type": "object",
+            "properties": {
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqCreateDungeon": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tag_names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/def.DungeonType"
+                }
+            }
+        },
+        "dungeon.ReqRemoveDungeonBooks": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqRemoveDungeonItems": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqRemoveDungeonTags": {
+            "type": "object",
+            "properties": {
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dungeon.ReqReportMonsterResult": {
+            "type": "object",
+            "properties": {
+                "monster_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "description": "\"unknown\", \"familiar\", \"remembered\"",
+                    "type": "string"
+                }
+            }
+        },
+        "dungeon.ReqUpdateDungeon": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/def.DungeonType"
+                }
+            }
+        },
+        "dungeon.RespDungeonResults": {
+            "type": "object",
+            "properties": {
+                "today_difficulty": {
+                    "type": "integer"
+                },
+                "total_monsters": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dungeon.RespUpdatedDungeon": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tag_names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/def.DungeonType"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -888,66 +2213,18 @@ const docTemplate = `{
                 }
             }
         },
-        "item.RespItems": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/item.ItemDTO"
-                    }
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Item": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string",
-                    "example": "0"
-                }
-            }
-        },
-        "module.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "module.SuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "message": {
-                    "type": "string"
-                }
-            }
+        "model.MonsterSource": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "MonsterSourceItem",
+                "MonsterSourceBook",
+                "MonsterSourceTag"
+            ]
         },
         "profile.ReqUpdateProfile": {
             "type": "object",
@@ -1051,6 +2328,17 @@ const docTemplate = `{
                 "review_interval": {
                     "description": "Definitions should match with ProfileMemorizationSetting",
                     "type": "integer"
+                }
+            }
+        },
+        "utils.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         }

@@ -121,12 +121,9 @@ func ginRecoveryWithLog() gin.HandlerFunc {
 				} else {
 					er = irr.TrackSkip(1, irr.Error("%v", err), "recover from panic!!")
 				}
-				er = er.LogError(wlog.ByCtx(c, c.HandlerName()))
+				log := wlog.ByCtx(c, c.HandlerName())
 
-				// 返回 HTTP 500 错误
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"message": "Internal Server Error",
-				})
+				utils.GinHandleError(c, log, http.StatusInternalServerError, er, "Unexpected internal Server Error")
 			}
 		}()
 

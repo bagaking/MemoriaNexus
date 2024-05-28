@@ -1,8 +1,15 @@
 entry = [
+    "doc/DESIGN.md",
     "doc/API_SPEC.md",
+    
+    "deployment/*.sql",
+    
     "src/gw/**/*.go",
+    
     "src/utils/*.go",
-    "src/deployment/**/*.sql",
+    "src/def/*.go",
+    "src/model/**/*.go",
+    
     "src/model/**/book*.go",
     "src/model/**/tag*.go",
     "src/module/book/*.go",

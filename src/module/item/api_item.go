@@ -4,39 +4,26 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
-
-	"github.com/bagaking/goulp/wlog"
 
 	"gorm.io/gorm"
 
+	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
-	"github.com/bagaking/memorianexus/src/module"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
-
-// ItemDTO 数据传输对象
-type ItemDTO struct {
-	ID        utils.UInt64 `json:"id"`
-	UserID    utils.UInt64 `json:"user_id"`
-	Type      string       `json:"type"`
-	Content   string       `json:"content"`
-	Tags      []string     `json:"tags,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
-}
 
 // GetItem handles retrieving a single item by ID, including its tags.
 // @Summary Get an item by ID
 // @Description Get detailed information about an item, including its tags.
-// @Tags item
+// @TagNames item
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Item ID"
-// @Success 200 {object} ItemDTO "Successfully retrieved item with tags"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Success 200 {object} dto.RespItemGet "Successfully retrieved item with tags"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
 // @Router /items/{id} [get]
 func (svr *Service) GetItem(c *gin.Context) {
 	log := wlog.ByCtx(c)
@@ -61,28 +48,23 @@ func (svr *Service) GetItem(c *gin.Context) {
 	}
 
 	// 创建 DTO 并返回
-	response := ItemDTO{
-		ID:        item.ID,
-		UserID:    item.UserID,
-		Type:      item.Type,
-		Content:   item.Content,
-		Tags:      tags,
-		CreatedAt: item.CreatedAt,
-		UpdatedAt: item.UpdatedAt,
+	resp := dto.RespItemGet{
+		Message: "item found",
+		Data:    (&dto.Item{}).FromModel(&item, tags...),
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, resp)
 }
 
 // DeleteItem handles the deletion of an item.
 // @Summary Delete an item
 // @Description Delete an item from the system by ID.
-// @Tags item
+// @TagNames item
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Item ID"
-// @Success 200 {object} module.SuccessResponse "Successfully deleted item"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
+// @Success 200 {object} dto.RespItemDelete "Successfully deleted item"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
 // @Router /items/{id} [delete]
 func (svr *Service) DeleteItem(c *gin.Context) {
 	log := wlog.ByCtx(c)
@@ -116,7 +98,7 @@ func (svr *Service) DeleteItem(c *gin.Context) {
 	}
 
 	// 如果Item的UserID与请求中的用户ID不匹配，则拒绝删除操作
-	if item.UserID != userID {
+	if item.CreatorID != userID {
 		utils.GinHandleError(c, log.WithField("user_id", userID),
 			http.StatusForbidden, errors.New("unauthorized to delete this item"), "Unauthorized to delete this item")
 		return
@@ -129,15 +111,12 @@ func (svr *Service) DeleteItem(c *gin.Context) {
 		return
 	}
 
-	dto := ItemDTO{
-		ID:        item.ID,
-		UserID:    item.UserID,
-		Type:      item.Type,
-		Content:   item.Content,
-		CreatedAt: item.CreatedAt,
-		UpdatedAt: item.UpdatedAt,
+	// 创建 DTO 并返回
+	resp := dto.RespItemDelete{
+		Message: "item deleted",
+		Data:    (&dto.Item{}).FromModel(&item),
 	}
 
 	// 返回成功响应
-	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Item deleted", Data: dto})
+	c.JSON(http.StatusOK, resp)
 }

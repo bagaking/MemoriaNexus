@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/bagaking/goulp/wlog"
@@ -25,6 +26,47 @@ type Book struct {
 	Items []*Item `gorm:"many2many:BookItem;"`
 }
 
+// BeforeCreate 钩子
+func (b *Book) BeforeCreate(tx *gorm.DB) (err error) {
+	// 确保UserID不为0
+	if b.ID <= 0 {
+		return errors.New("user UInt64 must be larger than zero")
+	}
+	return
+}
+
+func (b *Book) TableName() string {
+	return "books"
+}
+
+type BookTag struct {
+	BookID utils.UInt64 `gorm:"primaryKey"`
+	TagID  utils.UInt64 `gorm:"primaryKey"`
+}
+
+func (BookTag) Associate(bookID, tagID utils.UInt64) ITagAssociate {
+	return BookTag{BookID: bookID, TagID: tagID}
+}
+
+func (BookTag) Type() TagRefType {
+	return BookTagRef
+}
+
+var _ ITagAssociate = &BookTag{}
+
+func (b BookTag) TableName() string {
+	return "book_tags"
+}
+
+type BookItem struct {
+	BookID utils.UInt64 `gorm:"primaryKey"`
+	ItemID utils.UInt64 `gorm:"primaryKey"`
+}
+
+func (b *BookItem) TableName() string {
+	return "book_items"
+}
+
 // BeforeDelete is a GORM hook that is called before deleting a book.
 func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
 	log := wlog.Common("BeforeDeleteBook")
@@ -41,14 +83,4 @@ func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
 	}
 
 	return nil
-}
-
-type BookTag struct {
-	BookID utils.UInt64 `gorm:"primaryKey"`
-	TagID  utils.UInt64 `gorm:"primaryKey"`
-}
-
-type BookItem struct {
-	BookID utils.UInt64 `gorm:"primaryKey"`
-	ItemID utils.UInt64 `gorm:"primaryKey"`
 }

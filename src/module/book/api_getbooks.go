@@ -16,7 +16,7 @@ import (
 // GetBooks handles retrieving a list of books with pagination.
 // @Summary Get list of books with pagination
 // @Description Get a paginated list of books for the user.
-// @Tags book
+// @TagNames book
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number for pagination" default(1)
@@ -87,7 +87,7 @@ func (svr *Service) GetBooks(c *gin.Context) {
 // GetBook handles retrieving a single book by ID.
 // @Summary Get a book by ID
 // @Description Get detailed information about a book.
-// @Tags book
+// @TagNames book
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Book ID"

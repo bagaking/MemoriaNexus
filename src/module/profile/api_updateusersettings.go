@@ -3,9 +3,9 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/memorianexus/src/module/dto"
 
-	"github.com/bagaking/memorianexus/src/module"
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/gin-gonic/gin"
@@ -30,15 +30,15 @@ type ReqUpdateUserSettingsAdvance struct {
 // UpdateUserSettingsMemorization handles a request to update the current user's settings.
 // @Summary Update user settings
 // @Description Updates the settings for the user who made the request.
-// @Tags profile
+// @TagNames profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param settings body ReqUpdateUserSettingsMemorization true "User settings update info"
-// @Success 200 {object} module.SuccessResponse "Successfully updated user settings"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Success 200 {object} dto.SuccessResponse "Successfully updated user settings"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [put]
 func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)
@@ -80,21 +80,21 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Settings updated successfully"})
+	c.JSON(http.StatusOK, dto.SuccessResponse{Message: "Settings updated successfully"})
 }
 
 // UpdateUserSettingsAdvance updates the advanced settings for the current user.
 // @Summary Update user advanced settings
 // @Description Updates advanced settings for the authenticated user.
-// @Tags profile
+// @TagNames profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param settings body ReqUpdateUserSettingsAdvance true "User advanced settings update info"
-// @Success 200 {object} module.SuccessResponse "Successfully updated user advanced settings"
-// @Failure 400 {object} module.ErrorResponse "Bad Request"
-// @Failure 404 {object} module.ErrorResponse "Not Found"
-// @Failure 500 {object} module.ErrorResponse "Internal Server Error"
+// @Success 200 {object} dto.SuccessResponse "Successfully updated user advanced settings"
+// @Failure 400 {object} utils.ErrorResponse "Bad Request"
+// @Failure 404 {object} utils.ErrorResponse "Not Found"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [put]
 func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
 	userID, exists := utils.GetUIDFromGinCtx(c)
@@ -139,5 +139,5 @@ func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, module.SuccessResponse{Message: "Advanced settings updated successfully"})
+	c.JSON(http.StatusOK, dto.SuccessResponse{Message: "Advanced settings updated successfully"})
 }

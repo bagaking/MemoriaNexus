@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bagaking/memorianexus/src/module/dto"
+	"github.com/sirupsen/logrus"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
@@ -14,7 +17,7 @@ import (
 // UpdateBook handles updating a book's information.
 // @Summary Update book information
 // @Description Update information for an existing book.
-// @Tags book
+// @TagNames book
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Book ID"
@@ -70,31 +73,34 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 // DeleteBook handles deleting a book.
 // @Summary Delete a book
 // @Description Delete a book from the system by ID.
-// @Tags book
+// @TagNames book
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Book ID"
 // @Success 200 {string} string "Successfully deleted book"
 // @Router /books/{id} [delete]
 func (svr *Service) DeleteBook(c *gin.Context) {
-	log := wlog.ByCtx(c, "DeleteBook")
+	var log logrus.FieldLogger = wlog.ByCtx(c, "DeleteBook")
 	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GinHandleError(c, log, http.StatusUnauthorized, irr.Error("user not authenticated"), "user not authenticated")
+		return
+	}
+	log = log.WithField("user_id", userID)
+
+	idStr := c.Param("id")
+	id := utils.UInt64(0)
+	if err := id.UnmarshalJSON([]byte(idStr)); err != nil {
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid book id")
 		return
 	}
 
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
-		return
-	}
+	log = log.WithField("book_id", id)
 
 	// 删除前校验所有者
 	var book model.Book
-	if err = svr.db.Where("id = ? AND user_id = ?", id, userID).First(&book).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found or permission denied"})
+	if err := svr.db.Where("id = ? AND user_id = ?", id, userID).First(&book).Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusNotFound, err, "book not found or permission denied")
 		return
 	}
 
@@ -102,28 +108,30 @@ func (svr *Service) DeleteBook(c *gin.Context) {
 	tx := svr.db.Begin()
 
 	// 删除书册与标签、项的关系
-	if err = tx.Where("book_id = ?", id).Delete(&model.BookTag{}).Error; err != nil {
+	if err := tx.Where("book_id = ?", id).Delete(&model.BookTag{}).Error; err != nil {
 		tx.Rollback()
-		log.WithError(err).Errorf("Failed to delete book_tag_ref for user %v book_id= %v", userID, id)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book tags"})
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to delete book-tags")
 		return
 	}
 
-	if err = tx.Where("book_id = ?", id).Delete(&model.BookItem{}).Error; err != nil {
+	if err := tx.Where("book_id = ?", id).Delete(&model.BookItem{}).Error; err != nil {
 		tx.Rollback()
-		log.WithError(err).Errorf("Failed to delete book_item_ref for user %v book_id= %v", userID, id)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book items"})
+		utils.GinHandleError(c, log, http.StatusInternalServerError,
+			irr.Wrap(err, "user=%v book_id=%v", userID, id), "failed to delete book-items")
 		return
 	}
 
 	// 删除书册
-	if err = tx.Delete(&model.Book{}, id).Error; err != nil {
+	if err := tx.Delete(&model.Book{}, id).Error; err != nil {
 		tx.Rollback()
-		log.WithError(err).Errorf("Failed to delete book for user %v book_id= %v", userID, id)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book"})
+		utils.GinHandleError(c, log, http.StatusInternalServerError,
+			irr.Wrap(err, "user=%v book_id=%v", userID, id), "failed to delete book")
 		return
 	}
 
 	tx.Commit()
-	c.JSON(http.StatusOK, gin.H{"message": "Book deleted", "book_id": id})
+	c.JSON(http.StatusOK, dto.RespSuccess[utils.UInt64]{
+		Message: "Book deleted",
+		Data:    id,
+	})
 }
