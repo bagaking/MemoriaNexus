@@ -19,12 +19,12 @@ type Profile struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-
 	Nickname  string `gorm:"nickname,size:255"`
 	Email     string `gorm:"email,size:255;not null;unique"`
 	AvatarURL string `gorm:"avatar_url,size:255"`
 	Bio       string `gorm:"bio,type:text"`
+
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	settingsMemorization *ProfileMemorizationSetting
 	settingsAdvance      *ProfileAdvanceSetting
@@ -158,9 +158,12 @@ func (p *Profile) EnsureLoadProfileSettingsAdvance(db *gorm.DB) (*ProfileAdvance
 	return p.settingsAdvance, nil
 }
 
-// SaveProfileSettingsMemorization 使用保存逻辑更新用户记忆设置
-func (p *Profile) SaveProfileSettingsMemorization(db *gorm.DB) error {
-	if p.settingsMemorization.ID != p.ID {
+// UpdateSettingsMemorization 使用保存逻辑更新用户记忆设置
+func (p *Profile) UpdateSettingsMemorization(db *gorm.DB, updater *ProfileMemorizationSetting) error {
+	if updater == nil {
+		return irr.Trace("updater cannot be nil")
+	}
+	if updater.ID != p.ID {
 		// 确保settingsMemorization的ID与Profile的ID匹配
 		return errors.New("profile UInt64 does not match with settingsMemorization UInt64")
 	}
@@ -168,22 +171,25 @@ func (p *Profile) SaveProfileSettingsMemorization(db *gorm.DB) error {
 	result := db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
 		UpdateAll: true,
-	}).Create(p.settingsMemorization)
+	}).Create(updater)
 
 	return result.Error
 }
 
-// SaveProfileSettingsAdvance 使用保存逻辑更新用户高级设置
-func (p *Profile) SaveProfileSettingsAdvance(db *gorm.DB) error {
-	if p.settingsAdvance.ID != p.ID {
+// UpdateSettingsAdvance 使用保存逻辑更新用户高级设置
+func (p *Profile) UpdateSettingsAdvance(db *gorm.DB, updater *ProfileAdvanceSetting) error {
+	if updater == nil {
+		return irr.Trace("updater cannot be nil")
+	}
+	if updater.ID != p.ID {
 		// 确保settingsAdvance的ID与Profile的ID匹配
-		return errors.New("profile UInt64 does not match with settingsAdvance UInt64")
+		return irr.Trace("profile UInt64 does not match with settingsAdvance UInt64")
 	}
 
 	result := db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
 		UpdateAll: true,
-	}).Create(p.settingsAdvance)
+	}).Create(updater)
 
 	return result.Error
 }

@@ -1312,7 +1312,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved user profile",
                         "schema": {
-                            "$ref": "#/definitions/profile.RespGetProfile"
+                            "$ref": "#/definitions/dto.RespProfile"
                         }
                     },
                     "400": {
@@ -1404,7 +1404,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved user points",
                         "schema": {
-                            "$ref": "#/definitions/profile.RespGetPoints"
+                            "$ref": "#/definitions/dto.RespPoints"
                         }
                     },
                     "400": {
@@ -1444,7 +1444,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved user advanced settings",
                         "schema": {
-                            "$ref": "#/definitions/profile.RespSettingsAdvance"
+                            "$ref": "#/definitions/dto.RespSettingsAdvance"
                         }
                     },
                     "400": {
@@ -1496,7 +1496,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated user advanced settings",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespSettingsAdvance"
                         }
                     },
                     "400": {
@@ -1536,7 +1536,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved user settings",
                         "schema": {
-                            "$ref": "#/definitions/profile.RespSettingsMemorization"
+                            "$ref": "#/definitions/dto.RespSettingsMemorization"
                         }
                     },
                     "400": {
@@ -1588,7 +1588,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated user settings",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespSettingsMemorization"
                         }
                     },
                     "400": {
@@ -1863,6 +1863,43 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Points": {
+            "type": "object",
+            "properties": {
+                "cash": {
+                    "type": "integer"
+                },
+                "gem": {
+                    "type": "integer"
+                },
+                "vip_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.Profile": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nickname": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.RespBookCreate": {
             "type": "object",
             "properties": {
@@ -1960,6 +1997,82 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RespPoints": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Points"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespProfile": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Profile"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespSettingsAdvance": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.SettingsAdvance"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespSettingsMemorization": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.SettingsMemorization"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SettingsAdvance": {
+            "type": "object",
+            "properties": {
+                "email_notifications": {
+                    "type": "boolean"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "push_notifications": {
+                    "type": "boolean"
+                },
+                "theme": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SettingsMemorization": {
+            "type": "object",
+            "properties": {
+                "difficulty_preference": {
+                    "type": "integer"
+                },
+                "quiz_mode": {
+                    "type": "string"
+                },
+                "review_interval": {
+                    "description": "Definitions should match with ProfileMemorizationSetting",
                     "type": "integer"
                 }
             }
@@ -2229,6 +2342,12 @@ const docTemplate = `{
         "profile.ReqUpdateProfile": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -2264,69 +2383,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "review_interval": {
-                    "type": "integer"
-                }
-            }
-        },
-        "profile.RespGetPoints": {
-            "type": "object",
-            "properties": {
-                "cash": {
-                    "type": "integer"
-                },
-                "gem": {
-                    "type": "integer"
-                },
-                "vip_score": {
-                    "type": "integer"
-                }
-            }
-        },
-        "profile.RespGetProfile": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "nickname": {
-                    "type": "string"
-                }
-            }
-        },
-        "profile.RespSettingsAdvance": {
-            "type": "object",
-            "properties": {
-                "email_notifications": {
-                    "type": "boolean"
-                },
-                "language": {
-                    "type": "string"
-                },
-                "push_notifications": {
-                    "type": "boolean"
-                },
-                "theme": {
-                    "type": "string"
-                }
-            }
-        },
-        "profile.RespSettingsMemorization": {
-            "type": "object",
-            "properties": {
-                "difficulty_preference": {
-                    "type": "integer"
-                },
-                "quiz_mode": {
-                    "type": "string"
-                },
-                "review_interval": {
-                    "description": "Definitions should match with ProfileMemorizationSetting",
                     "type": "integer"
                 }
             }

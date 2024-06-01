@@ -3,18 +3,13 @@ package profile
 import (
 	"net/http"
 
+	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
-
-// RespGetPoints defines the structure for the user profile API response.
-type RespGetPoints struct {
-	Cash     utils.UInt64 `json:"cash"`
-	Gem      utils.UInt64 `json:"gem"`
-	VIPScore utils.UInt64 `json:"vip_score"`
-}
 
 // GetUserPoints retrieves the points for the authenticated user.
 // @Summary Get user points
@@ -22,15 +17,16 @@ type RespGetPoints struct {
 // @TagNames profile
 // @Produce  json
 // @Security ApiKeyAuth
-// @Success 200 {object} RespGetPoints "Successfully retrieved user points"
+// @Success 200 {object} dto.RespPoints "Successfully retrieved user points"
 // @Failure 400 {object} utils.ErrorResponse "Bad Request"
 // @Failure 404 {object} utils.ErrorResponse "Not Found"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/points [get]
 func (svr *Service) GetUserPoints(c *gin.Context) {
+	log := wlog.ByCtx(c)
 	userID, exists := utils.GetUIDFromGinCtx(c)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
 		return
 	}
 
@@ -39,16 +35,10 @@ func (svr *Service) GetUserPoints(c *gin.Context) {
 	// This is simulation, replace it with actual logic as needed.
 	points, err := model.EnsureLoadProfilePoints(svr.db, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Profile not found"})
+		utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
 		return
 	}
 
 	// Assuming the points information is stored within profile structure.
-	resp := RespGetPoints{
-		Cash:     points.Cash,
-		Gem:      points.Gem,
-		VIPScore: points.VipScore,
-	}
-
-	c.JSON(http.StatusOK, resp)
+	new(dto.RespPoints).With(new(dto.Points).FromModel(points)).Response(c)
 }

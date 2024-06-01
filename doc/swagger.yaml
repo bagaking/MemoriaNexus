@@ -182,6 +182,30 @@ definitions:
         description: 显影程度，根据复习次数变化
         type: integer
     type: object
+  dto.Points:
+    properties:
+      cash:
+        type: integer
+      gem:
+        type: integer
+      vip_score:
+        type: integer
+    type: object
+  dto.Profile:
+    properties:
+      avatar_url:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+    type: object
   dto.RespBookCreate:
     properties:
       data:
@@ -245,6 +269,55 @@ definitions:
       page:
         type: integer
       total:
+        type: integer
+    type: object
+  dto.RespPoints:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Points'
+      message:
+        type: string
+    type: object
+  dto.RespProfile:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Profile'
+      message:
+        type: string
+    type: object
+  dto.RespSettingsAdvance:
+    properties:
+      data:
+        $ref: '#/definitions/dto.SettingsAdvance'
+      message:
+        type: string
+    type: object
+  dto.RespSettingsMemorization:
+    properties:
+      data:
+        $ref: '#/definitions/dto.SettingsMemorization'
+      message:
+        type: string
+    type: object
+  dto.SettingsAdvance:
+    properties:
+      email_notifications:
+        type: boolean
+      language:
+        type: string
+      push_notifications:
+        type: boolean
+      theme:
+        type: string
+    type: object
+  dto.SettingsMemorization:
+    properties:
+      difficulty_preference:
+        type: integer
+      quiz_mode:
+        type: string
+      review_interval:
+        description: Definitions should match with ProfileMemorizationSetting
         type: integer
     type: object
   dto.SuccessResponse:
@@ -422,6 +495,10 @@ definitions:
     - MonsterSourceTag
   profile.ReqUpdateProfile:
     properties:
+      avatar_url:
+        type: string
+      bio:
+        type: string
       email:
         type: string
       nickname:
@@ -445,47 +522,6 @@ definitions:
       quiz_mode:
         type: string
       review_interval:
-        type: integer
-    type: object
-  profile.RespGetPoints:
-    properties:
-      cash:
-        type: integer
-      gem:
-        type: integer
-      vip_score:
-        type: integer
-    type: object
-  profile.RespGetProfile:
-    properties:
-      avatar_url:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      nickname:
-        type: string
-    type: object
-  profile.RespSettingsAdvance:
-    properties:
-      email_notifications:
-        type: boolean
-      language:
-        type: string
-      push_notifications:
-        type: boolean
-      theme:
-        type: string
-    type: object
-  profile.RespSettingsMemorization:
-    properties:
-      difficulty_preference:
-        type: integer
-      quiz_mode:
-        type: string
-      review_interval:
-        description: Definitions should match with ProfileMemorizationSetting
         type: integer
     type: object
   utils.ErrorResponse:
@@ -1360,7 +1396,7 @@ paths:
         "200":
           description: Successfully retrieved user profile
           schema:
-            $ref: '#/definitions/profile.RespGetProfile'
+            $ref: '#/definitions/dto.RespProfile'
         "400":
           description: Bad Request
           schema:
@@ -1418,7 +1454,7 @@ paths:
         "200":
           description: Successfully retrieved user points
           schema:
-            $ref: '#/definitions/profile.RespGetPoints'
+            $ref: '#/definitions/dto.RespPoints'
         "400":
           description: Bad Request
           schema:
@@ -1443,7 +1479,7 @@ paths:
         "200":
           description: Successfully retrieved user advanced settings
           schema:
-            $ref: '#/definitions/profile.RespSettingsAdvance'
+            $ref: '#/definitions/dto.RespSettingsAdvance'
         "400":
           description: Bad Request
           schema:
@@ -1476,7 +1512,7 @@ paths:
         "200":
           description: Successfully updated user advanced settings
           schema:
-            $ref: '#/definitions/dto.SuccessResponse'
+            $ref: '#/definitions/dto.RespSettingsAdvance'
         "400":
           description: Bad Request
           schema:
@@ -1501,7 +1537,7 @@ paths:
         "200":
           description: Successfully retrieved user settings
           schema:
-            $ref: '#/definitions/profile.RespSettingsMemorization'
+            $ref: '#/definitions/dto.RespSettingsMemorization'
         "400":
           description: Bad Request
           schema:
@@ -1534,7 +1570,7 @@ paths:
         "200":
           description: Successfully updated user settings
           schema:
-            $ref: '#/definitions/dto.SuccessResponse'
+            $ref: '#/definitions/dto.RespSettingsMemorization'
         "400":
           description: Bad Request
           schema:

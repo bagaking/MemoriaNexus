@@ -43,6 +43,13 @@ func GinErrWithReqBody(req any) GinHandleErrorOption {
 
 // GinHandleError handles errors by logging them and sending a ErrorResponse.
 func GinHandleError(c *gin.Context, log logrus.FieldLogger, status int, err error, msg string, options ...GinHandleErrorOption) {
+	resp := ErrorResponse{
+		Message: msg,
+	}
+	if err != nil {
+		resp.Error = err.Error() // Ensure the error is converted to a string
+	}
+
 	// Initialize options with defaults
 	opts := &ginHandleErrorOptions{
 		requestContents: make(map[string]any),
@@ -95,10 +102,7 @@ func GinHandleError(c *gin.Context, log logrus.FieldLogger, status int, err erro
 		log.WithFields(fields).Info("Other case") // Other cases (e.g., redirects) are logged as info
 	}
 
-	c.JSON(status, ErrorResponse{
-		Message: msg,
-		Error:   err.Error(), // Ensure the error is converted to a string
-	})
+	c.JSON(status, resp)
 }
 
 // getGinSimplifiedStackTrace returns a simplified stack trace.

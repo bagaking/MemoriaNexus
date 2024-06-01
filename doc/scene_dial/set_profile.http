@@ -1,13 +1,62 @@
-### Update Profile Settings
-PUT http://localhost:8080/api/v1/profile/settings
+### 获取用户信息（确保用户已登录）
+GET http://localhost:8080/api/v1/profile/me
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+> {% client.global.set("USER_EMAIL", response.body.data.email) %}
+> {% client.global.set("USER_NICKNAME", response.body.data.nickname) %}
+
+### 更新用户昵称和头像
+PUT http://localhost:8080/api/v1/profile/me
 Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
   "nickname": "new_nickname",
-  "avatar_url": "https://example.com/new_avatar.png"
+  "avatar_url": "https://example.com/new_avatar.png",
+  "bio": "my old name is {{USER_NICKNAME}}"
 }
 
-### Get User Profile (Example URI and Method might differ based on actual API implementation)
-GET http://localhost:8080/api/v1/profile
+### 获取用户积分信息
+GET http://localhost:8080/api/v1/profile/points
 Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 获取用户记忆设置
+GET http://localhost:8080/api/v1/profile/settings/memorization
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 更新用户记忆设置
+PUT http://localhost:8080/api/v1/profile/settings/memorization
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "difficulty_preference": 2,
+  "quiz_mode": "standard",
+  "review_interval": 7
+}
+
+### 获取用户高级设置
+GET http://localhost:8080/api/v1/profile/settings/advance
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 更新用户高级设置
+PUT http://localhost:8080/api/v1/profile/settings/advance
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "email_notifications": true,
+  "language": "en",
+  "push_notifications": true,
+  "theme": "dark"
+}
+
+### 恢复用户昵称和头像
+PUT http://localhost:8080/api/v1/profile/me
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "nickname": "{{USER_NICKNAME}}",
+  "avatar_url": "https://example.com/original_avatar.png"
+}
