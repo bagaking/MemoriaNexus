@@ -1,444 +1,143 @@
-.
-├── cmd
-│   └── main.go
-├── config
-│   ├── app.dev.yaml
-│   ├── app.prod.yaml
-│   ├── log.dev.yaml
-│   └── log.prod.yaml
-├── deployment
-│   ├── migration
-│   │   ├── 01.profile_down.sql
-│   │   ├── 01.profile_up.sql
-│   │   ├── 02.book_item_down.sql
-│   │   ├── 02.book_item_up.sql
-│   │   ├── 03.dungeon_down.sql
-│   │   ├── 03.dungeon_up.sql
-│   │   └── migrate.sh
-│   ├── Dockerfile
-│   └── ci_cd.yaml
-├── dev_memorianexus
-│   ├── dial
-│   │   ├── auth.http
-│   │   ├── create_some_item_and_book.http
-│   │   ├── dungeon_crud_tests.http
-│   │   ├── http-client.env.json
-│   │   └── profile.http
-│   ├── logs
-│   │   └── memorianexus.log
-│   ├── mysql-data
-│   │   ├── #innodb_redo
-│   │   │   ├── #ib_redo13
-│   │   │   ├── #ib_redo14_tmp
-│   │   │   ├── #ib_redo15_tmp
-│   │   │   ├── #ib_redo16_tmp
-│   │   │   ├── #ib_redo17_tmp
-│   │   │   ├── #ib_redo18_tmp
-│   │   │   ├── #ib_redo19_tmp
-│   │   │   ├── #ib_redo20_tmp
-│   │   │   ├── #ib_redo21_tmp
-│   │   │   ├── #ib_redo22_tmp
-│   │   │   ├── #ib_redo23_tmp
-│   │   │   ├── #ib_redo24_tmp
-│   │   │   ├── #ib_redo25_tmp
-│   │   │   ├── #ib_redo26_tmp
-│   │   │   ├── #ib_redo27_tmp
-│   │   │   ├── #ib_redo28_tmp
-│   │   │   ├── #ib_redo29_tmp
-│   │   │   ├── #ib_redo30_tmp
-│   │   │   ├── #ib_redo31_tmp
-│   │   │   ├── #ib_redo32_tmp
-│   │   │   ├── #ib_redo33_tmp
-│   │   │   ├── #ib_redo34_tmp
-│   │   │   ├── #ib_redo35_tmp
-│   │   │   ├── #ib_redo36_tmp
-│   │   │   ├── #ib_redo37_tmp
-│   │   │   ├── #ib_redo38_tmp
-│   │   │   ├── #ib_redo39_tmp
-│   │   │   ├── #ib_redo40_tmp
-│   │   │   ├── #ib_redo41_tmp
-│   │   │   ├── #ib_redo42_tmp
-│   │   │   ├── #ib_redo43_tmp
-│   │   │   └── #ib_redo44_tmp
-│   │   ├── #innodb_temp
-│   │   │   ├── temp_1.ibt
-│   │   │   ├── temp_10.ibt
-│   │   │   ├── temp_2.ibt
-│   │   │   ├── temp_3.ibt
-│   │   │   ├── temp_4.ibt
-│   │   │   ├── temp_5.ibt
-│   │   │   ├── temp_6.ibt
-│   │   │   ├── temp_7.ibt
-│   │   │   ├── temp_8.ibt
-│   │   │   └── temp_9.ibt
-│   │   ├── memorianexus
-│   │   │   ├── book_items.ibd
-│   │   │   ├── book_tags.ibd
-│   │   │   ├── books.ibd
-│   │   │   ├── dungeon_books.ibd
-│   │   │   ├── dungeon_monsters.ibd
-│   │   │   ├── dungeon_tags.ibd
-│   │   │   ├── dungeons.ibd
-│   │   │   ├── item_tags.ibd
-│   │   │   ├── items.ibd
-│   │   │   ├── monsters.ibd
-│   │   │   ├── profile_advance_settings.ibd
-│   │   │   ├── profile_memorization_settings.ibd
-│   │   │   ├── profile_points.ibd
-│   │   │   ├── profiles.ibd
-│   │   │   └── tags.ibd
-│   │   ├── mysql
-│   │   │   ├── general_log.CSM
-│   │   │   ├── general_log.CSV
-│   │   │   ├── general_log_214.sdi
-│   │   │   ├── slow_log.CSM
-│   │   │   ├── slow_log.CSV
-│   │   │   └── slow_log_215.sdi
-│   │   ├── performance_schema
-│   │   │   ├── accounts_146.sdi
-│   │   │   ├── binary_log_trans_190.sdi
-│   │   │   ├── cond_instances_81.sdi
-│   │   │   ├── data_lock_waits_162.sdi
-│   │   │   ├── data_locks_161.sdi
-│   │   │   ├── error_log_82.sdi
-│   │   │   ├── events_errors_su_140.sdi
-│   │   │   ├── events_errors_su_141.sdi
-│   │   │   ├── events_errors_su_142.sdi
-│   │   │   ├── events_errors_su_143.sdi
-│   │   │   ├── events_errors_su_144.sdi
-│   │   │   ├── events_stages_cu_112.sdi
-│   │   │   ├── events_stages_hi_113.sdi
-│   │   │   ├── events_stages_hi_114.sdi
-│   │   │   ├── events_stages_su_115.sdi
-│   │   │   ├── events_stages_su_116.sdi
-│   │   │   ├── events_stages_su_117.sdi
-│   │   │   ├── events_stages_su_118.sdi
-│   │   │   ├── events_stages_su_119.sdi
-│   │   │   ├── events_statement_120.sdi
-│   │   │   ├── events_statement_121.sdi
-│   │   │   ├── events_statement_122.sdi
-│   │   │   ├── events_statement_123.sdi
-│   │   │   ├── events_statement_124.sdi
-│   │   │   ├── events_statement_125.sdi
-│   │   │   ├── events_statement_126.sdi
-│   │   │   ├── events_statement_127.sdi
-│   │   │   ├── events_statement_128.sdi
-│   │   │   ├── events_statement_129.sdi
-│   │   │   ├── events_statement_130.sdi
-│   │   │   ├── events_statement_131.sdi
-│   │   │   ├── events_transacti_132.sdi
-│   │   │   ├── events_transacti_133.sdi
-│   │   │   ├── events_transacti_134.sdi
-│   │   │   ├── events_transacti_135.sdi
-│   │   │   ├── events_transacti_136.sdi
-│   │   │   ├── events_transacti_137.sdi
-│   │   │   ├── events_transacti_138.sdi
-│   │   │   ├── events_transacti_139.sdi
-│   │   │   ├── events_waits_cur_83.sdi
-│   │   │   ├── events_waits_his_84.sdi
-│   │   │   ├── events_waits_his_85.sdi
-│   │   │   ├── events_waits_sum_86.sdi
-│   │   │   ├── events_waits_sum_87.sdi
-│   │   │   ├── events_waits_sum_88.sdi
-│   │   │   ├── events_waits_sum_89.sdi
-│   │   │   ├── events_waits_sum_90.sdi
-│   │   │   ├── events_waits_sum_91.sdi
-│   │   │   ├── file_instances_92.sdi
-│   │   │   ├── file_summary_by__93.sdi
-│   │   │   ├── file_summary_by__94.sdi
-│   │   │   ├── global_status_182.sdi
-│   │   │   ├── global_variables_185.sdi
-│   │   │   ├── host_cache_95.sdi
-│   │   │   ├── hosts_147.sdi
-│   │   │   ├── keyring_componen_192.sdi
-│   │   │   ├── keyring_keys_153.sdi
-│   │   │   ├── log_status_175.sdi
-│   │   │   ├── memory_summary_b_155.sdi
-│   │   │   ├── memory_summary_b_156.sdi
-│   │   │   ├── memory_summary_b_157.sdi
-│   │   │   ├── memory_summary_b_158.sdi
-│   │   │   ├── memory_summary_g_154.sdi
-│   │   │   ├── metadata_locks_160.sdi
-│   │   │   ├── mutex_instances_96.sdi
-│   │   │   ├── objects_summary__97.sdi
-│   │   │   ├── performance_time_98.sdi
-│   │   │   ├── persisted_variab_188.sdi
-│   │   │   ├── prepared_stateme_176.sdi
-│   │   │   ├── processlist_99.sdi
-│   │   │   ├── replication_appl_166.sdi
-│   │   │   ├── replication_appl_167.sdi
-│   │   │   ├── replication_appl_168.sdi
-│   │   │   ├── replication_appl_169.sdi
-│   │   │   ├── replication_appl_171.sdi
-│   │   │   ├── replication_appl_172.sdi
-│   │   │   ├── replication_asyn_173.sdi
-│   │   │   ├── replication_asyn_174.sdi
-│   │   │   ├── replication_conn_163.sdi
-│   │   │   ├── replication_conn_165.sdi
-│   │   │   ├── replication_grou_164.sdi
-│   │   │   ├── replication_grou_170.sdi
-│   │   │   ├── rwlock_instances_100.sdi
-│   │   │   ├── session_account__152.sdi
-│   │   │   ├── session_connect__151.sdi
-│   │   │   ├── session_status_183.sdi
-│   │   │   ├── session_variable_186.sdi
-│   │   │   ├── setup_actors_101.sdi
-│   │   │   ├── setup_consumers_102.sdi
-│   │   │   ├── setup_instrument_103.sdi
-│   │   │   ├── setup_meters_104.sdi
-│   │   │   ├── setup_metrics_105.sdi
-│   │   │   ├── setup_objects_106.sdi
-│   │   │   ├── setup_threads_107.sdi
-│   │   │   ├── socket_instances_148.sdi
-│   │   │   ├── socket_summary_b_149.sdi
-│   │   │   ├── socket_summary_b_150.sdi
-│   │   │   ├── status_by_accoun_178.sdi
-│   │   │   ├── status_by_host_179.sdi
-│   │   │   ├── status_by_thread_180.sdi
-│   │   │   ├── status_by_user_181.sdi
-│   │   │   ├── table_handles_159.sdi
-│   │   │   ├── table_io_waits_s_108.sdi
-│   │   │   ├── table_io_waits_s_109.sdi
-│   │   │   ├── table_lock_waits_110.sdi
-│   │   │   ├── threads_111.sdi
-│   │   │   ├── tls_channel_stat_191.sdi
-│   │   │   ├── user_defined_fun_189.sdi
-│   │   │   ├── user_variables_b_177.sdi
-│   │   │   ├── users_145.sdi
-│   │   │   ├── variables_by_thr_184.sdi
-│   │   │   └── variables_info_187.sdi
-│   │   ├── sys
-│   │   │   └── sys_config.ibd
-│   │   ├── #ib_16384_0.dblwr
-│   │   ├── #ib_16384_1.dblwr
-│   │   ├── auto.cnf
-│   │   ├── binlog.000001
-│   │   ├── binlog.000002
-│   │   ├── binlog.000003
-│   │   ├── binlog.000004
-│   │   ├── binlog.000005
-│   │   ├── binlog.000006
-│   │   ├── binlog.000007
-│   │   ├── binlog.000008
-│   │   ├── binlog.000009
-│   │   ├── binlog.000010
-│   │   ├── binlog.000011
-│   │   ├── binlog.000012
-│   │   ├── binlog.000013
-│   │   ├── binlog.000014
-│   │   ├── binlog.000015
-│   │   ├── binlog.000016
-│   │   ├── binlog.000017
-│   │   ├── binlog.000018
-│   │   ├── binlog.000019
-│   │   ├── binlog.000020
-│   │   ├── binlog.000021
-│   │   ├── binlog.000022
-│   │   ├── binlog.000023
-│   │   ├── binlog.000024
-│   │   ├── binlog.000025
-│   │   ├── binlog.000026
-│   │   ├── binlog.000027
-│   │   ├── binlog.000028
-│   │   ├── binlog.000029
-│   │   ├── binlog.000030
-│   │   ├── binlog.000031
-│   │   ├── binlog.000032
-│   │   ├── binlog.000033
-│   │   ├── binlog.000034
-│   │   ├── binlog.000035
-│   │   ├── binlog.000036
-│   │   ├── binlog.000037
-│   │   ├── binlog.000038
-│   │   ├── binlog.000039
-│   │   ├── binlog.000040
-│   │   ├── binlog.000041
-│   │   ├── binlog.000042
-│   │   ├── binlog.000043
-│   │   ├── binlog.000044
-│   │   ├── binlog.000045
-│   │   ├── binlog.000046
-│   │   ├── binlog.000047
-│   │   ├── binlog.000048
-│   │   ├── binlog.000049
-│   │   ├── binlog.000050
-│   │   ├── binlog.000051
-│   │   ├── binlog.000052
-│   │   ├── binlog.000053
-│   │   ├── binlog.000054
-│   │   ├── binlog.000055
-│   │   ├── binlog.000056
-│   │   ├── binlog.000057
-│   │   ├── binlog.000058
-│   │   ├── binlog.000059
-│   │   ├── binlog.000060
-│   │   ├── binlog.000061
-│   │   ├── binlog.000062
-│   │   ├── binlog.000063
-│   │   ├── binlog.000064
-│   │   ├── binlog.000065
-│   │   ├── binlog.000066
-│   │   ├── binlog.000067
-│   │   ├── binlog.000068
-│   │   ├── binlog.000069
-│   │   ├── binlog.000070
-│   │   ├── binlog.000071
-│   │   ├── binlog.000072
-│   │   ├── binlog.000073
-│   │   ├── binlog.000074
-│   │   ├── binlog.000075
-│   │   ├── binlog.000076
-│   │   ├── binlog.000077
-│   │   ├── binlog.000078
-│   │   ├── binlog.000079
-│   │   ├── binlog.000080
-│   │   ├── binlog.000081
-│   │   ├── binlog.000082
-│   │   ├── binlog.000083
-│   │   ├── binlog.000084
-│   │   ├── binlog.000085
-│   │   ├── binlog.000086
-│   │   ├── binlog.000087
-│   │   ├── binlog.000088
-│   │   ├── binlog.000089
-│   │   ├── binlog.000090
-│   │   ├── binlog.000091
-│   │   ├── binlog.000092
-│   │   ├── binlog.index
-│   │   ├── ca-key.pem
-│   │   ├── ca.pem
-│   │   ├── client-cert.pem
-│   │   ├── client-key.pem
-│   │   ├── ib_buffer_pool
-│   │   ├── ibdata1
-│   │   ├── ibtmp1
-│   │   ├── mysql.ibd
-│   │   ├── mysql.sock -> /var/run/mysqld/mysqld.sock
-│   │   ├── mysql_upgrade_history
-│   │   ├── private_key.pem
-│   │   ├── public_key.pem
-│   │   ├── server-cert.pem
-│   │   ├── server-key.pem
-│   │   ├── undo_001
-│   │   └── undo_002
-│   ├── redis-data
-│   │   └── dump.rdb
-│   └── docker-compose.yml
-├── doc
-│   ├── design
-│   │   └── CURVE_USAGE_DESIGN.md
-│   ├── API_SPEC.md
-│   ├── CODE_STRUCTURE.md
-│   ├── DESIGN.md
-│   ├── PROJECT_STRUCTURE.md
-│   ├── docs.go
-│   ├── swagger.json
-│   └── swagger.yaml
-├── internal
-│   ├── repository
-│   │   ├── cache.go
-│   │   ├── dc.go
-│   │   └── rds.go
-│   ├── tests
-│   │   ├── integration
-│   │   │   └── api_test.go
-│   │   └── unit
-│   │       └── calculator_test.go
-│   └── utils
-│       ├── batch.go
-│       ├── gin_handle_error.go
-│       ├── idgen.go
-│       ├── percentage.go
-│       ├── uint64.go
-│       └── util.go
-├── pkg
-│   └── memcurve
-│       ├── calculator.go
-│       ├── calculator_test.go
-│       └── curvemodel.go
-├── script
-│   └── setup_project.sh
-├── src
-│   ├── core
-│   │   ├── analytics
-│   │   │   ├── reporter.go
-│   │   │   └── types.go
-│   │   ├── interfaces
-│   │   │   └── port.go
-│   │   ├── model
-│   │   │   ├── repo.go
-│   │   │   └── userfactor.go
-│   │   ├── reminder
-│   │   │   ├── service.go
-│   │   │   └── types.go
-│   │   ├── review
-│   │   │   ├── scheduler.go
-│   │   │   └── session.go
-│   │   ├── handlers.go
-│   │   └── init.go
-│   ├── def
-│   │   ├── difficulty_level.go
-│   │   ├── dungeon_type.go
-│   │   └── importance_level.go
-│   ├── gw
-│   │   └── routes.go
-│   ├── model
-│   │   ├── book.go
-│   │   ├── dungeon.go
-│   │   ├── item.go
-│   │   ├── monster.go
-│   │   ├── profile.go
-│   │   ├── profile_points.go
-│   │   └── tag.go
-│   └── module
-│       ├── achievement
-│       │   └── init.go
-│       ├── analytic
-│       │   └── init.go
-│       ├── book
-│       │   ├── api_createbook.go
-│       │   ├── api_getbooks.go
-│       │   ├── api_updatebook.go
-│       │   ├── dto.go
-│       │   ├── init.go
-│       │   └── util.go
-│       ├── dto
-│       │   ├── book.go
-│       │   ├── common.go
-│       │   ├── general.go
-│       │   ├── item.go
-│       │   └── monster.go
-│       ├── dungeon
-│       │   ├── api_dungeon.go
-│       │   ├── api_dungeon_append.go
-│       │   ├── api_dungeon_contents.go
-│       │   ├── api_dungeon_monsters.go
-│       │   ├── api_endless.go
-│       │   ├── dto.go
-│       │   ├── init.go
-│       │   └── util.go
-│       ├── item
-│       │   ├── api_item.go
-│       │   ├── api_itemcreate.go
-│       │   ├── api_items.go
-│       │   ├── api_itemupdate.go
-│       │   └── init.go
-│       ├── nft
-│       │   └── init.go
-│       ├── operation
-│       │   └── init.go
-│       ├── profile
-│       │   ├── api_getuserpoints.go
-│       │   ├── api_getuserprofile.go
-│       │   ├── api_getusersettings.go
-│       │   ├── api_updateuserprofile.go
-│       │   ├── api_updateusersettings.go
-│       │   └── init.go
-│       └── system
-│           └── init.go
-├── LICENSE
-├── MODULES.puml
-├── Makefile
-├── README.md
-├── go.mod
-└── go.sum
+# Project Structure
+- cmd/ (1 files)
+  - main.go (133 lines, 3077 chars)
+- config/ (4 files)
+  - app.dev.yaml (0 chars)
+  - app.prod.yaml (0 chars)
+  - log.dev.yaml (0 chars)
+  - log.prod.yaml (0 chars)
+- deployment/ (9 files)
+  - migration/ (7 files)
+    - 01.profile_down.sql (8 lines, 646 chars)
+    - 01.profile_up.sql (56 lines, 2519 chars)
+    - 02.book_item_down.sql (10 lines, 663 chars)
+    - 02.book_item_up.sql (62 lines, 2349 chars)
+    - 03.dungeon_down.sql (7 lines, 425 chars)
+    - 03.dungeon_up.sql (53 lines, 2048 chars)
+    - migrate.sh (47 lines, 934 chars)
+  - Dockerfile (44 lines, 1563 chars)
+  - ci_cd.yaml (0 chars)
+- doc/ (12 files)
+  - design/ (1 files)
+    - CURVE_USAGE_DESIGN.md (72 lines, 1372 chars)
+  - scene_dial/ (4 files)
+    - basic_auth.http (20 lines, 444 chars)
+    - create_dungeon_and_crud.http (104 lines, 3001 chars)
+    - create_items_and_books.http (71 lines, 1797 chars)
+    - set_profile.http (12 lines, 410 chars)
+  - API_SPEC.md (84 lines, 3141 chars)
+  - CODE_STRUCTURE.md (74 lines, 3570 chars)
+  - DESIGN.md (80 lines, 3231 chars)
+  - PROJECT_STRUCTURE.md (30 lines, 1084 chars)
+  - docs.go (2364 lines, 80746 chars)
+  - swagger.json (2334 lines, 79974 chars)
+  - swagger.yaml (1553 lines, 39361 chars)
+- internal/ (11 files)
+  - repository/ (3 files)
+    - cache.go (6 lines, 196 chars)
+    - dc.go (6 lines, 238 chars)
+    - rds.go (6 lines, 234 chars)
+  - tests/ (2 files)
+    - integration/ (1 files)
+      - api_test.go (6 lines, 204 chars)
+    - unit/ (1 files)
+      - calculator_test.go (6 lines, 204 chars)
+  - utils/ (6 files)
+    - batch.go (93 lines, 2511 chars)
+    - gin_handle_error.go (146 lines, 4203 chars)
+    - idgen.go (45 lines, 845 chars)
+    - percentage.go (60 lines, 1732 chars)
+    - uint64.go (61 lines, 1708 chars)
+    - util.go (20 lines, 377 chars)
+- pkg/ (3 files)
+  - memcurve/ (3 files)
+    - calculator.go (180 lines, 5435 chars)
+    - calculator_test.go (197 lines, 6515 chars)
+    - curvemodel.go (6 lines, 190 chars)
+- script/ (2 files)
+  - generate_tree_md.sh (88 lines, 2659 chars)
+  - setup_project.sh (111 lines, 4006 chars)
+- src/ (57 files)
+  - core/ (11 files)
+    - analytics/ (2 files)
+      - reporter.go (6 lines, 177 chars)
+      - types.go (6 lines, 179 chars)
+    - interfaces/ (1 files)
+      - port.go (6 lines, 244 chars)
+    - model/ (2 files)
+      - repo.go (15 lines, 190 chars)
+      - userfactor.go (12 lines, 394 chars)
+    - reminder/ (2 files)
+      - service.go (6 lines, 190 chars)
+      - types.go (6 lines, 180 chars)
+    - review/ (2 files)
+      - scheduler.go (27 lines, 747 chars)
+      - session.go (6 lines, 186 chars)
+    - handlers.go (28 lines, 830 chars)
+    - init.go (26 lines, 355 chars)
+  - def/ (3 files)
+    - difficulty_level.go (80 lines, 2150 chars)
+    - dungeon_type.go (57 lines, 1166 chars)
+    - importance_level.go (68 lines, 1646 chars)
+  - gw/ (1 files)
+    - routes.go (83 lines, 2308 chars)
+  - model/ (7 files)
+    - book.go (86 lines, 1905 chars)
+    - dungeon.go (145 lines, 4007 chars)
+    - item.go (108 lines, 2693 chars)
+    - monster.go (281 lines, 7372 chars)
+    - profile.go (189 lines, 5015 chars)
+    - profile_points.go (52 lines, 1322 chars)
+    - tag.go (301 lines, 8852 chars)
+  - module/ (35 files)
+    - achievement/ (1 files)
+      - init.go (30 lines, 521 chars)
+    - analytic/ (1 files)
+      - init.go (30 lines, 515 chars)
+    - book/ (6 files)
+      - api_createbook.go (102 lines, 2839 chars)
+      - api_getbooks.go (133 lines, 3622 chars)
+      - api_updatebook.go (137 lines, 3998 chars)
+      - dto.go (29 lines, 672 chars)
+      - init.go (27 lines, 437 chars)
+      - util.go (1 lines, 13 chars)
+    - dto/ (5 files)
+      - book.go (33 lines, 700 chars)
+      - common.go (23 lines, 627 chars)
+      - general.go (7 lines, 136 chars)
+      - item.go (50 lines, 1279 chars)
+      - monster.go (32 lines, 678 chars)
+    - dungeon/ (8 files)
+      - api_dungeon.go (384 lines, 12160 chars)
+      - api_dungeon_append.go (140 lines, 4561 chars)
+      - api_dungeon_contents.go (231 lines, 7831 chars)
+      - api_dungeon_monsters.go (205 lines, 6678 chars)
+      - api_endless.go (66 lines, 2085 chars)
+      - dto.go (45 lines, 1026 chars)
+      - init.go (69 lines, 2087 chars)
+      - util.go (1 lines, 16 chars)
+    - item/ (5 files)
+      - api_item.go (122 lines, 3472 chars)
+      - api_itemcreate.go (116 lines, 3353 chars)
+      - api_items.go (112 lines, 3203 chars)
+      - api_itemupdate.go (86 lines, 2496 chars)
+      - init.go (24 lines, 522 chars)
+    - nft/ (1 files)
+      - init.go (89 lines, 1806 chars)
+    - operation/ (1 files)
+      - init.go (38 lines, 708 chars)
+    - profile/ (6 files)
+      - api_getuserpoints.go (54 lines, 1710 chars)
+      - api_getuserprofile.go (77 lines, 2640 chars)
+      - api_getusersettings.go (105 lines, 3722 chars)
+      - api_updateuserprofile.go (62 lines, 1939 chars)
+      - api_updateusersettings.go (143 lines, 4897 chars)
+      - init.go (31 lines, 980 chars)
+    - system/ (1 files)
+      - init.go (42 lines, 928 chars)
+- LICENSE (21 lines, 1065 chars)
+- MODULES.puml (49 lines, 861 chars)
+- Makefile (94 lines, 2388 chars)
+- README.md (48 lines, 2313 chars)
+- go.mod (67 lines, 2791 chars)
+- go.sum (187 lines, 17075 chars)

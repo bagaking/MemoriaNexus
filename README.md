@@ -29,7 +29,7 @@ Memoria Nexus is built on a robust technology stack ensuring high performance an
 - Backend: Go, PostgreSQL, Redis
 - Infrastructure: Docker, Kubernetes, CI/CD pipelines
 
-see [Code Structure](./doc/CODE_STRUCTURE.md)
+see [Projectt Structure](./doc/CODE_STRUCTURE.md)
 
 ## Contributions
 

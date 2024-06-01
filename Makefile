@@ -26,9 +26,10 @@ help:
 	@echo "  make compose-reset : Stop all services and remove data"
 
 gen-docs:
-	@tree -I 'bundle*' --dirsfirst --noreport > ./doc/PROJECT_STRUCTURE.md
-	# Generate API Documentation
+	# Gen API Documentation
 	swag init -g cmd/main.go -o doc/
+	# Gen file tree
+	@./script/generate_tree_md.sh "bundle,dev_*" > ./doc/PROJECT_STRUCTURE.md
 
 # bundle, @see github.com/bagaking/file_bundle
 bundle: gen-docs
