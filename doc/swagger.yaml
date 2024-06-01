@@ -127,30 +127,40 @@ definitions:
       user_id:
         type: integer
     type: object
-  dto.Item:
+  dto.Dungeon:
     properties:
-      content:
-        type: string
+      books:
+        items:
+          type: integer
+        type: array
       created_at:
         type: string
-      creator_id:
-        type: integer
-      difficulty:
-        $ref: '#/definitions/def.DifficultyLevel'
+      description:
+        type: string
       id:
         type: integer
-      importance:
-        $ref: '#/definitions/def.ImportanceLevel'
-      tags:
+      items:
+        items:
+          type: integer
+        type: array
+      rule:
+        type: string
+      tag_ids:
+        items:
+          type: integer
+        type: array
+      tag_names:
         items:
           type: string
         type: array
-      type:
+      title:
         type: string
+      type:
+        $ref: '#/definitions/def.DungeonType'
       updated_at:
         type: string
     type: object
-  dto.Monster:
+  dto.DungeonMonster:
     properties:
       content:
         type: string
@@ -182,6 +192,29 @@ definitions:
         description: 显影程度，根据复习次数变化
         type: integer
     type: object
+  dto.Item:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      difficulty:
+        $ref: '#/definitions/def.DifficultyLevel'
+      id:
+        type: integer
+      importance:
+        $ref: '#/definitions/def.ImportanceLevel'
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
   dto.Points:
     properties:
       cash:
@@ -212,6 +245,28 @@ definitions:
         $ref: '#/definitions/dto.Book'
       message:
         type: string
+    type: object
+  dto.RespDungeon:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Dungeon'
+      message:
+        type: string
+    type: object
+  dto.RespDungeonList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Dungeon'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      total:
+        type: integer
     type: object
   dto.RespItemCreate:
     properties:
@@ -260,7 +315,7 @@ definitions:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.Monster'
+          $ref: '#/definitions/dto.DungeonMonster'
         type: array
       limit:
         type: integer
@@ -342,9 +397,9 @@ definitions:
     type: object
   dungeon.ReqAddDungeonTags:
     properties:
-      tags:
+      tag_names:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   dungeon.ReqCreateDungeon:
@@ -414,45 +469,12 @@ definitions:
       type:
         $ref: '#/definitions/def.DungeonType'
     type: object
-  dungeon.RespDungeonResults:
+  dungeon.RespCampaignResult:
     properties:
       today_difficulty:
         type: integer
       total_monsters:
         type: integer
-    type: object
-  dungeon.RespUpdatedDungeon:
-    properties:
-      books:
-        items:
-          type: integer
-        type: array
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      items:
-        items:
-          type: integer
-        type: array
-      rule:
-        type: string
-      tag_ids:
-        items:
-          type: integer
-        type: array
-      tag_names:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-      type:
-        $ref: '#/definitions/def.DungeonType'
-      updated_at:
-        type: string
     type: object
   item.ReqCreateItem:
     properties:
@@ -650,7 +672,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Sort by field (familiarity, difficulty, importance)
         in: query
         name: sort_by
@@ -690,7 +712,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Number of monsters to fetch
         in: query
         name: count
@@ -707,9 +729,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.RespMonsterList'
-            type: array
+            $ref: '#/definitions/dto.RespMonsterList'
         "404":
           description: Dungeon not found
           schema:
@@ -771,7 +791,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dungeon.RespDungeonResults'
+            $ref: '#/definitions/dungeon.RespCampaignResult'
         "404":
           description: Dungeon not found
           schema:
@@ -791,7 +811,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+              $ref: '#/definitions/dto.RespDungeonList'
             type: array
         "500":
           description: Internal server error
@@ -815,7 +835,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+            $ref: '#/definitions/dto.RespDungeon'
         "400":
           description: Invalid request body
           schema:
@@ -836,9 +856,9 @@ paths:
         type: integer
       responses:
         "204":
-          description: No Content
+          description: updater
           schema:
-            type: string
+            $ref: '#/definitions/dto.RespDungeon'
         "404":
           description: Dungeon not found
           schema:
@@ -860,9 +880,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: the dungeon with its associations
           schema:
-            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+            $ref: '#/definitions/dto.RespDungeon'
         "404":
           description: Dungeon not found
           schema:
@@ -892,9 +912,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: updater
           schema:
-            $ref: '#/definitions/dungeon.RespUpdatedDungeon'
+            $ref: '#/definitions/dto.RespDungeon'
         "400":
           description: Invalid request body
           schema:
@@ -918,7 +938,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Dungeon books data
         in: body
         name: books
@@ -974,14 +994,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加复习计划的 Books
+      description: 向现有复习计划添加书籍
       parameters:
       - description: Dungeon ID
         in: path
         name: id
         required: true
-        type: integer
-      - description: Dungeon books data
+        type: string
+      - description: Books to add
         in: body
         name: books
         required: true
@@ -993,20 +1013,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.SuccessResponse'
+            $ref: '#/definitions/dto.RespDungeon'
         "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-        "404":
-          description: Dungeon or Book not found
+          description: Invalid request parameters
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
-      summary: Add books to a specific dungeon
+      summary: Add books to an existing dungeon
   /dungeon/dungeons/{id}/items:
     delete:
       consumes:
@@ -1017,7 +1033,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Dungeon items data
         in: body
         name: items
@@ -1073,14 +1089,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加复习计划的 Items
+      description: 向现有复习计划添加学习材料
       parameters:
       - description: Dungeon ID
         in: path
         name: id
         required: true
-        type: integer
-      - description: Dungeon items data
+        type: string
+      - description: Items to add
         in: body
         name: items
         required: true
@@ -1092,20 +1108,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.SuccessResponse'
+            $ref: '#/definitions/dto.RespDungeon'
         "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-        "404":
-          description: Dungeon or Item not found
+          description: Invalid request parameters
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
-      summary: Add items to a specific dungeon
+      summary: Add items to an existing dungeon
   /dungeon/dungeons/{id}/tags:
     delete:
       consumes:
@@ -1116,7 +1128,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Dungeon tags data
         in: body
         name: tags
@@ -1172,14 +1184,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加复习计划的 TagNames
+      description: 向现有复习计划添加标签
       parameters:
       - description: Dungeon ID
         in: path
         name: id
         required: true
-        type: integer
-      - description: Dungeon tags data
+        type: string
+      - description: Tags to add
         in: body
         name: tags
         required: true
@@ -1191,20 +1203,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.SuccessResponse'
+            $ref: '#/definitions/dto.RespDungeon'
         "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-        "404":
-          description: Dungeon or Tag not found
+          description: Invalid request parameters
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
-      summary: Add tags to a specific dungeon
+      summary: Add tags to an existing dungeon
   /dungeon/endless/{id}/monsters:
     get:
       description: 获取复习计划的所有Monsters及其关联的 Items, Books, TagNames

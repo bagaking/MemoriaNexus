@@ -187,7 +187,7 @@ const docTemplate = `{
                 "summary": "Get all the monsters of a specific campaign dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -246,7 +246,7 @@ const docTemplate = `{
                 "summary": "Get the next n monsters of a specific dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -271,10 +271,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RespMonsterList"
-                            }
+                            "$ref": "#/definitions/dto.RespMonsterList"
                         }
                     },
                     "404": {
@@ -368,7 +365,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dungeon.RespDungeonResults"
+                            "$ref": "#/definitions/dungeon.RespCampaignResult"
                         }
                     },
                     "404": {
@@ -399,7 +396,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                                "$ref": "#/definitions/dto.RespDungeonList"
                             }
                         }
                     },
@@ -435,7 +432,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "400": {
@@ -471,9 +468,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "the dungeon with its associations",
                         "schema": {
-                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "404": {
@@ -519,9 +516,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "updater",
                         "schema": {
-                            "$ref": "#/definitions/dungeon.RespUpdatedDungeon"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "400": {
@@ -558,9 +555,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
+                        "description": "updater",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "404": {
@@ -619,24 +616,24 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "添加复习计划的 Books",
+                "description": "向现有复习计划添加书籍",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Add books to a specific dungeon",
+                "summary": "Add books to an existing dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Dungeon books data",
+                        "description": "Books to add",
                         "name": "books",
                         "in": "body",
                         "required": true,
@@ -649,17 +646,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Dungeon or Book not found",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -683,7 +674,7 @@ const docTemplate = `{
                 "summary": "Remove books from a specific dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -768,24 +759,24 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "添加复习计划的 Items",
+                "description": "向现有复习计划添加学习材料",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Add items to a specific dungeon",
+                "summary": "Add items to an existing dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Dungeon items data",
+                        "description": "Items to add",
                         "name": "items",
                         "in": "body",
                         "required": true,
@@ -798,17 +789,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Dungeon or Item not found",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -832,7 +817,7 @@ const docTemplate = `{
                 "summary": "Remove items from a specific dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -917,24 +902,24 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "添加复习计划的 TagNames",
+                "description": "向现有复习计划添加标签",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Add tags to a specific dungeon",
+                "summary": "Add tags to an existing dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Dungeon tags data",
+                        "description": "Tags to add",
                         "name": "tags",
                         "in": "body",
                         "required": true,
@@ -947,17 +932,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessResponse"
+                            "$ref": "#/definitions/dto.RespDungeon"
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Dungeon or Tag not found",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -981,7 +960,7 @@ const docTemplate = `{
                 "summary": "Remove tags from a specific dungeon",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -1780,42 +1759,57 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Item": {
+        "dto.Dungeon": {
             "type": "object",
             "properties": {
-                "content": {
-                    "type": "string"
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "created_at": {
                     "type": "string"
                 },
-                "creator_id": {
-                    "type": "integer"
-                },
-                "difficulty": {
-                    "$ref": "#/definitions/def.DifficultyLevel"
+                "description": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "importance": {
-                    "$ref": "#/definitions/def.ImportanceLevel"
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
-                "tags": {
+                "rule": {
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tag_names": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "type": {
+                "title": {
                     "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/def.DungeonType"
                 },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "dto.Monster": {
+        "dto.DungeonMonster": {
             "type": "object",
             "properties": {
                 "content": {
@@ -1860,6 +1854,41 @@ const docTemplate = `{
                 "visibility": {
                     "description": "显影程度，根据复习次数变化",
                     "type": "integer"
+                }
+            }
+        },
+        "dto.Item": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "integer"
+                },
+                "difficulty": {
+                    "$ref": "#/definitions/def.DifficultyLevel"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "importance": {
+                    "$ref": "#/definitions/def.ImportanceLevel"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -1908,6 +1937,40 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.RespDungeon": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Dungeon"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespDungeonList": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Dungeon"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -1984,7 +2047,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.Monster"
+                        "$ref": "#/definitions/dto.DungeonMonster"
                     }
                 },
                 "limit": {
@@ -2111,10 +2174,10 @@ const docTemplate = `{
         "dungeon.ReqAddDungeonTags": {
             "type": "object",
             "properties": {
-                "tags": {
+                "tag_names": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
                     }
                 }
             }
@@ -2222,7 +2285,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dungeon.RespDungeonResults": {
+        "dungeon.RespCampaignResult": {
             "type": "object",
             "properties": {
                 "today_difficulty": {
@@ -2230,56 +2293,6 @@ const docTemplate = `{
                 },
                 "total_monsters": {
                     "type": "integer"
-                }
-            }
-        },
-        "dungeon.RespUpdatedDungeon": {
-            "type": "object",
-            "properties": {
-                "books": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "rule": {
-                    "type": "string"
-                },
-                "tag_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "tag_names": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/def.DungeonType"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },

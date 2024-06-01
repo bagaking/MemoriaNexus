@@ -50,13 +50,3 @@ Authorization: Bearer {{ACCESS_TOKEN}}
   "push_notifications": true,
   "theme": "dark"
 }
-
-### 恢复用户昵称和头像
-PUT http://localhost:8080/api/v1/profile/me
-Content-Type: application/json
-Authorization: Bearer {{ACCESS_TOKEN}}
-
-{
-  "nickname": "{{USER_NICKNAME}}",
-  "avatar_url": "https://example.com/original_avatar.png"
-}

@@ -3,7 +3,6 @@ entry = [
     "doc/API_SPEC.md",
     
     "deployment/*.sql",
-    
     "src/gw/**/*.go",
     
     "src/utils/*.go",
@@ -11,7 +10,6 @@ entry = [
     "src/model/**/*.go",
     
     "src/module/item/*.go",
-
 ]
 
 exclude = [

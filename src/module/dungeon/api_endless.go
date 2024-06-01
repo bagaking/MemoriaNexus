@@ -55,11 +55,11 @@ func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 
 	resp := dto.RespMonsterList{
 		Message: "monsters found",
-		Data:    make([]*dto.Monster, 0, len(monsters)),
+		Data:    make([]*dto.DungeonMonster, 0, len(monsters)),
 	}
 
 	for _, monster := range monsters {
-		resp.Append((&dto.Monster{}).FromModel(monster))
+		resp.Append((&dto.DungeonMonster{}).FromModel(monster))
 	}
 
 	c.JSON(http.StatusOK, resp)

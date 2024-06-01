@@ -23,9 +23,31 @@ type RespSuccessPage[T any] struct {
 }
 
 func (resp *RespSuccessPage[T]) Append(items ...T) int {
-	resp.Total += int64(len(items))
-	resp.Data = append(resp.Data, items...)
+	lenItems := len(items)
+	resp.Total += int64(lenItems)
+	if resp.Data == nil {
+		// deep copy
+		resp.Data = make([]T, 0, lenItems)
+		copy(resp.Data, items)
+	} else {
+		resp.Data = append(resp.Data, items...)
+	}
 	return len(resp.Data)
+}
+
+func (resp *RespSuccessPage[T]) Response(c *gin.Context, msgAppend ...string) {
+	for _, msg := range msgAppend {
+		if resp.Message != "" {
+			resp.Message += " "
+		}
+		resp.Message += msg
+	}
+	if resp.Message == "" {
+		resp.Message = "success"
+	}
+
+	// Respond with a generic success message.
+	c.JSON(http.StatusOK, resp)
 }
 
 func (resp *RespSuccess[T]) With(t T) *RespSuccess[T] {
