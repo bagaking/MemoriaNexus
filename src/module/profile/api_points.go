@@ -3,10 +3,11 @@ package profile
 import (
 	"net/http"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
@@ -23,12 +24,8 @@ import (
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/points [get]
 func (svr *Service) GetUserPoints(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetUserPoints").WithField("user_id", userID)
 
 	// Assuming that the user points are a part of the Profile model, you would load the profile
 	// from the database or service and then extract the points part to respond.

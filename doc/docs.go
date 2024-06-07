@@ -24,6 +24,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "book"
+                ],
                 "summary": "Get list of books with pagination",
                 "parameters": [
                     {
@@ -45,7 +48,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved list of books",
                         "schema": {
-                            "$ref": "#/definitions/book.RespBooks"
+                            "$ref": "#/definitions/dto.RespBooks"
                         }
                     }
                 }
@@ -58,6 +61,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "book"
+                ],
                 "summary": "Create a book",
                 "parameters": [
                     {
@@ -66,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RespBookCreate"
+                            "$ref": "#/definitions/dto.ReqCreateBook"
                         }
                     }
                 ],
@@ -74,7 +80,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Successfully created book",
                         "schema": {
-                            "$ref": "#/definitions/book.RespBook"
+                            "$ref": "#/definitions/dto.RespBookCreate"
                         }
                     },
                     "400": {
@@ -95,6 +101,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "book"
+                ],
                 "summary": "Get a book by ID",
                 "parameters": [
                     {
@@ -109,7 +118,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved book",
                         "schema": {
-                            "$ref": "#/definitions/book.RespBook"
+                            "$ref": "#/definitions/dto.RespBookGet"
                         }
                     }
                 }
@@ -121,6 +130,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "book"
                 ],
                 "summary": "Update book information",
                 "parameters": [
@@ -137,7 +149,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/book.ReqCreateBook"
+                            "$ref": "#/definitions/dto.ReqCreateBook"
                         }
                     }
                 ],
@@ -145,7 +157,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully updated book",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.RespBookUpdate"
                         }
                     }
                 }
@@ -157,6 +169,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "book"
                 ],
                 "summary": "Delete a book",
                 "parameters": [
@@ -172,7 +187,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully deleted book",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.RespBookDelete"
                         }
                     }
                 }
@@ -184,10 +199,13 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get all the monsters of a specific campaign dungeon",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -217,7 +235,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved monsters",
                         "schema": {
                             "$ref": "#/definitions/dto.RespMonsterList"
                         }
@@ -237,16 +255,19 @@ const docTemplate = `{
                 }
             }
         },
-        "/dungeon/campaigns/{id}/next_monsters": {
+        "/dungeon/campaigns/{id}/practice": {
             "get": {
-                "description": "获取复习计划的后n个Monsters",
+                "description": "从 Campaign Dungeon 中提取一些要复习的 Monster 缓存到本地",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get the next n monsters of a specific dungeon",
+                "tags": [
+                    "dungeon"
+                ],
+                "summary": "Get monsters for review",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Dungeon ID",
                         "name": "id",
                         "in": "path",
@@ -258,18 +279,11 @@ const docTemplate = `{
                         "name": "count",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort by field (familiarity, difficulty, importance)",
-                        "name": "sort_by",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved monsters",
                         "schema": {
                             "$ref": "#/definitions/dto.RespMonsterList"
                         }
@@ -289,7 +303,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/dungeon/campaigns/{id}/report_result": {
+        "/dungeon/campaigns/{id}/submit": {
             "post": {
                 "description": "上报复习计划的Monster结果",
                 "consumes": [
@@ -298,7 +312,10 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Report the result of a specific monster",
+                "tags": [
+                    "dungeon"
+                ],
+                "summary": "Report the result of a specific monster recall",
                 "parameters": [
                     {
                         "type": "integer",
@@ -319,7 +336,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully reported result",
                         "schema": {
                             "$ref": "#/definitions/dto.SuccessResponse"
                         }
@@ -345,54 +362,19 @@ const docTemplate = `{
                 }
             }
         },
-        "/dungeon/campaigns/{id}/results": {
-            "get": {
-                "description": "获取复习计划的结果",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get the results of a specific dungeon",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Dungeon ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dungeon.RespCampaignResult"
-                        }
-                    },
-                    "404": {
-                        "description": "Dungeon not found",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/dungeon/dungeons": {
             "get": {
                 "description": "获取复习计划列表",
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get the list of dungeon campaigns",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved dungeons",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -416,6 +398,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Create a new dungeon campaign",
                 "parameters": [
                     {
@@ -430,7 +415,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Successfully created dungeon",
                         "schema": {
                             "$ref": "#/definitions/dto.RespDungeon"
                         }
@@ -456,6 +441,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get the details of a specific dungeon campaign",
                 "parameters": [
                     {
@@ -468,7 +456,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "the dungeon with its associations",
+                        "description": "Successfully retrieved dungeon",
                         "schema": {
                             "$ref": "#/definitions/dto.RespDungeon"
                         }
@@ -495,6 +483,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Update a specific dungeon campaign",
                 "parameters": [
                     {
@@ -516,7 +507,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "updater",
+                        "description": "Successfully updated dungeon",
                         "schema": {
                             "$ref": "#/definitions/dto.RespDungeon"
                         }
@@ -543,6 +534,9 @@ const docTemplate = `{
             },
             "delete": {
                 "description": "删除复习计划",
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Delete a specific dungeon campaign",
                 "parameters": [
                     {
@@ -555,7 +549,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "updater",
+                        "description": "Successfully deleted dungeon",
                         "schema": {
                             "$ref": "#/definitions/dto.RespDungeon"
                         }
@@ -1165,6 +1159,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "item"
+                ],
                 "summary": "Get an item by ID",
                 "parameters": [
                     {
@@ -1219,7 +1216,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully updated item",
+                        "description": "the updater",
                         "schema": {
                             "$ref": "#/definitions/dto.RespItemUpdate"
                         }
@@ -1593,63 +1590,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "book.ReqCreateBook": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "book.RespBook": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "book.RespBooks": {
-            "type": "object",
-            "properties": {
-                "books": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/book.RespBook"
-                    }
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                }
-            }
-        },
         "def.DifficultyLevel": {
             "type": "integer",
             "enum": [
@@ -1736,6 +1676,9 @@ const docTemplate = `{
                 "GlobalMasterPiece"
             ]
         },
+        "def.RecallIntervalLevel": {
+            "type": "object"
+        },
         "dto.Book": {
             "type": "object",
             "properties": {
@@ -1812,47 +1755,55 @@ const docTemplate = `{
         "dto.DungeonMonster": {
             "type": "object",
             "properties": {
-                "content": {
-                    "type": "string"
-                },
                 "created_at": {
                     "type": "string"
                 },
-                "creator_id": {
-                    "type": "integer"
-                },
                 "difficulty": {
-                    "$ref": "#/definitions/def.DifficultyLevel"
+                    "description": "Item 向 DungeonMonster 单项同步",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.DifficultyLevel"
+                        }
+                    ]
                 },
-                "dungeonID": {
+                "dungeon_id": {
                     "type": "integer"
                 },
-                "id": {
+                "familiarity": {
+                    "description": "以下为宽表内容，为了加速查询",
                     "type": "integer"
                 },
                 "importance": {
-                    "$ref": "#/definitions/def.ImportanceLevel"
+                    "description": "Item 向 DungeonMonster 单项同步",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.ImportanceLevel"
+                        }
+                    ]
                 },
-                "monsterSource": {
-                    "$ref": "#/definitions/model.MonsterSource"
-                },
-                "monsterSourceEntityID": {
+                "item_id": {
                     "type": "integer"
                 },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "type": {
+                "next_practice_at": {
+                    "description": "下次复习时间",
                     "type": "string"
                 },
-                "updated_at": {
+                "practice_at": {
+                    "description": "上次复习时间的记录",
                     "type": "string"
+                },
+                "practice_count": {
+                    "description": "复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）",
+                    "type": "integer"
+                },
+                "source_id": {
+                    "type": "integer"
+                },
+                "source_type": {
+                    "$ref": "#/definitions/model.MonsterSource"
                 },
                 "visibility": {
-                    "description": "显影程度，根据复习次数变化",
+                    "description": "用于 runtime",
                     "type": "integer"
                 }
             }
@@ -1929,6 +1880,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReqCreateBook": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.RespBookCreate": {
             "type": "object",
             "properties": {
@@ -1937,6 +1905,62 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.RespBookDelete": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespBookGet": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Book"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespBookUpdate": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.Book"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RespBooks": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Book"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -1966,7 +1990,7 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
-                "page": {
+                "offset": {
                     "type": "integer"
                 },
                 "total": {
@@ -2022,7 +2046,7 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
-                "page": {
+                "offset": {
                     "type": "integer"
                 },
                 "total": {
@@ -2056,7 +2080,7 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
-                "page": {
+                "offset": {
                     "type": "integer"
                 },
                 "total": {
@@ -2098,15 +2122,7 @@ const docTemplate = `{
             }
         },
         "dto.RespSettingsMemorization": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/dto.SettingsMemorization"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "dto.SettingsAdvance": {
             "type": "object",
@@ -2122,21 +2138,6 @@ const docTemplate = `{
                 },
                 "theme": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.SettingsMemorization": {
-            "type": "object",
-            "properties": {
-                "difficulty_preference": {
-                    "type": "integer"
-                },
-                "quiz_mode": {
-                    "type": "string"
-                },
-                "review_interval": {
-                    "description": "Definitions should match with ProfileMemorizationSetting",
-                    "type": "integer"
                 }
             }
         },
@@ -2263,7 +2264,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "result": {
-                    "description": "\"unknown\", \"familiar\", \"remembered\"",
+                    "description": "\"defeat\", \"miss\", \"hit\", \"kill\", \"complete\"",
                     "type": "string"
                 }
             }
@@ -2282,17 +2283,6 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/def.DungeonType"
-                }
-            }
-        },
-        "dungeon.RespCampaignResult": {
-            "type": "object",
-            "properties": {
-                "today_difficulty": {
-                    "type": "integer"
-                },
-                "total_monsters": {
-                    "type": "integer"
                 }
             }
         },
@@ -2396,7 +2386,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "review_interval": {
-                    "type": "integer"
+                    "$ref": "#/definitions/def.RecallIntervalLevel"
                 }
             }
         },

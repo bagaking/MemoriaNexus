@@ -3,9 +3,10 @@ package dto
 import (
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/memorianexus/src/def"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 )
 

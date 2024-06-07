@@ -47,20 +47,15 @@ func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetMonstersWithAssociations(svr.db, sortBy, offset, limit)
+	monsters, err := dungeon.GetAssociationsExpandedMonsterList(svr.db, sortBy, offset, limit)
 	if err != nil {
 		utils.GinHandleError(c, wlog.ByCtx(c), http.StatusInternalServerError, err, "Failed to fetch dungeon monsters with associations")
 		return
 	}
 
-	resp := dto.RespMonsterList{
-		Message: "monsters found",
-		Data:    make([]*dto.DungeonMonster, 0, len(monsters)),
-	}
-
+	resp := new(dto.RespMonsterList)
 	for _, monster := range monsters {
-		resp.Append((&dto.DungeonMonster{}).FromModel(monster))
+		resp.Append(new(dto.DungeonMonster).FromModel(monster))
 	}
-
-	c.JSON(http.StatusOK, resp)
+	resp.Response(c, "monsters found")
 }

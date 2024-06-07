@@ -3,9 +3,6 @@ package utils
 import (
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/khgame/ranger_iam/pkg/authcli"
-
 	"github.com/bytedance/sonic"
 	"github.com/khicago/irr"
 )
@@ -53,9 +50,4 @@ func ParseIDFromString(value string) (UInt64, error) {
 		return 0, err
 	}
 	return UInt64(parsedValue), nil
-}
-
-func GetUIDFromGinCtx(c *gin.Context) (UInt64, bool) {
-	id, exist := authcli.GetUIDFromGinCtx(c)
-	return UInt64(id), exist
 }

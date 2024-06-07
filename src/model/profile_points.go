@@ -3,9 +3,9 @@ package model
 import (
 	"time"
 
-	"gorm.io/gorm"
-
 	"github.com/bagaking/memorianexus/internal/utils"
+
+	"gorm.io/gorm"
 )
 
 // ProfilePoints 定义了用户积分信息的模型

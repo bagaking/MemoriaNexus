@@ -3,15 +3,14 @@ entry = [
     "doc/API_SPEC.md",
     
     "deployment/**/*.sql",
-    
-    "src/gw/**/*.go",
-    
-    "src/utils/*.go",
+
     "src/def/*.go",
+
+    "src/dto/common.go",
+    "src/dto/dungeon.go",
+    "src/dto/item.go",
+
     "src/model/**/*.go",
-    
-    "src/module/item/init.go",
-    "src/module/item/item.go",
     "src/module/dungeon/*.go",
 ]
 

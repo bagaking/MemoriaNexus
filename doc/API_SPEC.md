@@ -53,9 +53,9 @@
 - **DELETE /dungeon/dungeons/:id/tags**：删除复习计划的 Tags（body 支持标签 ID 列表）
 
 - **GET /dungeon/campaigns/:id/monsters**：获取战役副本的所有 Monsters（query 支持排序字段 sort_by 和分页参数 offset 和 limit）
-- **GET /dungeon/campaigns/:id/next_monsters**：获取战役副本的后 n 个 Monsters（query 支持获取数量 count 和排序字段 sort_by）
-- **GET /dungeon/campaigns/:id/today_conclusion**：获取战役副本的结果
-- **POST /dungeon/campaigns/:id/report_result**：上报战役副本的 Monster 结果（body 支持结果数据）
+- **GET /dungeon/campaigns/:id/practice**：获取战役副本的后 n 个 Monsters（query 支持获取数量 count 和排序字段 sort_by）
+- **POST /dungeon/campaigns/:id/submit**：上报战役副本的 Monster 结果（body 支持结果数据）
+- **GET /dungeon/campaigns/:id/conclusion/today**：获取战役副本的结果 (当日)
 
 - **GET /dungeon/endless/:id/monsters**：获取无限副本的所有 Monsters 及其关联的 Items, Books, Tags（query 支持排序字段 sort_by 和分页参数 offset 和 limit）
 

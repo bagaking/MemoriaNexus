@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/irr"
-
-	"github.com/bagaking/memorianexus/internal/utils"
 
 	"gorm.io/gorm"
 )

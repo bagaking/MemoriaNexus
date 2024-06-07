@@ -1,6 +1,10 @@
 package model
 
 import (
+	"context"
+	"time"
+
+	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/def"
 	"github.com/khicago/got/util/typer"
@@ -26,9 +30,19 @@ type (
 		SourceType MonsterSource
 		SourceID   utils.UInt64
 
-		Visibility utils.Percentage `gorm:"default:0"` // 显影程度，根据复习次数变化
+		// 用于 runtime
+		Visibility     utils.Percentage `gorm:"default:0"` // Visibility 显影程度，根据复习次数变化
+		PracticeAt     time.Time        // 上次复习时间的记录
+		NextPracticeAt time.Time        // 下次复习时间
+		PracticeCount  uint32           // 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
 
-		monster *Item
+		// 以下为宽表内容，为了加速查询
+		Familiarity utils.Percentage `gorm:"default:0"` // UserMonster 向 DungeonMonster 单项同步
+
+		Difficulty def.DifficultyLevel `gorm:"default:0x01"` // Item 向 DungeonMonster 单项同步
+		Importance def.ImportanceLevel `gorm:"default:0x01"` // Item 向 DungeonMonster 单项同步
+
+		CreatedAt time.Time
 	}
 
 	MonsterSource uint8
@@ -40,17 +54,13 @@ const (
 	MonsterSourceTag
 )
 
-func (dm *DungeonMonster) Monster() *Item {
-	return dm.monster
-}
-
 func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs []utils.UInt64) error {
 	// Validate the existence of resources
 	if err := validateExistence(tx, source, sourceEntityIDs); err != nil {
 		return irr.Wrap(err, "add monster to dungeon failed")
 	}
 
-	if err := createDungeonRef(tx, source, d.ID, sourceEntityIDs, d.Type == def.DungeonTypeCampaign); err != nil {
+	if err := createDungeonMonsterRef(tx, source, d.ID, sourceEntityIDs, d.Type == def.DungeonTypeCampaign); err != nil {
 		return irr.Wrap(err, "add monster to dungeon failed")
 	}
 
@@ -83,7 +93,7 @@ func validateExistence(tx *gorm.DB, source MonsterSource, resourceIDs []utils.UI
 	return nil
 }
 
-func createDungeonRef(tx *gorm.DB, source MonsterSource, dungeonID utils.UInt64, sourceEntityIDs []utils.UInt64, loadAssociationMonster bool) error {
+func createDungeonMonsterRef(tx *gorm.DB, source MonsterSource, dungeonID utils.UInt64, sourceEntityIDs []utils.UInt64, loadAssociationMonster bool) error {
 	for _, id := range sourceEntityIDs {
 		switch source {
 		case MonsterSourceItem:
@@ -143,7 +153,19 @@ func createDungeonMonster(tx *gorm.DB, dungeonID, itemID utils.UInt64, source Mo
 		ItemID:     itemID,
 		SourceType: source,
 		SourceID:   sourceEntityID,
-		Visibility: 0,
+
+		// 用于 runtime
+		Visibility:     0,
+		PracticeCount:  0,
+		PracticeAt:     time.Now(),
+		NextPracticeAt: time.Now(),
+
+		// 以下为宽表内容，为了加速查询
+		Familiarity: utils.Percentage(0),
+		Difficulty:  def.NoviceNormal,
+		Importance:  def.DomainGeneral,
+
+		CreatedAt: time.Now(),
 	}
 	if err := tx.Where("dungeon_id = ? AND item_id = ?", dungeonID, itemID).FirstOrCreate(&dungeonMonster).Error; err != nil {
 		return err
@@ -177,32 +199,54 @@ func createMonstersForTag(tx *gorm.DB, dungeonID, tagID utils.UInt64) error {
 	return nil
 }
 
-// GetMonsters - 获取当前 Dungeon 的已创建的 DungeonMonster
-func (d *Dungeon) GetMonsters(tx *gorm.DB, sortBy string, offset, limit int) ([]DungeonMonster, error) {
-	var monsters []DungeonMonster
-	query := tx.Where("dungeon_id = ?", d.ID).Offset(offset).Limit(limit)
+// GetMonsters retrieves the monsters for the dungeon with sorting and pagination
+func (d *Dungeon) GetMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
+	var dungeonMonsters []DungeonMonster
 
-	// todo: 要去查 item
-	//switch sortBy {
-	//case "familiarity":
-	//	query = query.Order("familiarity ASC, item_id ASC")
-	//case "difficulty":
-	//	query = query.Order("difficulty ASC, item_id ASC")
-	//case "importance":
-	//	query = query.Order("importance ASC, item_id ASC")
-	//default:
-	//	query = query.Order("item_id ASC")
-	//}
-
-	if err := query.Find(&monsters).Error; err != nil {
+	if err := tx.Where("dungeon_id = ?", d.ID).
+		Order("item_id ASC").Offset(offset).Limit(limit).
+		Find(&dungeonMonsters).Error; err != nil {
 		return nil, err
 	}
 
-	return monsters, nil
+	return dungeonMonsters, nil
 }
 
-// GetMonstersWithAssociations - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
-func (d *Dungeon) GetMonstersWithAssociations(tx *gorm.DB, sortBy string, offset, limit int) ([]DungeonMonster, error) {
+// GetMonstersForPractice retrieves the monsters for practice based on the memorization strategy
+func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strategy string, count int) ([]DungeonMonster, error) {
+	now := time.Now()
+	log := wlog.ByCtx(ctx, "GetMonstersForPractice").
+		WithField("time", now).
+		WithField("strategy", strategy).
+		WithField("dungeon_id", d.ID).
+		WithField("count", count)
+
+	log.Infof("start get monsters")
+	var query *gorm.DB
+	var dungeonMonsters []DungeonMonster
+	// 根据复习策略进行查询
+	switch strategy {
+	case "classic":
+		// 经典策略：下次复习时间早于当前时间，熟练度最低，重要程度最高，难度最低
+		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
+			Order("familiarity ASC, importance DESC, difficulty ASC").
+			Limit(count).Find(&dungeonMonsters)
+	default:
+		// 默认策略：下次复习时间早于当前时间，按熟练度排序
+		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
+			Order("familiarity ASC").
+			Limit(count).Find(&dungeonMonsters)
+	}
+	if err := query.Error; err != nil {
+		return nil, err
+	}
+
+	log.Infof("got dungeon monsters %v", dungeonMonsters)
+	return dungeonMonsters, nil
+}
+
+// GetAssociationsExpandedMonsterList - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
+func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string, offset, limit int) ([]DungeonMonster, error) {
 	// 获取关联的 Items, Books, TagNames
 	books, items, tags, err := GetDungeonAssociations(tx, d.ID)
 	if err != nil {
@@ -241,20 +285,9 @@ func (d *Dungeon) GetMonstersWithAssociations(tx *gorm.DB, sortBy string, offset
 	itemIDs := typer.Keys(itemSourceMap)
 
 	// 获取所有 item 的详细信息并排序分页
-	txItems := tx.Table("items").Where("id IN (?)", itemIDs)
-	switch sortBy {
-	case "familiarity":
-		txItems = txItems.Order("familiarity ASC, id ASC")
-	case "difficulty":
-		txItems = txItems.Order("difficulty ASC, id ASC")
-	case "importance":
-		txItems = txItems.Order("importance ASC, id ASC")
-	default:
-		txItems = txItems.Order("id ASC")
-	}
-
 	var itemsList []*Item
-	if err = txItems.Offset(offset).Limit(limit).Find(&itemsList).Error; err != nil {
+	if err = tx.Table("items").Where("id IN (?)", itemIDs).
+		Offset(offset).Limit(limit).Find(&itemsList).Error; err != nil {
 		return nil, err
 	}
 
@@ -266,7 +299,6 @@ func (d *Dungeon) GetMonstersWithAssociations(tx *gorm.DB, sortBy string, offset
 			DungeonID:  d.ID,
 			SourceType: MonsterSourceItem,
 			SourceID:   itemSourceMap[item.ID],
-			monster:    item,
 		}
 		if _, ok := tagItemMap[item.ID]; ok {
 			monster.SourceType = MonsterSourceTag

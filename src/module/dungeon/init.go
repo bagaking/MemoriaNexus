@@ -1,6 +1,7 @@
 package dungeon
 
 import (
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -26,42 +27,49 @@ func Init(db *gorm.DB) (*Service, error) {
 }
 
 func (svr *Service) ApplyMux(group gin.IRouter) {
-	group.POST("/dungeons", svr.CreateDungeon)
-	group.GET("/dungeons", svr.GetDungeons)
+	dungeonsGeneralGroup := group.Group("/dungeons")
+	{
+		dungeonsGeneralGroup.POST("", svr.CreateDungeon)
+		dungeonsGeneralGroup.GET("", svr.GetDungeons)
 
-	group.GET("/dungeons/:id", svr.GetDungeon)
-	group.DELETE("/dungeons/:id", svr.DeleteDungeon)
+		dungeonsDetailGroup := dungeonsGeneralGroup.Group("/:id").Use(utils.GinMWParseID())
+		{
+			dungeonsDetailGroup.GET("", svr.GetDungeon)
+			dungeonsDetailGroup.DELETE("", svr.DeleteDungeon)
+			dungeonsDetailGroup.PUT("", svr.UpdateDungeon)
 
-	group.PUT("/dungeons/:id", svr.UpdateDungeon)
-	group.POST("/dungeons/:id/books", svr.AppendBooksToDungeon)
-	group.POST("/dungeons/:id/items", svr.AppendItemsToDungeon)
-	group.POST("/dungeons/:id/tags", svr.AppendTagsToDungeon)
+			dungeonsDetailGroup.POST("/books", svr.AppendBooksToDungeon)
+			dungeonsDetailGroup.POST("/items", svr.AppendItemsToDungeon)
+			dungeonsDetailGroup.POST("/tags", svr.AppendTagsToDungeon)
 
-	group.GET("/dungeons/:id/books", svr.GetDungeonBooksDetail)
-	group.GET("/dungeons/:id/items", svr.GetDungeonItemsDetail)
-	group.GET("/dungeons/:id/tags", svr.GetDungeonTagsDetail)
+			dungeonsDetailGroup.GET("/books", svr.GetDungeonBooksDetail)
+			dungeonsDetailGroup.GET("/items", svr.GetDungeonItemsDetail)
+			dungeonsDetailGroup.GET("/tags", svr.GetDungeonTagsDetail)
 
-	group.DELETE("/dungeons/:id/books", svr.SubtractDungeonBooks)
-	group.DELETE("/dungeons/:id/items", svr.SubtractDungeonItems)
-	group.DELETE("/dungeons/:id/tags", svr.SubtractDungeonTags)
+			dungeonsDetailGroup.DELETE("/books", svr.SubtractDungeonBooks)
+			dungeonsDetailGroup.DELETE("/items", svr.SubtractDungeonItems)
+			dungeonsDetailGroup.DELETE("/tags", svr.SubtractDungeonTags)
+		}
+	}
 
-	// 新增的复习相关API接口
-	group.GET("/campaigns/:id/monsters", svr.GetMonstersOfCampaignDungeon)
-	group.GET("/campaigns/:id/next_monsters", svr.GetNextMonstersOfCampaignDungeon)
-	group.GET("/campaigns/:id/today_conclusion", svr.GetCampaignDungeonTodayConclusion)
-	group.POST("/campaigns/:id/report_result", svr.ReportCampaignResult)
+	campaignsDetailGroup := group.Group("/campaigns/:id").Use(utils.GinMWParseID())
+	{
+		campaignsDetailGroup.GET("/monsters", svr.GetMonstersOfCampaignDungeon)
+		campaignsDetailGroup.GET("/practice", svr.GetMonstersForCampaignPractice)
+		campaignsDetailGroup.POST("/submit", svr.SubmitCampaignResult)
 
-	group.GET("/endless/:id/monsters", svr.GetMonstersOfEndlessDungeon)
-	// group.GET("/endless/:id/next_monsters", svr.GetNextMonstersOfEndlessDungeon)
-	// group.GET("/endless/:id/today_conclusion", svr.GetEndlessDungeonTodayConclusion)
-	// group.POST("/endless/:id/report_result", svr.ReportEndlessResult)
+		campaignsDetailGroup.GET("/conclusion/today", svr.GetCampaignDungeonConclusionOfToday)
+	}
 
-	group.GET("/instances", svr.GetDungeonInstances)
+	endlessDetailGroup := group.Group("/endless/:id").Use(utils.GinMWParseID())
+	{
+		endlessDetailGroup.GET("/monsters", svr.GetMonstersOfEndlessDungeon)
+		// endlessDetailGroup.GET("/next_monsters", svr.GetNextMonstersOfEndlessDungeon)
+		// endlessDetailGroup.GET("/today_conclusion", svr.GetEndlessDungeonTodayConclusion)
+		// endlessDetailGroup.POST("/report_result", svr.ReportEndlessResult)
+	}
+
 	group.GET("/instances/:id", svr.GetDungeonInstance)
-}
-
-func (svr *Service) GetDungeonInstances(context *gin.Context) {
-	// 实现代码
 }
 
 func (svr *Service) GetDungeonInstance(context *gin.Context) {

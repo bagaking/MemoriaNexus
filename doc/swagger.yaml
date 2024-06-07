@@ -1,41 +1,4 @@
 definitions:
-  book.ReqCreateBook:
-    properties:
-      description:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-    type: object
-  book.RespBook:
-    properties:
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      title:
-        type: string
-      updated_at:
-        type: string
-      user_id:
-        type: integer
-    type: object
-  book.RespBooks:
-    properties:
-      books:
-        items:
-          $ref: '#/definitions/book.RespBook'
-        type: array
-      limit:
-        type: integer
-      page:
-        type: integer
-    type: object
   def.DifficultyLevel:
     enum:
     - 1
@@ -112,6 +75,8 @@ definitions:
     - GlobalKey
     - GlobalEssential
     - GlobalMasterPiece
+  def.RecallIntervalLevel:
+    type: object
   dto.Book:
     properties:
       created_at:
@@ -162,34 +127,38 @@ definitions:
     type: object
   dto.DungeonMonster:
     properties:
-      content:
-        type: string
       created_at:
         type: string
-      creator_id:
-        type: integer
       difficulty:
-        $ref: '#/definitions/def.DifficultyLevel'
-      dungeonID:
+        allOf:
+        - $ref: '#/definitions/def.DifficultyLevel'
+        description: Item 向 DungeonMonster 单项同步
+      dungeon_id:
         type: integer
-      id:
+      familiarity:
+        description: 以下为宽表内容，为了加速查询
         type: integer
       importance:
-        $ref: '#/definitions/def.ImportanceLevel'
-      monsterSource:
-        $ref: '#/definitions/model.MonsterSource'
-      monsterSourceEntityID:
+        allOf:
+        - $ref: '#/definitions/def.ImportanceLevel'
+        description: Item 向 DungeonMonster 单项同步
+      item_id:
         type: integer
-      tags:
-        items:
-          type: string
-        type: array
-      type:
+      next_practice_at:
+        description: 下次复习时间
         type: string
-      updated_at:
+      practice_at:
+        description: 上次复习时间的记录
         type: string
+      practice_count:
+        description: 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
+        type: integer
+      source_id:
+        type: integer
+      source_type:
+        $ref: '#/definitions/model.MonsterSource'
       visibility:
-        description: 显影程度，根据复习次数变化
+        description: 用于 runtime
         type: integer
     type: object
   dto.Item:
@@ -239,12 +208,59 @@ definitions:
       nickname:
         type: string
     type: object
+  dto.ReqCreateBook:
+    properties:
+      description:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
   dto.RespBookCreate:
     properties:
       data:
         $ref: '#/definitions/dto.Book'
       message:
         type: string
+    type: object
+  dto.RespBookDelete:
+    properties:
+      data:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.RespBookGet:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Book'
+      message:
+        type: string
+    type: object
+  dto.RespBookUpdate:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Book'
+      message:
+        type: string
+    type: object
+  dto.RespBooks:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Book'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      offset:
+        type: integer
+      total:
+        type: integer
     type: object
   dto.RespDungeon:
     properties:
@@ -263,7 +279,7 @@ definitions:
         type: integer
       message:
         type: string
-      page:
+      offset:
         type: integer
       total:
         type: integer
@@ -299,7 +315,7 @@ definitions:
         type: integer
       message:
         type: string
-      page:
+      offset:
         type: integer
       total:
         type: integer
@@ -321,7 +337,7 @@ definitions:
         type: integer
       message:
         type: string
-      page:
+      offset:
         type: integer
       total:
         type: integer
@@ -348,11 +364,6 @@ definitions:
         type: string
     type: object
   dto.RespSettingsMemorization:
-    properties:
-      data:
-        $ref: '#/definitions/dto.SettingsMemorization'
-      message:
-        type: string
     type: object
   dto.SettingsAdvance:
     properties:
@@ -364,16 +375,6 @@ definitions:
         type: boolean
       theme:
         type: string
-    type: object
-  dto.SettingsMemorization:
-    properties:
-      difficulty_preference:
-        type: integer
-      quiz_mode:
-        type: string
-      review_interval:
-        description: Definitions should match with ProfileMemorizationSetting
-        type: integer
     type: object
   dto.SuccessResponse:
     properties:
@@ -455,7 +456,7 @@ definitions:
       monster_id:
         type: integer
       result:
-        description: '"unknown", "familiar", "remembered"'
+        description: '"defeat", "miss", "hit", "kill", "complete"'
         type: string
     type: object
   dungeon.ReqUpdateDungeon:
@@ -468,13 +469,6 @@ definitions:
         type: string
       type:
         $ref: '#/definitions/def.DungeonType'
-    type: object
-  dungeon.RespCampaignResult:
-    properties:
-      today_difficulty:
-        type: integer
-      total_monsters:
-        type: integer
     type: object
   item.ReqCreateItem:
     properties:
@@ -544,7 +538,7 @@ definitions:
       quiz_mode:
         type: string
       review_interval:
-        type: integer
+        $ref: '#/definitions/def.RecallIntervalLevel'
     type: object
   utils.ErrorResponse:
     properties:
@@ -578,8 +572,10 @@ paths:
         "200":
           description: Successfully retrieved list of books
           schema:
-            $ref: '#/definitions/book.RespBooks'
+            $ref: '#/definitions/dto.RespBooks'
       summary: Get list of books with pagination
+      tags:
+      - book
     post:
       consumes:
       - application/json
@@ -590,19 +586,21 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/dto.RespBookCreate'
+          $ref: '#/definitions/dto.ReqCreateBook'
       produces:
       - application/json
       responses:
         "201":
           description: Successfully created book
           schema:
-            $ref: '#/definitions/book.RespBook'
+            $ref: '#/definitions/dto.RespBookCreate'
         "400":
           description: Invalid parameters
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Create a book
+      tags:
+      - book
   /books/{id}:
     delete:
       consumes:
@@ -620,8 +618,10 @@ paths:
         "200":
           description: Successfully deleted book
           schema:
-            type: string
+            $ref: '#/definitions/dto.RespBookDelete'
       summary: Delete a book
+      tags:
+      - book
     get:
       consumes:
       - application/json
@@ -638,8 +638,10 @@ paths:
         "200":
           description: Successfully retrieved book
           schema:
-            $ref: '#/definitions/book.RespBook'
+            $ref: '#/definitions/dto.RespBookGet'
       summary: Get a book by ID
+      tags:
+      - book
     put:
       consumes:
       - application/json
@@ -655,15 +657,17 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/book.ReqCreateBook'
+          $ref: '#/definitions/dto.ReqCreateBook'
       produces:
       - application/json
       responses:
         "200":
           description: Successfully updated book
           schema:
-            type: string
+            $ref: '#/definitions/dto.RespBookUpdate'
       summary: Update book information
+      tags:
+      - book
   /dungeon/campaigns/{id}/monsters:
     get:
       description: 获取复习计划的所有Monsters
@@ -672,7 +676,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: Sort by field (familiarity, difficulty, importance)
         in: query
         name: sort_by
@@ -692,7 +696,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved monsters
           schema:
             $ref: '#/definitions/dto.RespMonsterList'
         "404":
@@ -704,30 +708,27 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all the monsters of a specific campaign dungeon
-  /dungeon/campaigns/{id}/next_monsters:
+      tags:
+      - dungeon
+  /dungeon/campaigns/{id}/practice:
     get:
-      description: 获取复习计划的后n个Monsters
+      description: 从 Campaign Dungeon 中提取一些要复习的 Monster 缓存到本地
       parameters:
       - description: Dungeon ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: Number of monsters to fetch
         in: query
         name: count
         required: true
         type: integer
-      - description: Sort by field (familiarity, difficulty, importance)
-        in: query
-        name: sort_by
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved monsters
           schema:
             $ref: '#/definitions/dto.RespMonsterList'
         "404":
@@ -738,8 +739,10 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
-      summary: Get the next n monsters of a specific dungeon
-  /dungeon/campaigns/{id}/report_result:
+      summary: Get monsters for review
+      tags:
+      - dungeon
+  /dungeon/campaigns/{id}/submit:
     post:
       consumes:
       - application/json
@@ -760,7 +763,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully reported result
           schema:
             $ref: '#/definitions/dto.SuccessResponse'
         "400":
@@ -775,32 +778,9 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
-      summary: Report the result of a specific monster
-  /dungeon/campaigns/{id}/results:
-    get:
-      description: 获取复习计划的结果
-      parameters:
-      - description: Dungeon ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dungeon.RespCampaignResult'
-        "404":
-          description: Dungeon not found
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-      summary: Get the results of a specific dungeon
+      summary: Report the result of a specific monster recall
+      tags:
+      - dungeon
   /dungeon/dungeons:
     get:
       description: 获取复习计划列表
@@ -808,7 +788,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved dungeons
           schema:
             items:
               $ref: '#/definitions/dto.RespDungeonList'
@@ -818,6 +798,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get the list of dungeon campaigns
+      tags:
+      - dungeon
     post:
       consumes:
       - application/json
@@ -833,7 +815,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Successfully created dungeon
           schema:
             $ref: '#/definitions/dto.RespDungeon'
         "400":
@@ -845,6 +827,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Create a new dungeon campaign
+      tags:
+      - dungeon
   /dungeon/dungeons/{id}:
     delete:
       description: 删除复习计划
@@ -856,7 +840,7 @@ paths:
         type: integer
       responses:
         "204":
-          description: updater
+          description: Successfully deleted dungeon
           schema:
             $ref: '#/definitions/dto.RespDungeon'
         "404":
@@ -868,6 +852,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Delete a specific dungeon campaign
+      tags:
+      - dungeon
     get:
       description: 获取复习计划详情
       parameters:
@@ -880,7 +866,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: the dungeon with its associations
+          description: Successfully retrieved dungeon
           schema:
             $ref: '#/definitions/dto.RespDungeon'
         "404":
@@ -892,6 +878,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get the details of a specific dungeon campaign
+      tags:
+      - dungeon
     put:
       consumes:
       - application/json
@@ -912,7 +900,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: updater
+          description: Successfully updated dungeon
           schema:
             $ref: '#/definitions/dto.RespDungeon'
         "400":
@@ -928,6 +916,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Update a specific dungeon campaign
+      tags:
+      - dungeon
   /dungeon/dungeons/{id}/books:
     delete:
       consumes:
@@ -1361,6 +1351,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get an item by ID
+      tags:
+      - item
     put:
       consumes:
       - application/json
@@ -1381,7 +1373,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully updated item
+          description: the updater
           schema:
             $ref: '#/definitions/dto.RespItemUpdate'
         "400":

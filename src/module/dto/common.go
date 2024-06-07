@@ -12,27 +12,54 @@ type RespSuccess[T any] struct {
 	Data    T      `json:"data,omitempty"`
 }
 
+type Updater[T any] struct {
+	From    T              `json:"from,omitempty"`
+	To      T              `json:"to,omitempty"`
+	Updates map[string]any `json:"updates,omitempty"`
+}
+
 // RespSuccessPage defines the response structure for a successful operation.
 type RespSuccessPage[T any] struct {
 	Message string `json:"message"`
 	Data    []T    `json:"data,omitempty"`
 
-	Page  int   `json:"page"`
-	Limit int   `json:"limit"`
-	Total int64 `json:"total"`
+	Offset int   `json:"offset"`
+	Limit  int   `json:"limit"`
+	Total  int64 `json:"total,omitempty"`
 }
 
-func (resp *RespSuccessPage[T]) Append(items ...T) int {
+// Page start from 1
+func (resp *RespSuccessPage[T]) Page() int {
+	return resp.Offset/resp.Limit + 1
+}
+
+func (resp *RespSuccessPage[T]) SetTotal(total int64) *RespSuccessPage[T] {
+	resp.Total = total
+	return resp
+}
+
+func (resp *RespSuccessPage[T]) SetPageAndLimit(page int, limit int) *RespSuccessPage[T] {
+	resp.Offset = (page - 1) * resp.Limit
+	resp.Limit = limit
+	return resp
+}
+
+func (resp *RespSuccessPage[T]) SetOffsetAndLimit(offset int, limit int) *RespSuccessPage[T] {
+	resp.Offset = offset
+	resp.Limit = limit
+	return resp
+}
+
+func (resp *RespSuccessPage[T]) Append(items ...T) *RespSuccessPage[T] {
 	lenItems := len(items)
-	resp.Total += int64(lenItems)
 	if resp.Data == nil {
 		// deep copy
-		resp.Data = make([]T, 0, lenItems)
+		resp.Data = make([]T, lenItems)
 		copy(resp.Data, items)
 	} else {
 		resp.Data = append(resp.Data, items...)
 	}
-	return len(resp.Data)
+	return resp
 }
 
 func (resp *RespSuccessPage[T]) Response(c *gin.Context, msgAppend ...string) {

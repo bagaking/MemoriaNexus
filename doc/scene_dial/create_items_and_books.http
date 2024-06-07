@@ -9,7 +9,7 @@ Authorization: Bearer {{ACCESS_TOKEN}}
   "tags": ["programming", "go", "backend"]
 }
 
-> {% client.global.set("BOOK_ID", response.body.id) %}
+> {% client.global.set("BOOK_ID", response.body.data.id) %}
 
 ### 获取所有册子
 GET http://localhost:8080/api/v1/books

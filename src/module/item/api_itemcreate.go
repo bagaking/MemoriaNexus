@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
@@ -35,12 +36,8 @@ const (
 // @Failure 400 {object} utils.ErrorResponse "Bad Request if too many books or tags, or bad data"
 // @Router /items [post]
 func (svr *Service) CreateItem(c *gin.Context) {
-	log := wlog.ByCtx(c, "CreateItem")
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, errors.New("user not authenticated"), "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "CreateItem").WithField("user_id", userID)
 
 	var req ReqCreateItem
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -101,16 +98,11 @@ func (svr *Service) CreateItem(c *gin.Context) {
 		return
 	}
 
-	// 提交事务
 	if err = tx.Commit().Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to commit transaction")
 		tx.Rollback()
 		return
 	}
 
-	// 返回成功响应
-	c.JSON(http.StatusOK, dto.RespItemCreate{
-		Message: "item created",
-		Data:    (&dto.Item{}).FromModel(item, req.Tags...),
-	})
+	new(dto.RespItemCreate).With(new(dto.Item).FromModel(item, req.Tags...)).Response(c, "item created")
 }

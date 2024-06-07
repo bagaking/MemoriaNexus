@@ -4,12 +4,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
@@ -35,13 +36,8 @@ type ReqUpdateProfile struct {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/me [get]
 func (svr *Service) GetUserProfile(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	// Extract the user ID from the context.
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetUserProfile").WithField("user_id", userID)
 
 	// Use the ID to load the profile from the database.
 	profile, err := model.EnsureLoadProfile(svr.db, userID)
@@ -74,20 +70,16 @@ func (svr *Service) GetUserProfile(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/me [put]
 func (svr *Service) UpdateUserProfile(c *gin.Context) {
-	log := wlog.ByCtx(c, "UpdateUserProfile")
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "UpdateUserProfile").WithField("user_id", userID)
 
 	var req ReqUpdateProfile
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid request body")
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid request body")
 		return
 	}
 
-	profile := &model.Profile{
+	updater := &model.Profile{
 		ID:        userID,
 		Nickname:  req.Nickname,
 		Email:     req.Email,
@@ -96,13 +88,10 @@ func (svr *Service) UpdateUserProfile(c *gin.Context) {
 	}
 
 	// Perform the update operation in the repository.
-	if err := profile.UpdateProfile(svr.db, profile); err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update profile")
+	if err := svr.db.Model(updater).Where("id = ?", userID).Updates(updater).Error; err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update profile")
 		return
 	}
 
-	// Respond with a generic success message.
-	new(dto.RespProfile).With(
-		new(dto.Profile).FromModel(profile),
-	).Response(c, "profile updated")
+	new(dto.RespProfile).With(new(dto.Profile).FromModel(updater)).Response(c, "profile updated")
 }

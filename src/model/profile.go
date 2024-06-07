@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bagaking/memorianexus/src/def"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"gorm.io/gorm"
@@ -36,9 +38,20 @@ type Profile struct {
 type ProfileMemorizationSetting struct {
 	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
-	ReviewInterval       uint   `gorm:"type:int unsigned"`
-	DifficultyPreference uint8  `gorm:"type:tinyint unsigned"`
-	QuizMode             string `gorm:"size:255"`
+	// 复习时间的配置，是一组时间，作为根据复习结算时的熟练度来选择下次复习时间的依据
+	ReviewIntervalSetting def.RecallIntervalLevel `gorm:"type:string"`
+
+	// 用户挑战偏好
+	DifficultyPreference uint8 `gorm:"type:tinyint unsigned"`
+
+	// 倾向的战斗模式，决定了 monster 的出场顺序
+	QuizMode string `gorm:"size:255"`
+}
+
+var DefaultMemorizationSetting = ProfileMemorizationSetting{
+	ReviewIntervalSetting: def.DefaultRecallIntervals, // 先用 day
+	DifficultyPreference:  1,
+	QuizMode:              "classic",
 }
 
 // ProfileAdvanceSetting 定义了用户高级设置的模型

@@ -3,7 +3,10 @@ package dto
 import (
 	"time"
 
+	"github.com/bagaking/memorianexus/src/def"
+
 	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/memorianexus/src/model"
 )
 
@@ -21,9 +24,9 @@ type (
 
 	SettingsMemorization struct {
 		// Definitions should match with ProfileMemorizationSetting
-		ReviewInterval       uint   `json:"review_interval"`
-		DifficultyPreference uint8  `json:"difficulty_preference"`
-		QuizMode             string `json:"quiz_mode"`
+		ReviewIntervalSetting def.RecallIntervalLevel `json:"review_interval_setting"`
+		DifficultyPreference  uint8                   `json:"difficulty_preference"`
+		QuizMode              string                  `json:"quiz_mode"`
 	}
 
 	SettingsAdvance struct {
@@ -56,7 +59,7 @@ func (p *Profile) FromModel(model *model.Profile) *Profile {
 }
 
 func (s *SettingsMemorization) FromModel(model *model.ProfileMemorizationSetting) *SettingsMemorization {
-	s.ReviewInterval = model.ReviewInterval
+	s.ReviewIntervalSetting = model.ReviewIntervalSetting
 	s.DifficultyPreference = model.DifficultyPreference
 	s.QuizMode = model.QuizMode
 	return s

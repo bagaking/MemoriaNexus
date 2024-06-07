@@ -2,6 +2,9 @@ package utils
 
 import (
 	"strconv"
+	"strings"
+
+	"github.com/khicago/got/util/strs"
 
 	"github.com/bytedance/sonic"
 	"github.com/khicago/irr"
@@ -10,19 +13,35 @@ import (
 // Percentage is a custom type to handle JSON serialization of percentages as uint8.
 type Percentage uint8
 
-// Raw returns the raw uint8 value of the percentage.
-func (p *Percentage) Raw() uint8 {
-	return uint8(*p)
+func Percentage100() Percentage {
+	return Percentage(100)
 }
 
-// AsFloat returns the percentage as a float64 value (e.g., 50 becomes 50.0).
-func (p *Percentage) AsFloat() float64 {
-	return float64(*p)
+// Raw returns the raw uint8 value of the percentage.
+func (p Percentage) Raw() uint8 {
+	return uint8(p)
+}
+
+func (p Percentage) ToDotValue() float64 {
+	return float64(p) / 100
+}
+
+func (p Percentage) Clamp0100() Percentage {
+	if p > 100 {
+		return Percentage100()
+	} else if p < 0 {
+		return 0
+	}
+	return p
+}
+
+func (p *Percentage) FromDotValue(v float64) {
+	*p = Percentage(v * 100).Clamp0100()
 }
 
 // MarshalJSON serializes the Percentage as a string to avoid precision loss in JavaScript.
 func (p *Percentage) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + strconv.Itoa(int(*p)) + `"`), nil
+	return []byte(`"` + strconv.Itoa(int(*p)) + `%"`), nil
 }
 
 // UnmarshalJSON supports parsing the Percentage from a number or a string in JSON.
@@ -32,6 +51,9 @@ func (p *Percentage) UnmarshalJSON(b []byte) error {
 
 	// Attempt to unmarshal as a string first to accommodate both quoted and non-quoted JSON numbers.
 	if err := sonic.Unmarshal(b, &strValue); err == nil {
+		if strs.EndsWith(strValue, "%") {
+			strValue = strings.TrimRight(strValue, "%")
+		}
 		tempVal, err := strconv.ParseUint(strValue, 10, 8)
 		if err != nil {
 			return irr.Wrap(err, "parse string val failed")

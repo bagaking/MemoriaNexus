@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/irr"
@@ -18,7 +20,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/bagaking/memorianexus/doc"
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/gw"
 )
 

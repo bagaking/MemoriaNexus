@@ -43,11 +43,30 @@ CREATE TABLE `dungeon_monsters` (
     `dungeon_id` BIGINT UNSIGNED NOT NULL,
     `item_id` BIGINT UNSIGNED NOT NULL,
 
-    `visibility` TINYINT UNSIGNED NOT NULL COMMENT "percentage: 0-100",
-
     `source_type` TINYINT UNSIGNED COMMENT "source type of the monster, item=1, book=2, tag=3",
     `source_id` BIGINT UNSIGNED NOT NULL,
 
+    -- 宽表用途，用于查询
+    `familiarity`  TINYINT UNSIGNED COMMENT "percentage: 0-100",
+    `importance` TINYINT UNSIGNED COMMENT "Importance",
+    `difficulty` TINYINT UNSIGNED COMMENT "Difficulty",
+
+    -- runtime
+    `visibility` TINYINT UNSIGNED NOT NULL COMMENT "percentage: 0-100",
+    `practice_at` DATETIME DEFAULT NULL,
+    `next_practice_at` DATETIME DEFAULT CURRENT_TIMESTAMP, -- set to current_time for initial
+    `practice_count` INT UNSIGNED DEFAULT 0,
+
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+
     PRIMARY KEY (`dungeon_id`, `item_id`),
-    INDEX idx_dungen_monsters (`item_id`)
+    INDEX idx_practice_order (`dungeon_id`, `familiarity`, `importance`, `difficulty`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_monsters` (
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `item_id` BIGINT UNSIGNED NOT NULL,
+    `familiarity`  TINYINT UNSIGNED COMMENT "percentage: 0-100",
+
+    PRIMARY KEY (`user_id`, `item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/memorianexus/src/def"
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/irr"
 
 	"gorm.io/gorm"
-
-	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 type (

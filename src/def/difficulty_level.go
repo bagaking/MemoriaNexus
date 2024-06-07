@@ -5,9 +5,7 @@ import (
 	"errors"
 )
 
-type (
-	DifficultyLevel uint8
-)
+type DifficultyLevel uint8
 
 const (
 	NoviceNormal    DifficultyLevel = 0x01
@@ -77,4 +75,10 @@ func (d *DifficultyLevel) UnmarshalJSON(data []byte) error {
 		return errors.New("invalid type for DifficultyLevel")
 	}
 	return nil
+}
+
+// Normalize returns a normalized value between 0 and 1
+func (d DifficultyLevel) Normalize() float64 {
+	maxValue := float64(MasterExtreme)
+	return float64(d) / maxValue
 }

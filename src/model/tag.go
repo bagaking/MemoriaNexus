@@ -7,13 +7,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"gorm.io/gorm"
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
-
-	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 // Tag represents a tag entity with unique name.

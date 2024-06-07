@@ -1,11 +1,12 @@
 entry = [
     "README.md",
-    "deployment/**/*.sql",
+
     "doc/API_SPEC.md",
     "doc/DESIGN.md",
-    "src/module/**/*",
-    "src/def/**/*",
-    "src/gw/**/*",
+    "doc/swagger.yaml",
+#    "src/module/**/*",
+#    "src/def/**/*",
+#    "src/gw/**/*",
 ]
 
 exclude = [

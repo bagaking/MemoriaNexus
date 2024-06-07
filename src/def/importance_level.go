@@ -5,9 +5,7 @@ import (
 	"errors"
 )
 
-type (
-	ImportanceLevel uint8
-)
+type ImportanceLevel uint8
 
 const (
 	DomainGeneral   ImportanceLevel = 0x01
@@ -65,4 +63,10 @@ func (i *ImportanceLevel) UnmarshalJSON(data []byte) error {
 		return errors.New("invalid type for ImportanceLevel")
 	}
 	return nil
+}
+
+// Normalize returns a normalized value between 0 and 1
+func (i ImportanceLevel) Normalize() float64 {
+	maxValue := float64(GlobalMasterPiece)
+	return float64(i) / maxValue
 }

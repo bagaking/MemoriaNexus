@@ -1,10 +1,8 @@
 entry = [
-    "README.md",
-    "deployment/**/*.sql",
     "doc/API_SPEC.md",
-    "doc/DESIGN.md",
-    "src/module/**/*",
-    "src/model/**/*",
+    "doc/Design.md",
+    "src/module/**/*.go",
+    "src/module/dto/**/*.go",
 ]
 
 exclude = [

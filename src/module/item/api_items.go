@@ -1,8 +1,9 @@
 package item
 
 import (
-	"errors"
 	"net/http"
+
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/memorianexus/src/module/dto"
 
@@ -10,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 )
 
@@ -45,12 +45,8 @@ type RespItems struct {
 // @Failure 400 {object} utils.ErrorResponse "Bad Request"
 // @Router /items [get]
 func (svr *Service) GetItems(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetItems")
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, errors.New("user not authenticated"), "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetItems").WithField("user_id", userID)
 
 	var req ReqGetItems
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -84,29 +80,22 @@ func (svr *Service) GetItems(c *gin.Context) {
 		return
 	}
 
+	pager := new(dto.RespItemList).SetPageAndLimit(req.Page, req.Limit).SetTotal(total)
+
 	var items []model.Item
-	offset := (req.Page - 1) * req.Limit
-	if err := query.Offset(offset).Limit(req.Limit).Find(&items).Error; err != nil {
+	if err := query.Offset(pager.Offset).Limit(req.Limit).Find(&items).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to retrieve items")
 		return
 	}
 
 	// 转换 Item 为 Item
-	resp := dto.RespItemList{
-		Message: "items found",
-		Data:    make([]*dto.Item, 0, len(items)),
-		Page:    req.Page,
-		Limit:   req.Limit,
-		Total:   total,
-	}
 	for _, item := range items {
 		tags, err := model.GetItemTagNames(c, svr.db, item.ID)
 		if err != nil {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to get item tag names")
 			return
 		}
-		resp.Append((&dto.Item{}).FromModel(&item, tags...))
+		pager.Append(new(dto.Item).FromModel(&item, tags...))
 	}
-
-	c.JSON(http.StatusOK, resp)
+	pager.Response(c, "items found")
 }

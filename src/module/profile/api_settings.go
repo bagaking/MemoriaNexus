@@ -3,20 +3,23 @@ package profile
 import (
 	"net/http"
 
+	"github.com/bagaking/memorianexus/src/def"
+
+	"github.com/bagaking/memorianexus/internal/utils"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 
-	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
 // ReqUpdateUserSettingsMemorization defines the request format for updating user settings.
 type ReqUpdateUserSettingsMemorization struct {
-	ReviewInterval       *uint   `json:"review_interval"`
-	DifficultyPreference *uint8  `json:"difficulty_preference"`
-	QuizMode             *string `json:"quiz_mode"`
+	ReviewIntervalSetting *def.RecallIntervalLevel `json:"review_interval"`
+	DifficultyPreference  *uint8                   `json:"difficulty_preference"`
+	QuizMode              *string                  `json:"quiz_mode"`
 }
 
 // ReqUpdateUserSettingsAdvance defines the request to update advanced settings.
@@ -39,12 +42,8 @@ type ReqUpdateUserSettingsAdvance struct {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [get]
 func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetUserSettingsMemorization").WithField("user_id", userID)
 
 	profile, err := model.EnsureLoadProfile(svr.db, userID)
 	if err != nil {
@@ -73,12 +72,8 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [get]
 func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetUserSettingsAdvance").WithField("user_id", userID)
 
 	profile, err := model.EnsureLoadProfile(svr.db, userID)
 	if err != nil || profile == nil {
@@ -110,12 +105,8 @@ func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/memorization [put]
 func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "UpdateUserSettingsMemorization").WithField("user_id", userID)
 
 	var updateReq ReqUpdateUserSettingsMemorization
 	if err := c.ShouldBindWith(&updateReq, binding.JSON); err != nil {
@@ -134,8 +125,8 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 	}
 
 	// Update the fields that were provided in the request.
-	if updateReq.ReviewInterval != nil {
-		settingsToUpdate.ReviewInterval = *updateReq.ReviewInterval
+	if updateReq.ReviewIntervalSetting != nil {
+		settingsToUpdate.ReviewIntervalSetting = *updateReq.ReviewIntervalSetting
 	}
 	if updateReq.DifficultyPreference != nil {
 		settingsToUpdate.DifficultyPreference = *updateReq.DifficultyPreference
@@ -149,9 +140,8 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 		return
 	}
 
-	new(dto.RespSettingsMemorization).With(
-		new(dto.SettingsMemorization).FromModel(settingsToUpdate),
-	).Response(c, "settings updated successfully")
+	new(dto.RespSettingsMemorization).With(new(dto.SettingsMemorization).FromModel(settingsToUpdate)).
+		Response(c, "memorization settings updated")
 }
 
 // UpdateUserSettingsAdvance updates the advanced settings for the current user.
@@ -168,12 +158,8 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /profile/settings/advance [put]
 func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
-	log := wlog.ByCtx(c)
-	userID, exists := utils.GetUIDFromGinCtx(c)
-	if !exists {
-		utils.GinHandleError(c, log, http.StatusUnauthorized, nil, "User not authenticated")
-		return
-	}
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "UpdateUserSettingsAdvance").WithField("user_id", userID)
 
 	var updateReq ReqUpdateUserSettingsAdvance
 	if err := c.ShouldBindWith(&updateReq, binding.JSON); err != nil {
@@ -212,5 +198,5 @@ func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
 
 	new(dto.RespSettingsAdvance).With(
 		new(dto.SettingsAdvance).FromModel(advanceSettings),
-	).Response(c, "advanced settings updated successfully")
+	).Response(c, "advanced settings updated")
 }
