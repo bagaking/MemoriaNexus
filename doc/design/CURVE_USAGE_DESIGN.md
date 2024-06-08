@@ -1,4 +1,4 @@
-# Ebbinghaus Curve 系统要如何设计
+# Ebbinghaus Curve 系统要如何设计 (回归优化思路)
 
 > @PM [bagaking](kinghand@foxmail.com)
 
