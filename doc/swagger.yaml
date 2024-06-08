@@ -1,4 +1,18 @@
 definitions:
+  def.AttackResult:
+    enum:
+    - defeat
+    - miss
+    - hit
+    - kill
+    - complete
+    type: string
+    x-enum-varnames:
+    - AttackDefeat
+    - AttackMiss
+    - AttackHit
+    - AttackKill
+    - AttackComplete
   def.DifficultyLevel:
     enum:
     - 1
@@ -456,8 +470,9 @@ definitions:
       monster_id:
         type: integer
       result:
+        allOf:
+        - $ref: '#/definitions/def.AttackResult'
         description: '"defeat", "miss", "hit", "kill", "complete"'
-        type: string
     type: object
   dungeon.ReqUpdateDungeon:
     properties:
@@ -479,6 +494,14 @@ definitions:
         type: array
       content:
         type: string
+      difficulty:
+        allOf:
+        - $ref: '#/definitions/def.DifficultyLevel'
+        description: 难度，默认值为 NoviceNormal (0x01)
+      importance:
+        allOf:
+        - $ref: '#/definitions/def.ImportanceLevel'
+        description: 重要程度，默认值为 DomainGeneral (0x01)
       tags:
         description: 新增字段，用于接收一组 Tag 名称
         items:
@@ -491,6 +514,14 @@ definitions:
     properties:
       content:
         type: string
+      difficulty:
+        allOf:
+        - $ref: '#/definitions/def.DifficultyLevel'
+        description: 难度，默认值为 NoviceNormal (0x01)
+      importance:
+        allOf:
+        - $ref: '#/definitions/def.ImportanceLevel'
+        description: 重要程度，默认值为 DomainGeneral (0x01)
       tags:
         description: 新增字段
         items:

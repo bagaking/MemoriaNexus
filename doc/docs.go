@@ -1590,6 +1590,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "def.AttackResult": {
+            "type": "string",
+            "enum": [
+                "defeat",
+                "miss",
+                "hit",
+                "kill",
+                "complete"
+            ],
+            "x-enum-varnames": [
+                "AttackDefeat",
+                "AttackMiss",
+                "AttackHit",
+                "AttackKill",
+                "AttackComplete"
+            ]
+        },
         "def.DifficultyLevel": {
             "type": "integer",
             "enum": [
@@ -2265,7 +2282,11 @@ const docTemplate = `{
                 },
                 "result": {
                     "description": "\"defeat\", \"miss\", \"hit\", \"kill\", \"complete\"",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.AttackResult"
+                        }
+                    ]
                 }
             }
         },
@@ -2299,6 +2320,22 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
+                "difficulty": {
+                    "description": "难度，默认值为 NoviceNormal (0x01)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.DifficultyLevel"
+                        }
+                    ]
+                },
+                "importance": {
+                    "description": "重要程度，默认值为 DomainGeneral (0x01)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.ImportanceLevel"
+                        }
+                    ]
+                },
                 "tags": {
                     "description": "新增字段，用于接收一组 Tag 名称",
                     "type": "array",
@@ -2316,6 +2353,22 @@ const docTemplate = `{
             "properties": {
                 "content": {
                     "type": "string"
+                },
+                "difficulty": {
+                    "description": "难度，默认值为 NoviceNormal (0x01)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.DifficultyLevel"
+                        }
+                    ]
+                },
+                "importance": {
+                    "description": "重要程度，默认值为 DomainGeneral (0x01)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.ImportanceLevel"
+                        }
+                    ]
                 },
                 "tags": {
                     "description": "新增字段",

@@ -42,13 +42,14 @@ type ProfileMemorizationSetting struct {
 	ReviewIntervalSetting def.RecallIntervalLevel `gorm:"type:string"`
 
 	// 用户挑战偏好
-	DifficultyPreference uint8 `gorm:"type:tinyint unsigned"`
+	DifficultyPreference utils.Percentage `gorm:"type:tinyint unsigned"`
 
 	// 倾向的战斗模式，决定了 monster 的出场顺序
 	QuizMode string `gorm:"size:255"`
 }
 
 var DefaultMemorizationSetting = ProfileMemorizationSetting{
+	// 用户的设置值
 	ReviewIntervalSetting: def.DefaultRecallIntervals, // 先用 day
 	DifficultyPreference:  1,
 	QuizMode:              "classic",

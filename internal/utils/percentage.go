@@ -22,8 +22,8 @@ func (p Percentage) Raw() uint8 {
 	return uint8(p)
 }
 
-func (p Percentage) ToDotValue() float64 {
-	return float64(p) / 100
+func (p Percentage) NormalizedFloat() float64 {
+	return float64(p.Clamp0100()) / 100
 }
 
 func (p Percentage) Clamp0100() Percentage {
@@ -35,8 +35,12 @@ func (p Percentage) Clamp0100() Percentage {
 	return p
 }
 
-func (p *Percentage) FromDotValue(v float64) {
+func (p *Percentage) FromNormalizedFloat(v float64) {
 	*p = Percentage(v * 100).Clamp0100()
+}
+
+func (p *Percentage) Times(v float64) float64 {
+	return p.NormalizedFloat() * v
 }
 
 // MarshalJSON serializes the Percentage as a string to avoid precision loss in JavaScript.

@@ -1,0 +1,66 @@
+### 创建一个新的 Book
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming Basics. {{$timestamp}}",
+  "description": "A book about Go programming basics. {{$timestamp}}"
+}
+
+> {% client.global.set("BOOK_ID", response.body.data.id) %}
+
+### 创建一个新的 Item (多跑几次)
+POST http://localhost:8080/api/v1/items
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "content": "#Go {{$timestamp}}\n variables are statically typed and declared using the var keyword. \n#{{$random.alphabetic(12)}}",
+  "type": "flashcard",
+  "book_ids": [{{BOOK_ID}}],
+  "tags": ["tag1", "test_tag"],
+  "importance": {{$random.integer(1, 36)}},
+  "difficulty": {{$random.integer(1, 68)}}
+}
+
+> {% client.global.set("ITEM_ID", response.body.data.id) %}
+
+### 创建一个新的复习计划
+POST http://localhost:8080/api/v1/dungeon/dungeons
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "title": "Go Programming Dungeon",
+  "description": "A dungeon to review Go programming concepts.",
+  "type": "campaign",
+  "rule": "no rule",
+  "books": [{{BOOK_ID}}]
+}
+
+> {% client.global.set("DUNGEON_ID", response.body.data.id) %}
+
+### 获取这个复习计划的详细信息
+GET http://localhost:8080/api/v1/dungeon/dungeons/{{DUNGEON_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 抽卡
+GET http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/practice?count=15&strategy=classic
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+> {% client.global.set("MONSTER_ID", response.body.data[0].item_id) %}
+
+### 上报复习计划的 Monster 结果
+POST http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/submit
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "monster_id": {{MONSTER_ID}},
+  "result": "kill"
+}
+
+### 获取复习计划的结果
+GET http://localhost:8080/api/v1/dungeon/campaigns/{{DUNGEON_ID}}/results
+Authorization: Bearer {{ACCESS_TOKEN}}

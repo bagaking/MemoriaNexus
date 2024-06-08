@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bagaking/memorianexus/src/def"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -21,8 +23,8 @@ import (
 )
 
 type ReqReportMonsterResult struct {
-	MonsterID utils.UInt64 `json:"monster_id"`
-	Result    string       `json:"result"` // "defeat", "miss", "hit", "kill", "complete"
+	MonsterID utils.UInt64     `json:"monster_id"`
+	Result    def.AttackResult `json:"result"` // "defeat", "miss", "hit", "kill", "complete"
 }
 
 // GetMonstersOfCampaignDungeon handles fetching all the monsters of a specific campaign dungeon
@@ -145,31 +147,22 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 	}
 
 	// 更新DungeonMonster的显影程度和下次复习时间
-	var dungeonMonster model.DungeonMonster
-	if err := svr.db.Where("dungeon_id = ? AND item_id = ?", campaignID, req.MonsterID).First(&dungeonMonster).Error; err != nil {
+	var dm model.DungeonMonster
+	if err := svr.db.Where("dungeon_id = ? AND item_id = ?", campaignID, req.MonsterID).First(&dm).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "DungeonMonster not found")
 		return
 	}
+	log = log.WithField("item_id", dm.ItemID)
 
 	// 处理Monster结果 - 根据需求调整处理逻辑，例如更新Monster的熟练度或状态等
-	var newFamiliarity utils.Percentage
-	switch req.Result {
-	case "defeat":
-		newFamiliarity = 20
-	case "miss":
-		newFamiliarity = 40
-	case "hit":
-		newFamiliarity = 60
-	case "kill":
-		newFamiliarity = 80
-	case "complete":
-		newFamiliarity = 100
-	default:
-		utils.GinHandleError(c, log, http.StatusBadRequest, errors.New("invalid result"), "Invalid result")
+	damageRate := req.Result.DamageRate()
+	if damageRate <= 0 {
+		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Error("invalid attack result %s", req.Result), "Invalid result")
 		return
 	}
 
 	// 更新UserMonster的熟练度
+	newFamiliarity := CalculateNewFamiliarity(dm.Familiarity, damageRate, dm.PracticeAt, dm.Difficulty)
 	userMonster := model.UserMonster{
 		UserID:      userID,
 		ItemID:      req.MonsterID,
@@ -182,6 +175,7 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update UserMonster familiarity")
 		return
 	}
+	log.Infof("damage calculate, last_practice_at %v, damage_rate= %v, difficulty= %v, current= %v, new= %v", dm.PracticeAt, damageRate, dm.Difficulty, dm.Familiarity, newFamiliarity)
 
 	// 计算下次复习时间
 	var userSettings model.ProfileMemorizationSetting
@@ -194,32 +188,26 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 		userSettings.ID = userID
 	}
 
-	nextRecallTime := calculateNextPracticeAt(c,
-		newFamiliarity,
-		dungeonMonster.Importance,
-		dungeonMonster.Difficulty,
-		&userSettings,
-		dungeonMonster.NextPracticeAt,
-	)
-
+	nextRecallTime := CalculateNextPracticeAt(c, newFamiliarity, dm.Importance, &userSettings)
 	updater := map[string]any{
-		"visibility":       utils.Percentage(newFamiliarity.ToDotValue() * dungeonMonster.Visibility.ToDotValue()),
+		"visibility":       utils.Percentage(newFamiliarity.Times(dm.Visibility.NormalizedFloat())),
 		"familiarity":      newFamiliarity,
 		"practice_at":      time.Now(),
 		"next_practice_at": nextRecallTime,
 		"practice_count":   gorm.Expr("practice_count + ?", 1),
 	}
 
-	if err := svr.db.Model(&dungeonMonster).
+	if err := svr.db.Model(&dm).
 		Where("dungeon_id = ? AND item_id = ?", campaignID, req.MonsterID).
 		Updates(updater).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update DungeonMonster visibility and next recall time")
 		return
 	}
+	log.Infof("next_practice_at updated, last_practice_at= %v, new_familiarity= %v, importance= %v, next_recall_at= %v", dm.PracticeAt, newFamiliarity, dm.Importance, nextRecallTime)
 
 	new(dto.RespMonsterUpdate).With(
 		dto.Updater[*dto.DungeonMonster]{
-			From:    new(dto.DungeonMonster).FromModel(dungeonMonster),
+			From:    new(dto.DungeonMonster).FromModel(dm),
 			Updates: updater,
 		}).Response(c, "user-monster practice result updated")
 }

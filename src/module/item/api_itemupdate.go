@@ -3,6 +3,8 @@ package item
 import (
 	"net/http"
 
+	"github.com/bagaking/memorianexus/src/def"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/memorianexus/src/module/dto"
@@ -13,9 +15,11 @@ import (
 )
 
 type ReqUpdateItem struct {
-	Type    string   `json:"type,omitempty"`
-	Content string   `json:"content,omitempty"`
-	Tags    []string `json:"tags,omitempty"` // 新增字段
+	Type       string              `json:"type,omitempty"`
+	Content    string              `json:"content,omitempty"`
+	Difficulty def.DifficultyLevel `json:"difficulty,omitempty"` // 难度，默认值为 NoviceNormal (0x01)
+	Importance def.ImportanceLevel `json:"importance,omitempty"` // 重要程度，默认值为 DomainGeneral (0x01)
+	Tags       []string            `json:"tags,omitempty"`       // 新增字段
 }
 
 // UpdateItem handles updating an existing item's information and associated tags.
@@ -42,9 +46,12 @@ func (svr *Service) UpdateItem(c *gin.Context) {
 	}
 
 	updater := &model.Item{
-		Type:    req.Type,
-		Content: req.Content,
+		Type:       req.Type,
+		Content:    req.Content,
+		Difficulty: req.Difficulty,
+		Importance: req.Importance,
 	}
+	// todo: 懒求值 update dungeon-monster 宽表冗余
 
 	// 开始数据库事务
 	tx := svr.db.Begin()

@@ -25,7 +25,7 @@ type (
 	SettingsMemorization struct {
 		// Definitions should match with ProfileMemorizationSetting
 		ReviewIntervalSetting def.RecallIntervalLevel `json:"review_interval_setting"`
-		DifficultyPreference  uint8                   `json:"difficulty_preference"`
+		DifficultyPreference  utils.Percentage        `json:"difficulty_preference"`
 		QuizMode              string                  `json:"quiz_mode"`
 	}
 

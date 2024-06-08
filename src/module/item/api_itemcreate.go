@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bagaking/memorianexus/src/def"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/goulp/wlog"
@@ -14,10 +16,12 @@ import (
 )
 
 type ReqCreateItem struct {
-	Type    string         `json:"type,omitempty"`
-	Content string         `json:"content,omitempty"`
-	BookIDs []utils.UInt64 `json:"book_ids,omitempty"` // 用于接收一个或多个 BookID
-	Tags    []string       `json:"tags,omitempty"`     // 新增字段，用于接收一组 Tag 名称
+	Type       string              `json:"type,omitempty"`
+	Content    string              `json:"content,omitempty"`
+	Difficulty def.DifficultyLevel `json:"difficulty,omitempty"` // 难度，默认值为 NoviceNormal (0x01)
+	Importance def.ImportanceLevel `json:"importance,omitempty"` // 重要程度，默认值为 DomainGeneral (0x01)
+	BookIDs    []utils.UInt64      `json:"book_ids,omitempty"`   // 用于接收一个或多个 BookID
+	Tags       []string            `json:"tags,omitempty"`       // 新增字段，用于接收一组 Tag 名称
 }
 
 const (
@@ -63,10 +67,12 @@ func (svr *Service) CreateItem(c *gin.Context) {
 
 	// 创建 Item 实例
 	item := &model.Item{
-		ID:        id,
-		CreatorID: userID,
-		Type:      req.Type,
-		Content:   req.Content,
+		ID:         id,
+		CreatorID:  userID,
+		Type:       req.Type,
+		Content:    req.Content,
+		Difficulty: req.Difficulty,
+		Importance: req.Importance,
 	}
 
 	// 创建 Item 并开始数据库事务

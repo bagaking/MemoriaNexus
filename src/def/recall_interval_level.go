@@ -10,16 +10,25 @@ import (
 	"github.com/bytedance/sonic"
 )
 
+var (
+	day     = 24 * time.Hour
+	week    = 7 * day
+	quarter = 13 * week
+)
+
 // DefaultRecallIntervals 艾宾浩斯记忆曲线的默认复习间隔策略
 var DefaultRecallIntervals = RecallIntervalLevel{
 	5 * time.Minute,
 	30 * time.Minute,
 	12 * time.Hour,
-	24 * time.Hour,
-	48 * time.Hour,
-	96 * time.Hour,
-	168 * time.Hour,
-	360 * time.Hour,
+	1 * day,
+	2 * day,
+	4 * day,
+	week,
+	2 * week,
+	4 * week,
+	8 * week,
+	quarter,
 }
 
 // RecallIntervalLevel 定义了复习间隔的级别

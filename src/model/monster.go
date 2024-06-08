@@ -60,10 +60,36 @@ func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs 
 		return irr.Wrap(err, "add monster to dungeon failed")
 	}
 
-	if err := createDungeonMonsterRef(tx, source, d.ID, sourceEntityIDs, d.Type == def.DungeonTypeCampaign); err != nil {
-		return irr.Wrap(err, "add monster to dungeon failed")
+	if source == MonsterSourceItem {
+		if err := createMonstersByItemID(tx, d.ID, sourceEntityIDs); err != nil {
+			return irr.Wrap(err, "add monster (from item list) to dungeon failed")
+		}
 	}
 
+	for _, id := range sourceEntityIDs {
+		switch source {
+		case MonsterSourceBook:
+			if err := createDungeonBookRecord(tx, d.ID, id); err != nil {
+				return err
+			}
+			if d.Type == def.DungeonTypeCampaign {
+				if err := createMonstersForBook(tx, d.ID, id); err != nil {
+					return irr.Wrap(err, "add monster (from book's ref) to dungeon failed")
+				}
+			}
+		case MonsterSourceTag:
+			if err := createDungeonTagRecord(tx, d.ID, id); err != nil {
+				return err
+			}
+			if d.Type == def.DungeonTypeCampaign {
+				if err := createMonstersForTag(tx, d.ID, id); err != nil {
+					return irr.Wrap(err, "add monster (from tag's ref) to dungeon failed")
+				}
+			}
+		default:
+			return irr.Error("unknown resource type: %v", source)
+		}
+	}
 	return nil
 }
 
@@ -93,38 +119,6 @@ func validateExistence(tx *gorm.DB, source MonsterSource, resourceIDs []utils.UI
 	return nil
 }
 
-func createDungeonMonsterRef(tx *gorm.DB, source MonsterSource, dungeonID utils.UInt64, sourceEntityIDs []utils.UInt64, loadAssociationMonster bool) error {
-	for _, id := range sourceEntityIDs {
-		switch source {
-		case MonsterSourceItem:
-			if err := createDungeonMonster(tx, dungeonID, id, source, id); err != nil {
-				return err
-			}
-		case MonsterSourceBook:
-			if err := createDungeonBookRecord(tx, dungeonID, id); err != nil {
-				return err
-			}
-			if loadAssociationMonster {
-				if err := createMonstersForBook(tx, dungeonID, id); err != nil {
-					return err
-				}
-			}
-		case MonsterSourceTag:
-			if err := createDungeonTagRecord(tx, dungeonID, id); err != nil {
-				return err
-			}
-			if loadAssociationMonster {
-				if err := createMonstersForTag(tx, dungeonID, id); err != nil {
-					return err
-				}
-			}
-		default:
-			return irr.Error("unknown resource type: %v", source)
-		}
-	}
-	return nil
-}
-
 func createDungeonBookRecord(tx *gorm.DB, dungeonID, bookID utils.UInt64) error {
 	dungeonBook := DungeonBook{
 		DungeonID: dungeonID,
@@ -147,10 +141,11 @@ func createDungeonTagRecord(tx *gorm.DB, dungeonID, tagID utils.UInt64) error {
 	return nil
 }
 
-func createDungeonMonster(tx *gorm.DB, dungeonID, itemID utils.UInt64, source MonsterSource, sourceEntityID utils.UInt64) error {
+func createDungeonMonster(tx *gorm.DB, dungeonID utils.UInt64, item Item, source MonsterSource, sourceEntityID utils.UInt64) error {
 	dungeonMonster := DungeonMonster{
-		DungeonID:  dungeonID,
-		ItemID:     itemID,
+		DungeonID: dungeonID,
+		ItemID:    item.ID,
+
 		SourceType: source,
 		SourceID:   sourceEntityID,
 
@@ -160,14 +155,14 @@ func createDungeonMonster(tx *gorm.DB, dungeonID, itemID utils.UInt64, source Mo
 		PracticeAt:     time.Now(),
 		NextPracticeAt: time.Now(),
 
-		// 以下为宽表内容，为了加速查询
+		// 以下为宽表内容，为了加速查询 todo: 设计更新机制
 		Familiarity: utils.Percentage(0),
-		Difficulty:  def.NoviceNormal,
-		Importance:  def.DomainGeneral,
+		Difficulty:  item.Difficulty,
+		Importance:  item.Importance,
 
 		CreatedAt: time.Now(),
 	}
-	if err := tx.Where("dungeon_id = ? AND item_id = ?", dungeonID, itemID).FirstOrCreate(&dungeonMonster).Error; err != nil {
+	if err := tx.Where("dungeon_id = ? AND item_id = ?", dungeonID, item.ID).FirstOrCreate(&dungeonMonster).Error; err != nil {
 		return err
 	}
 	return nil
@@ -178,8 +173,18 @@ func createMonstersForBook(tx *gorm.DB, dungeonID, bookID utils.UInt64) error {
 	if err := tx.Where("book_id = ?", bookID).Find(&bookItems).Error; err != nil {
 		return err
 	}
-	for _, bookItem := range bookItems {
-		if err := createDungeonMonster(tx, dungeonID, bookItem.ItemID, MonsterSourceItem, bookID); err != nil {
+
+	itemIDs := typer.SliceMap(bookItems, func(from BookItem) utils.UInt64 {
+		return from.ItemID
+	})
+
+	var items []Item
+	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		if err := createDungeonMonster(tx, dungeonID, item, MonsterSourceItem, bookID); err != nil {
 			return err
 		}
 	}
@@ -191,8 +196,32 @@ func createMonstersForTag(tx *gorm.DB, dungeonID, tagID utils.UInt64) error {
 	if err := tx.Where("tag_id = ?", tagID).Find(&tagItems).Error; err != nil {
 		return err
 	}
-	for _, tagItem := range tagItems {
-		if err := createDungeonMonster(tx, dungeonID, tagItem.ItemID, MonsterSourceItem, tagID); err != nil {
+
+	itemIDs := typer.SliceMap(tagItems, func(from ItemTag) utils.UInt64 {
+		return from.ItemID
+	})
+
+	var items []Item
+	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		if err := createDungeonMonster(tx, dungeonID, item, MonsterSourceItem, tagID); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createMonstersByItemID(tx *gorm.DB, dungeonID utils.UInt64, itemIDs []utils.UInt64) error {
+	var items []Item
+	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		if err := createDungeonMonster(tx, dungeonID, item, MonsterSourceItem, item.ID); err != nil {
 			return err
 		}
 	}

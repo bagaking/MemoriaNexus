@@ -1,8 +1,8 @@
 package def
 
 import (
-	"encoding/json"
-	"errors"
+	"github.com/bytedance/sonic"
+	"github.com/khicago/irr"
 )
 
 type DifficultyLevel uint8
@@ -30,6 +30,38 @@ const (
 	MasterExtreme   DifficultyLevel = 0x44
 )
 
+// Normalize returns a normalized value between 0 and 1
+func (d DifficultyLevel) Normalize() float64 {
+	maxValue := float64(MasterExtreme)
+	return float64(d) / maxValue
+}
+
+var difficultyFactors = map[DifficultyLevel]float64{
+	NoviceNormal:          1.1,
+	NoviceAdvanced:        1.15,
+	NoviceChallenge:       1.2,
+	AmateurNormal:         1.25,
+	AmateurAdvanced:       1.3,
+	AmateurChallenge:      1.35,
+	ProfessionalNormal:    1.4,
+	ProfessionalAdvanced:  1.45,
+	ProfessionalChallenge: 1.5,
+	ExpertNormal:          1.55,
+	ExpertAdvanced:        1.6,
+	ExpertChallenge:       1.65,
+	MasterNormal:          1.7,
+	MasterAdvanced:        1.75,
+	MasterChallenge:       1.8,
+	MasterExtreme:         1.85,
+}
+
+func (d DifficultyLevel) Factor() float64 {
+	if factor, exists := difficultyFactors[d]; exists {
+		return factor
+	}
+	return 1.0 // 默认值
+}
+
 var difficultyLevelNames = map[DifficultyLevel]string{
 	NoviceNormal:          "novice_normal",
 	NoviceAdvanced:        "novice_advanced",
@@ -56,7 +88,7 @@ func (d *DifficultyLevel) String() string {
 // UnmarshalJSON unmarshal the enum from a json string or number
 func (d *DifficultyLevel) UnmarshalJSON(data []byte) error {
 	var value interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
+	if err := sonic.Unmarshal(data, &value); err != nil {
 		return err
 	}
 
@@ -70,15 +102,9 @@ func (d *DifficultyLevel) UnmarshalJSON(data []byte) error {
 				return nil
 			}
 		}
-		return errors.New("invalid DifficultyLevel name")
+		return irr.Error("invalid DifficultyLevel name")
 	default:
-		return errors.New("invalid type for DifficultyLevel")
+		return irr.Error("invalid type for DifficultyLevel")
 	}
 	return nil
-}
-
-// Normalize returns a normalized value between 0 and 1
-func (d DifficultyLevel) Normalize() float64 {
-	maxValue := float64(MasterExtreme)
-	return float64(d) / maxValue
 }

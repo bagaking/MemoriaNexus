@@ -7,16 +7,18 @@ import (
 )
 
 // RespSuccess defines the response structure for a successful operation.
-type RespSuccess[T any] struct {
-	Message string `json:"message"`
-	Data    T      `json:"data,omitempty"`
-}
+type (
+	RespSuccess[T any] struct {
+		Message string `json:"message"`
+		Data    T      `json:"data,omitempty"`
+	}
 
-type Updater[T any] struct {
-	From    T              `json:"from,omitempty"`
-	To      T              `json:"to,omitempty"`
-	Updates map[string]any `json:"updates,omitempty"`
-}
+	Updater[T any] struct {
+		From    T              `json:"from,omitempty"`
+		To      T              `json:"to,omitempty"`
+		Updates map[string]any `json:"updates,omitempty"`
+	}
+)
 
 // RespSuccessPage defines the response structure for a successful operation.
 type RespSuccessPage[T any] struct {

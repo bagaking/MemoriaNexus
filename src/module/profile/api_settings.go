@@ -18,7 +18,7 @@ import (
 // ReqUpdateUserSettingsMemorization defines the request format for updating user settings.
 type ReqUpdateUserSettingsMemorization struct {
 	ReviewIntervalSetting *def.RecallIntervalLevel `json:"review_interval"`
-	DifficultyPreference  *uint8                   `json:"difficulty_preference"`
+	DifficultyPreference  *utils.Percentage        `json:"difficulty_preference"`
 	QuizMode              *string                  `json:"quiz_mode"`
 }
 
