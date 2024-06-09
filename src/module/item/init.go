@@ -22,7 +22,7 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 
 	idGroup := group.Group("/:id").Use(utils.GinMWParseID())
 	{
-		idGroup.GET("", svr.GetItem)
+		idGroup.GET("", svr.ReadItem)
 		idGroup.PUT("", svr.UpdateItem)
 		idGroup.DELETE("", svr.DeleteItem)
 	}

@@ -7,31 +7,19 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
-	"gorm.io/gorm/clause"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
-// ReqGetBookItemsQuery encapsulates the request parameters for fetching items.
-type (
-	ReqGetBookItemsQuery struct {
-		Page  int `form:"page"`
-		Limit int `form:"limit"`
-	}
-
-	ReqAddItems struct {
-		ItemIDs []utils.UInt64 `json:"item_ids"`
-	}
-)
-
-// GetBookItems handles retrieving a list of books with pagination.
+// GetItemsOfBook handles retrieving a list of books with pagination.
 // @Summary Get item list of books with pagination
 // @Description Get a paginated list of items for the book.
 // @Tags book
@@ -41,10 +29,10 @@ type (
 // @Param limit query int false "Number of items per page" default(10)
 // @Success 200 {object} dto.RespItemList "items of the book found"
 // @Router /books/{id}/items [get]
-func (svr *Service) GetBookItems(c *gin.Context) {
+func (svr *Service) GetItemsOfBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	bookID := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetBookItems").WithField("user_id", userID)
+	log := wlog.ByCtx(c, "GetItemsOfBook").WithField("user_id", userID)
 
 	var req ReqGetBookItemsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {

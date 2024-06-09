@@ -31,16 +31,6 @@ func (b *Book) FromModel(m *model.Book) *Book {
 	return b
 }
 
-// requests
-type (
-	// ReqCreateBook 定义创建书册的请求体
-	ReqCreateBook struct {
-		Title       string   `json:"title"`
-		Description string   `json:"description"`
-		Tags        []string `json:"tags,omitempty"`
-	}
-)
-
 // responses
 type (
 	RespBookGet    = RespSuccess[*Book]

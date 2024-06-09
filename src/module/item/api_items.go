@@ -14,22 +14,6 @@ import (
 	"github.com/bagaking/memorianexus/src/model"
 )
 
-// ReqGetItems encapsulates the request parameters for fetching items.
-type ReqGetItems struct {
-	UserID utils.UInt64 `form:"user_id"`
-	BookID utils.UInt64 `form:"book_id"`
-	Type   string       `form:"type"`
-	Page   int          `form:"page"`
-	Limit  int          `form:"limit"`
-}
-
-type RespItems struct {
-	Items []dto.Item `json:"items"`
-	Page  int        `json:"page"`
-	Limit int        `json:"limit"`
-	Total int64      `json:"total"`
-}
-
 // GetItems handles retrieving a list of items with optional filters and pagination.
 // @Summary Get a list of items with optional filters
 // @Description Get a list of items for the user with optional filters for book and type and support for pagination.

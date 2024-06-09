@@ -4,13 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"github.com/bagaking/goulp/wlog"
-	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
 
 	"github.com/bagaking/memorianexus/internal/utils"
@@ -24,7 +22,7 @@ import (
 // @Tags book
 // @Accept json
 // @Produce json
-// @Param book body dto.ReqCreateBook true "Book creation data"
+// @Param book body ReqCreateOrUpdateBook true "Book creation data"
 // @Success 201 {object} dto.RespBookCreate "Successfully created book"
 // @Failure 400 {object} utils.ErrorResponse "Invalid parameters"
 // @Router /books [post]
@@ -32,7 +30,7 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	log := wlog.ByCtx(c, "CreateBook")
 	userID := utils.GinMustGetUserID(c)
 
-	var req dto.ReqCreateBook
+	var req ReqCreateOrUpdateBook
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid request body")
 		return
@@ -101,62 +99,7 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// GetBooks handles retrieving a list of books with pagination.
-// @Summary Get list of books with pagination
-// @Description Get a paginated list of books for the user.
-// @Tags book
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number for pagination" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {object} dto.RespBooks "Successfully retrieved list of books"
-// @Router /books [get]
-func (svr *Service) GetBooks(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetBooks")
-	userID := utils.GinMustGetUserID(c)
-
-	pageStr := c.DefaultQuery("page", "1")
-	limitStr := c.DefaultQuery("limit", "10")
-
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		log.WithError(err).Error("Invalid page number")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
-		return
-	}
-
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		log.WithError(err).Error("Invalid limit number")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
-		return
-	}
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := (page - 1) * limit
-
-	var books []*model.Book
-	result := svr.db.Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&books)
-
-	if result.Error != nil {
-		log.WithError(result.Error).Errorf("Failed to fetch books for user %v", userID)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching books"})
-		return
-	}
-
-	resp := new(dto.RespBooks).SetPageAndLimit(page, limit).Append(
-		typer.SliceMap(books, func(book *model.Book) dto.Book {
-			return *(&dto.Book{}).FromModel(book)
-		})...)
-	resp.Response(c, "books found")
-}
-
-// GetBook handles retrieving a single book by ID.
+// ReadBook handles retrieving a single book by ID.
 // @Summary Get a book by ID
 // @Description Get detailed information about a book.
 // @Tags book
@@ -165,8 +108,8 @@ func (svr *Service) GetBooks(c *gin.Context) {
 // @Param id path uint64 true "Book ID"
 // @Success 200 {object} dto.RespBookGet "Successfully retrieved book"
 // @Router /books/{id} [get]
-func (svr *Service) GetBook(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetBook")
+func (svr *Service) ReadBook(c *gin.Context) {
+	log := wlog.ByCtx(c, "ReadBook")
 	userID := utils.GinMustGetUserID(c)
 	id := utils.GinMustGetID(c)
 
@@ -192,7 +135,7 @@ func (svr *Service) GetBook(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Book ID"
-// @Param book body dto.ReqCreateBook true "Book update data"
+// @Param book body ReqCreateOrUpdateBook true "Book update data"
 // @Success 200 {object} dto.RespBookUpdate "Successfully updated book"
 // @Router /books/{id} [put]
 func (svr *Service) UpdateBook(c *gin.Context) {
@@ -201,7 +144,7 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 
 	log := wlog.ByCtx(c, "UpdateBook").WithField("user_id", userID).WithField("book_id", id)
 
-	var req dto.ReqCreateBook
+	var req ReqCreateOrUpdateBook
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid request body")
 		return
