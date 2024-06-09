@@ -37,7 +37,6 @@ type RespItems struct {
 // @Accept json
 // @Produce json
 // @Param user_id query uint64 false "User ID"
-// @Param book_id query uint64 false "Book ID"
 // @Param type query string false "Type of item"
 // @Param page query int false "Page number for pagination"
 // @Param limit query int false "Number of items per page"
@@ -67,9 +66,6 @@ func (svr *Service) GetItems(c *gin.Context) {
 		req.UserID = userID
 	}
 	query = query.Where("creator_id = ?", req.UserID)
-	if req.BookID > 0 {
-		query = query.Where("book_id = ?", req.BookID)
-	}
 	if req.Type != "" {
 		query = query.Where("type = ?", req.Type)
 	}

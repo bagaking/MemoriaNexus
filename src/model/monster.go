@@ -277,7 +277,7 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strat
 // GetAssociationsExpandedMonsterList - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
 func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string, offset, limit int) ([]DungeonMonster, error) {
 	// 获取关联的 Items, Books, TagNames
-	books, items, tags, err := GetDungeonAssociations(tx, d.ID)
+	bookIDs, items, tags, err := GetDungeonAssociations(tx, d.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string,
 	}
 
 	// 获取 book 关联的 items
-	bookItemMap, err := GetItemsOfBooks(tx, books)
+	bookItemMap, err := GetItemsOfBooks(tx, bookIDs)
 	if err != nil {
 		return nil, err
 	}

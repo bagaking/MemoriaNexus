@@ -1,0 +1,11 @@
+entry = [
+    "./doc/**/*.http",
+    "./doc/DESIGN.md",
+    "./doc/API_SPEC.md",
+    "./README.md"
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

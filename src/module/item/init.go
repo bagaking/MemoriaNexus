@@ -1,6 +1,7 @@
 package item
 
 import (
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,11 @@ func NewService(repo *gorm.DB) *Service {
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.POST("", svr.CreateItem)
 	group.GET("", svr.GetItems)
-	group.GET("/:id", svr.GetItem)
-	group.PUT("/:id", svr.UpdateItem)
-	group.DELETE("/:id", svr.DeleteItem)
+
+	idGroup := group.Group("/:id").Use(utils.GinMWParseID())
+	{
+		idGroup.GET("", svr.GetItem)
+		idGroup.PUT("", svr.UpdateItem)
+		idGroup.DELETE("", svr.DeleteItem)
+	}
 }

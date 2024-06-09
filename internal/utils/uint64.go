@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/bytedance/sonic"
@@ -14,9 +17,59 @@ func (val UInt64) Raw() uint64 {
 	return uint64(val)
 }
 
+var (
+	Zero                  = UInt64(0)
+	_    json.Marshaler   = &Zero
+	_    json.Unmarshaler = &Zero
+)
+
+// Scan implements the sql.Scanner interface.
+func (val *UInt64) Scan(value any) error {
+	if value == nil {
+		*val = Zero
+		return nil
+	}
+
+	switch v := value.(type) {
+	case int64:
+		*val = UInt64(v)
+	case uint64:
+		*val = UInt64(v)
+	case []byte:
+		var parsed uint64
+		if err := json.Unmarshal(v, &parsed); err != nil {
+			return err
+		}
+		*val = UInt64(parsed)
+	case string:
+		var parsed uint64
+		if err := json.Unmarshal([]byte(v), &parsed); err != nil {
+			return err
+		}
+		*val = UInt64(parsed)
+	default:
+		return errors.New("unsupported Scan source")
+	}
+
+	return nil
+}
+
+// Value implements the driver.Valuer interface.
+func (val UInt64) Value() (driver.Value, error) {
+	return int64(val), nil
+}
+
 // MarshalJSON serializes the UInt64 as a string to avoid precision loss in JavaScript.
-func (val UInt64) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + strconv.FormatUint(uint64(val), 10) + `"`), nil
+func (val *UInt64) MarshalJSON() ([]byte, error) {
+	bytes, err := sonic.Marshal(uint64(*val))
+	if err != nil {
+		return nil, err
+	}
+	data := make([]byte, 0, len(bytes)+2)
+	data = append(data, '"')
+	data = append(data, bytes...)
+	data = append(data, '"')
+	return data, nil
 }
 
 // UnmarshalJSON supports parsing the UInt64 from a number or a string in JSON.

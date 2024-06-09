@@ -497,11 +497,11 @@ definitions:
       difficulty:
         allOf:
         - $ref: '#/definitions/def.DifficultyLevel'
-        description: 难度，默认值为 NoviceNormal (0x01)
+        description: '难度，默认值为 NoviceNormal (0x01), todo: 考虑是否允许用户编辑，编辑后要引入写扩散'
       importance:
         allOf:
         - $ref: '#/definitions/def.ImportanceLevel'
-        description: 重要程度，默认值为 DomainGeneral (0x01)
+        description: '重要程度，默认值为 DomainGeneral (0x01), todo: 考虑是否允许用户编辑'
       tags:
         description: 新增字段，用于接收一组 Tag 名称
         items:
@@ -697,6 +697,32 @@ paths:
           schema:
             $ref: '#/definitions/dto.RespBookUpdate'
       summary: Update book information
+      tags:
+      - book
+  /books/{id}/items:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of items for the book.
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: items of the book found
+          schema:
+            $ref: '#/definitions/dto.RespItemList'
+      summary: Get item list of books with pagination
       tags:
       - book
   /dungeon/campaigns/{id}/monsters:
@@ -1284,10 +1310,6 @@ paths:
       - description: User ID
         in: query
         name: user_id
-        type: integer
-      - description: Book ID
-        in: query
-        name: book_id
         type: integer
       - description: Type of item
         in: query

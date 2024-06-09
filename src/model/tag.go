@@ -237,7 +237,10 @@ func removeObsoleteTags(ctx context.Context, tx *gorm.DB, entityType TagRefType,
 	case ItemTagRef:
 		err = tx.Where("item_id = ? AND tag_id IN (?)", entityID, tagsToDelete).Delete(&ItemTag{}).Error
 	}
-	return irr.Wrap(err, "failed to delete obsolete tags")
+	if err != nil { // todo: irr wrap 考虑保护 err = nil 的情况?
+		return irr.Wrap(err, "failed to delete obsolete tags, entity_type= %v, tags_to_delete= %v", entityType, tagsToDelete)
+	}
+	return nil
 }
 
 // fetchTagIDsByEntity fetches tag IDs associated with an entity.

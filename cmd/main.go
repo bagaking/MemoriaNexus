@@ -23,6 +23,8 @@ import (
 	"github.com/bagaking/memorianexus/src/gw"
 )
 
+const APIGroup = "/api/v1"
+
 // dsn for dev
 // todo: using env config
 func dsn() string {
@@ -73,11 +75,12 @@ func main() {
 	router := gin.Default()
 	router.Use(
 		ginRecoveryWithLog(),
+		corsMiddleware(),
 	)
 
 	// 注入db实例到注册处理函数中
-	doc.SwaggerInfo.BasePath = "/api/v1"
-	group := router.Group("/api/v1")
+	doc.SwaggerInfo.BasePath = APIGroup
+	group := router.Group(APIGroup)
 
 	gw.RegisterRoutes(group, db) // 注意: RegisterRoutes 函数签名需要接受 *gorm.DB 参数
 
@@ -129,6 +132,23 @@ func ginRecoveryWithLog() gin.HandlerFunc {
 		}()
 
 		// 处理请求
+		c.Next()
+	}
+}
+
+// corsMiddleware 处理跨域请求
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Authorization, Accept, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
 		c.Next()
 	}
 }

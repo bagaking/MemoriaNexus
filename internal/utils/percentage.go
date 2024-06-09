@@ -27,12 +27,7 @@ func (p Percentage) NormalizedFloat() float64 {
 }
 
 func (p Percentage) Clamp0100() Percentage {
-	if p > 100 {
-		return Percentage100()
-	} else if p < 0 {
-		return 0
-	}
-	return p
+	return Clamp(p, 0, 100)
 }
 
 func (p *Percentage) FromNormalizedFloat(v float64) {

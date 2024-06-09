@@ -1,6 +1,7 @@
 package achievement
 
 import (
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -20,7 +21,10 @@ func Init(db *gorm.DB) (*Service, error) {
 
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.GET("/", svr.GetAllAchievements)
-	group.GET("/:id", svr.GetAchievementDetails)
+	idGroup := group.Group("/:id").Use(utils.GinMWParseID())
+	{
+		idGroup.GET("", svr.GetAchievementDetails)
+	}
 }
 
 func (svr *Service) GetAllAchievements(context *gin.Context) {

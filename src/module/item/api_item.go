@@ -28,7 +28,7 @@ import (
 func (svr *Service) GetItem(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	id := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "DeleteItem").WithField("user_id", userID).WithField("item_id", id)
+	log := wlog.ByCtx(c, "GetItem").WithField("user_id", userID).WithField("item_id", id)
 
 	var item model.Item
 	if err := svr.db.First(&item, id).Error; err != nil {

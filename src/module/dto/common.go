@@ -23,7 +23,7 @@ type (
 // RespSuccessPage defines the response structure for a successful operation.
 type RespSuccessPage[T any] struct {
 	Message string `json:"message"`
-	Data    []T    `json:"data,omitempty"`
+	Data    []T    `json:"data"`
 
 	Offset int   `json:"offset"`
 	Limit  int   `json:"limit"`
@@ -73,6 +73,10 @@ func (resp *RespSuccessPage[T]) Response(c *gin.Context, msgAppend ...string) {
 	}
 	if resp.Message == "" {
 		resp.Message = "success"
+	}
+
+	if resp.Data == nil {
+		resp.Data = make([]T, 0)
 	}
 
 	// Respond with a generic success message.

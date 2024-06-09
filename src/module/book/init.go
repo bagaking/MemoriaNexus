@@ -1,6 +1,7 @@
 package book
 
 import (
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -21,7 +22,11 @@ func Init(db *gorm.DB) (*Service, error) {
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.POST("", svr.CreateBook)
 	group.GET("", svr.GetBooks)
-	group.GET("/:id", svr.GetBook)
-	group.PUT("/:id", svr.UpdateBook)
-	group.DELETE("/:id", svr.DeleteBook)
+	idGroup := group.Group("/:id").Use(utils.GinMWParseID())
+	{
+		idGroup.GET("", svr.GetBook)
+		idGroup.PUT("", svr.UpdateBook)
+		idGroup.DELETE("", svr.DeleteBook)
+		idGroup.GET("/items", svr.GetBookItems)
+	}
 }

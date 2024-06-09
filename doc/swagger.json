@@ -182,6 +182,45 @@
                 }
             }
         },
+        "/books/{id}/items": {
+            "get": {
+                "description": "Get a paginated list of items for the book.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book"
+                ],
+                "summary": "Get item list of books with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "items of the book found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RespItemList"
+                        }
+                    }
+                }
+            }
+        },
         "/dungeon/campaigns/{id}/monsters": {
             "get": {
                 "description": "获取复习计划的所有Monsters",
@@ -1061,12 +1100,6 @@
                         "type": "integer",
                         "description": "User ID",
                         "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Book ID",
-                        "name": "book_id",
                         "in": "query"
                     },
                     {
@@ -2310,7 +2343,7 @@
                     "type": "string"
                 },
                 "difficulty": {
-                    "description": "难度，默认值为 NoviceNormal (0x01)",
+                    "description": "难度，默认值为 NoviceNormal (0x01), todo: 考虑是否允许用户编辑，编辑后要引入写扩散",
                     "allOf": [
                         {
                             "$ref": "#/definitions/def.DifficultyLevel"
@@ -2318,7 +2351,7 @@
                     ]
                 },
                 "importance": {
-                    "description": "重要程度，默认值为 DomainGeneral (0x01)",
+                    "description": "重要程度，默认值为 DomainGeneral (0x01), todo: 考虑是否允许用户编辑",
                     "allOf": [
                         {
                             "$ref": "#/definitions/def.ImportanceLevel"
