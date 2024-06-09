@@ -40,9 +40,9 @@ func (resp *RespSuccessPage[T]) SetTotal(total int64) *RespSuccessPage[T] {
 	return resp
 }
 
-func (resp *RespSuccessPage[T]) SetPageAndLimit(page int, limit int) *RespSuccessPage[T] {
-	resp.Offset = (page - 1) * resp.Limit
+func (resp *RespSuccessPage[T]) SetPageAndLimit(page, limit int) *RespSuccessPage[T] {
 	resp.Limit = limit
+	resp.Offset = (page - 1) * limit
 	return resp
 }
 

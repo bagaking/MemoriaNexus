@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"gorm.io/gorm/clause"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"gorm.io/gorm"
@@ -187,7 +189,9 @@ func updateTagsRef[T ITagAssociate](ctx context.Context, tx *gorm.DB, entityID u
 	}
 	// 插入新的关联
 	if len(tagsToAssociate) > 0 {
-		if err = tx.Create(&tagsToAssociate).Error; err != nil {
+		if err = tx.Clauses(clause.OnConflict{
+			DoNothing: true, // 如果冲突则不做任何操作
+		}).Create(&tagsToAssociate).Error; err != nil {
 			log.Warnf("failed to associate book tags %#v to tags %#v", tagsToAssociate, tags)
 			return irr.Wrap(err, "failed to associate new tags with book")
 		}

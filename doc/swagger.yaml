@@ -1,4 +1,11 @@
 definitions:
+  book.ReqAddItems:
+    properties:
+      item_ids:
+        items:
+          type: integer
+        type: array
+    type: object
   def.AttackResult:
     enum:
     - defeat
@@ -700,6 +707,39 @@ paths:
       tags:
       - book
   /books/{id}/items:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a list of items from the specified book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comma-separated list of item IDs to remove
+        in: query
+        name: item_ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: items removed from book successfully
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Failed to remove book items
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Remove items from a book
+      tags:
+      - book
     get:
       consumes:
       - application/json
@@ -723,6 +763,40 @@ paths:
           schema:
             $ref: '#/definitions/dto.RespItemList'
       summary: Get item list of books with pagination
+      tags:
+      - book
+    post:
+      consumes:
+      - application/json
+      description: Add a list of items to the specified book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: List of item IDs to add
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/book.ReqAddItems'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: items added to book successfully
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Failed to upsert book items
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Add items to a book
       tags:
       - book
   /dungeon/campaigns/{id}/monsters:

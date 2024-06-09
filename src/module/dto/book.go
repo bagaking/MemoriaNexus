@@ -46,6 +46,7 @@ type (
 	RespBookGet    = RespSuccess[*Book]
 	RespBookCreate = RespSuccess[*Book]
 	RespBookUpdate = RespSuccess[*Book]
+
 	RespBookDelete = RespSuccess[utils.UInt64]
 	RespBooks      = RespSuccessPage[Book]
 )

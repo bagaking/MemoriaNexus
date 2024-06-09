@@ -27,6 +27,9 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 		idGroup.GET("", svr.GetBook)
 		idGroup.PUT("", svr.UpdateBook)
 		idGroup.DELETE("", svr.DeleteBook)
+
 		idGroup.GET("/items", svr.GetBookItems)
+		idGroup.POST("/items", svr.AddItemsToBook)
+		idGroup.DELETE("/items", svr.RemoveItemsFromBook)
 	}
 }

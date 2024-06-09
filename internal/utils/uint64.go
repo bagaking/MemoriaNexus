@@ -37,13 +37,13 @@ func (val *UInt64) Scan(value any) error {
 		*val = UInt64(v)
 	case []byte:
 		var parsed uint64
-		if err := json.Unmarshal(v, &parsed); err != nil {
+		if err := sonic.Unmarshal(v, &parsed); err != nil {
 			return err
 		}
 		*val = UInt64(parsed)
 	case string:
 		var parsed uint64
-		if err := json.Unmarshal([]byte(v), &parsed); err != nil {
+		if err := sonic.Unmarshal([]byte(v), &parsed); err != nil {
 			return err
 		}
 		*val = UInt64(parsed)
