@@ -28,6 +28,17 @@ func (dt *DungeonType) String() string {
 	}
 }
 
+func (dt *DungeonType) Valid() bool {
+	switch *dt {
+	case DungeonTypeCampaign:
+	case DungeonTypeEndless:
+	case DungeonTypeInstance:
+	default:
+		return false
+	}
+	return true
+}
+
 // UnmarshalJSON custom unmarshaller to handle both strings and numbers
 func (dt *DungeonType) UnmarshalJSON(data []byte) error {
 	var value any

@@ -2,6 +2,8 @@ package model
 
 import (
 	"context"
+	"fmt"
+	"sort"
 	"time"
 
 	"github.com/bagaking/goulp/wlog"
@@ -31,10 +33,13 @@ type (
 		SourceID   utils.UInt64
 
 		// 用于 runtime
-		Visibility     utils.Percentage `gorm:"default:0"` // Visibility 显影程度，根据复习次数变化
-		PracticeAt     time.Time        // 上次复习时间的记录
-		NextPracticeAt time.Time        // 下次复习时间
-		PracticeCount  uint32           // 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
+		PracticeAt     time.Time // 上次复习时间的记录
+		NextPracticeAt time.Time // 下次复习时间
+		PracticeCount  uint32    // 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
+
+		// Gaming
+		Visibility utils.Percentage `gorm:"default:0"` // Visibility 显影程度，根据复习次数变化
+		Avatar     string           // 头像
 
 		// 以下为宽表内容，为了加速查询
 		Familiarity utils.Percentage `gorm:"default:0"` // UserMonster 向 DungeonMonster 单项同步
@@ -49,45 +54,59 @@ type (
 )
 
 const (
-	MonsterSourceItem MonsterSource = iota + 1
-	MonsterSourceBook
-	MonsterSourceTag
+	MonsterSourceItem MonsterSource = 1
+	MonsterSourceBook MonsterSource = 2
+	MonsterSourceTag  MonsterSource = 3
 )
 
+func (ms MonsterSource) String() string {
+	switch ms {
+	case MonsterSourceItem:
+		return "item"
+	case MonsterSourceBook:
+		return "book"
+	case MonsterSourceTag:
+		return "tag"
+	default:
+		return fmt.Sprintf("unsupported_monster_source(%d)", ms)
+	}
+}
+
 func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs []utils.UInt64) error {
+
 	// Validate the existence of resources
 	if err := validateExistence(tx, source, sourceEntityIDs); err != nil {
-		return irr.Wrap(err, "add monster to dungeon failed")
+		return irr.Track(err, "add monster to dungeon failed, source= %v, ids= %v", source, sourceEntityIDs)
 	}
 
 	if source == MonsterSourceItem {
 		if err := createMonstersByItemID(tx, d.ID, sourceEntityIDs); err != nil {
-			return irr.Wrap(err, "add monster (from item list) to dungeon failed")
+			return irr.Track(err, "add monster (from item list) to dungeon failed")
 		}
-	}
-
-	for _, id := range sourceEntityIDs {
-		switch source {
-		case MonsterSourceBook:
-			if err := createDungeonBookRecord(tx, d.ID, id); err != nil {
-				return err
-			}
-			if d.Type == def.DungeonTypeCampaign {
-				if err := createMonstersForBook(tx, d.ID, id); err != nil {
-					return irr.Wrap(err, "add monster (from book's ref) to dungeon failed")
+	} else {
+		for _, id := range sourceEntityIDs {
+			switch source {
+			case MonsterSourceBook:
+				if err := createDungeonBookRecord(tx, d.ID, id); err != nil {
+					return err
 				}
-			}
-		case MonsterSourceTag:
-			if err := createDungeonTagRecord(tx, d.ID, id); err != nil {
-				return err
-			}
-			if d.Type == def.DungeonTypeCampaign {
-				if err := createMonstersForTag(tx, d.ID, id); err != nil {
-					return irr.Wrap(err, "add monster (from tag's ref) to dungeon failed")
+				if d.Type == def.DungeonTypeCampaign {
+					if err := createMonstersForBook(tx, d.ID, id); err != nil {
+						return irr.Track(err, "add monster (from book's ref) to dungeon failed")
+					}
 				}
+			case MonsterSourceTag:
+				if err := createDungeonTagRecord(tx, d.ID, id); err != nil {
+					return err
+				}
+				if d.Type == def.DungeonTypeCampaign {
+					if err := createMonstersForTag(tx, d.ID, id); err != nil {
+						return irr.Track(err, "add monster (from tag's ref) to dungeon failed")
+					}
+				}
+			default:
+				return irr.Trace("add monster failed, unknown resource type: %v", source)
 			}
-		default:
-			return irr.Error("unknown resource type: %v", source)
 		}
 	}
 	return nil
@@ -96,20 +115,20 @@ func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs 
 func validateExistence(tx *gorm.DB, source MonsterSource, resourceIDs []utils.UInt64) error {
 	var count int64
 	switch source {
-	case MonsterSourceBook:
-		if err := tx.Model(&Book{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
-			return err
-		}
 	case MonsterSourceItem:
-		if err := tx.Model(&Item{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
-			return err
+		if err := tx.Model(&Item{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+			return irr.Track(err, "find items in ids failed, ids=%v", resourceIDs)
+		}
+	case MonsterSourceBook:
+		if err := tx.Model(&Book{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+			return irr.Track(err, "find books in ids failed, ids=%v", resourceIDs)
 		}
 	case MonsterSourceTag:
-		if err := tx.Model(&Tag{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
-			return err
+		if err := tx.Model(&Tag{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+			return irr.Track(err, "find tags in ids failed, ids=%v", resourceIDs)
 		}
 	default:
-		return irr.Error("unknown resource type: %v", source)
+		return irr.Trace("validate failed, unknown resource type: %v", source)
 	}
 
 	if count != int64(len(resourceIDs)) {
@@ -274,8 +293,18 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strat
 	return dungeonMonsters, nil
 }
 
-// GetAssociationsExpandedMonsterList - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
-func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string, offset, limit int) ([]DungeonMonster, error) {
+// GetDungeonMonsters - 获取当前 Dungeon 的 DungeonMonster，不会尝试解析 books 和 tags 的关联
+func (d *Dungeon) GetDungeonMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
+	var monsters []DungeonMonster
+	err := tx.Where("dungeon_id = ?", d.ID).Order("item_id ASC").Offset(offset).Limit(limit).Find(&monsters).Error
+	if err != nil {
+		return nil, irr.Wrap(err, "failed to fetch item ids")
+	}
+	return monsters, nil
+}
+
+// GetDungeonMonstersWithExpandedAssociations - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
+func (d *Dungeon) GetDungeonMonstersWithExpandedAssociations(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
 	// 获取关联的 Items, Books, TagNames
 	bookIDs, items, tags, err := GetDungeonAssociations(tx, d.ID)
 	if err != nil {
@@ -289,7 +318,7 @@ func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string,
 	}
 
 	// 获取 book 关联的 items
-	bookItemMap, err := GetItemsOfBooks(tx, bookIDs)
+	bookItemMap, err := GetItemIDsOfBooks(tx, bookIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +329,7 @@ func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string,
 	}
 
 	// 获取 tag 关联的 items
-	tagItemMap, err := GetItemsOfTags(tx, tags)
+	tagItemMap, err := GetItemIDsOfTags(tx, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -312,8 +341,12 @@ func (d *Dungeon) GetAssociationsExpandedMonsterList(tx *gorm.DB, sortBy string,
 
 	// 批量获取所有 item 的详细信息
 	itemIDs := typer.Keys(itemSourceMap)
+	sort.Slice(itemIDs, func(i, j int) bool { // map 取值不稳定
+		return itemIDs[i] < itemIDs[j]
+	})
 
-	// 获取所有 item 的详细信息并排序分页
+	// 获取所有 item 的详细信息并排序分页，不在内存里先裁剪的原因是如果查不到的话会导致列表 < limit
+	// todo 当然还是有优化空间，比如空洞不多的情况下，先送内存裁剪的结果，有异常了再搜后续
 	var itemsList []*Item
 	if err = tx.Table("items").Where("id IN (?)", itemIDs).
 		Offset(offset).Limit(limit).Find(&itemsList).Error; err != nil {

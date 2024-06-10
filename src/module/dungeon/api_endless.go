@@ -19,7 +19,6 @@ import (
 // @TagNames dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
-// @Param sort_by query string true "Sort by field (familiarity, difficulty, importance)"
 // @Param offset query int true "Offset for pagination"
 // @Param limit query int true "Limit for pagination"
 // @Success 200 {object} dto.RespMonsterList
@@ -29,7 +28,7 @@ import (
 func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 	id := c.Param("id")
 
-	sortBy := c.DefaultQuery("sort_by", "familiarity")
+	//sortBy := c.DefaultQuery("sort_by", "familiarity") // (familiarity, difficulty, importance)
 	offsetStr := c.DefaultQuery("offset", "0")
 	limitStr := c.DefaultQuery("limit", "10")
 	offset, err := strconv.Atoi(offsetStr)
@@ -47,7 +46,7 @@ func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetAssociationsExpandedMonsterList(svr.db, sortBy, offset, limit)
+	monsters, err := dungeon.GetDungeonMonstersWithExpandedAssociations(svr.db, offset, limit)
 	if err != nil {
 		utils.GinHandleError(c, wlog.ByCtx(c), http.StatusInternalServerError, err, "Failed to fetch dungeon monsters with associations")
 		return

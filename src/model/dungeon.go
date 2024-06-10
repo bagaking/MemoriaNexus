@@ -92,7 +92,6 @@ func GetDungeonBookIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, err
 
 func GetDungeonItemIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, error) {
 	var items []utils.UInt64
-
 	tx = tx.Model(&DungeonMonster{}).Select("item_id").Where("dungeon_id = ?", dungeonID)
 	rows, err := tx.Rows()
 	if err != nil {
@@ -138,7 +137,7 @@ func GetDungeonAssociations(tx *gorm.DB, dungeonID utils.UInt64) (books, items, 
 	if tags, err = GetDungeonTagIDs(tx, dungeonID); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-tag associations")
 	}
-	if items, err = GetDungeonItemIDs(tx, dungeonID); err != nil {
+	if items, err = GetDungeonItemIDs(tx, dungeonID); err != nil { // todo: 先不分页
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-item associations")
 	}
 	return books, items, tags, nil

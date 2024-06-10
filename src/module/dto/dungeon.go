@@ -41,10 +41,12 @@ type (
 		SourceID   utils.UInt64        `json:"source_id,omitempty"`
 
 		// 用于 runtime
-		Visibility     utils.Percentage `json:"visibility,omitempty"`       // Visibility 显影程度，根据复习次数变化
-		PracticeAt     time.Time        `json:"practice_at,omitempty"`      // 上次复习时间的记录
-		NextPracticeAt time.Time        `json:"next_practice_at,omitempty"` // 下次复习时间
-		PracticeCount  uint32           `json:"practice_count,omitempty"`   // 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
+		PracticeAt     time.Time `json:"practice_at,omitempty"`      // 上次复习时间的记录
+		NextPracticeAt time.Time `json:"next_practice_at,omitempty"` // 下次复习时间
+		PracticeCount  uint32    `json:"practice_count,omitempty"`   // 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
+
+		Visibility utils.Percentage `json:"visibility,omitempty"` // Visibility 显影程度，根据复习次数变化
+		Avatar     string           `json:"avatar,omitempty"`     // 怪物头像
 
 		// 以下为宽表内容，为了加速查询
 		Familiarity utils.Percentage `json:"familiarity,omitempty"` // UserMonster 向 DungeonMonster 单项同步

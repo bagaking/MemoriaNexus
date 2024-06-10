@@ -138,13 +138,25 @@ func (svr *Service) GetDungeons(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "GetDungeons").WithField("user_id", userID)
 
+	var req ReqGetDungeon
+	if err := c.ShouldBindQuery(&req); err != nil {
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid query parameters")
+		return
+	}
+
+	pager := utils.GinGetPagerFromQuery(c)
+
 	var dungeons []model.Dungeon
-	if err := svr.db.Where("user_id = ?", userID).Find(&dungeons).Error; err != nil {
+	tx := svr.db.Where("user_id = ?", userID).Offset(pager.Offset).Limit(pager.Limit).Find(&dungeons)
+	if req.Type.Valid() {
+		tx.Where("type = ?", req.Type)
+	}
+	if err := tx.Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon campaigns")
 		return
 	}
 
-	resp := new(dto.RespDungeonList)
+	resp := new(dto.RespDungeonList).WithPager(pager)
 	for i := range dungeons {
 		dungeon := dungeons[i]
 		books, items, tags, err := model.GetDungeonAssociations(svr.db, dungeon.ID)

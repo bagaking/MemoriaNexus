@@ -34,7 +34,7 @@ type ReqReportMonsterResult struct {
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
 // @Param sort_by query string true "Sort by field (familiarity, difficulty, importance)"
-// @Param offset query int true "Offset for pagination"
+// @Param page query int true "page for pagination"
 // @Param limit query int true "Limit for pagination"
 // @Success 200 {object} dto.RespMonsterList "Successfully retrieved monsters"
 // @Failure 404 {object} utils.ErrorResponse "Dungeon not found"
@@ -44,12 +44,12 @@ func (svr *Service) GetMonstersOfCampaignDungeon(c *gin.Context) {
 	userID, campaignID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
 	log := wlog.ByCtx(c, "GetMonstersOfCampaignDungeon").WithField("user_id", userID).WithField("campaign_id", campaignID)
 
-	offsetStr := c.DefaultQuery("offset", "0")
+	offsetStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "10")
 
-	offset, err := strconv.Atoi(offsetStr)
+	page, err := strconv.Atoi(offsetStr)
 	if err != nil {
-		offset = 0
+		page = 0
 	}
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
@@ -62,13 +62,14 @@ func (svr *Service) GetMonstersOfCampaignDungeon(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetMonsters(svr.db, offset, limit)
+	pager := new(utils.Pager).SetPageAndLimit(page, limit)
+	monsters, err := dungeon.GetMonsters(svr.db, pager.Offset, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon monsters")
 		return
 	}
 
-	resp := new(dto.RespMonsterList).SetOffsetAndLimit(offset, limit)
+	resp := new(dto.RespMonsterList).WithPager(pager)
 	for _, monster := range monsters {
 		resp.Append(new(dto.DungeonMonster).FromModel(monster))
 	}
@@ -99,6 +100,7 @@ func (svr *Service) GetMonstersForCampaignPractice(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "count= %v", countStr), "invalid argument")
 	}
 	log = log.WithField("count", count)
+	pager := new(utils.Pager).SetFirstCount(count)
 
 	var dungeon model.Dungeon
 	if err = svr.db.Where("id = ?", campaignID).First(&dungeon).Error; err != nil {
@@ -106,21 +108,19 @@ func (svr *Service) GetMonstersForCampaignPractice(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, strategy, count)
+	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, strategy, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch dungeon monsters")
 		return
 	}
 
-	resp := dto.RespMonsterList{
-		Limit: count,
-	}
-	dtos := typer.SliceMap(monsters,
+	resp := new(dto.RespMonsterList).WithPager(pager)
+	dtoMonsters := typer.SliceMap(monsters,
 		func(from model.DungeonMonster) *dto.DungeonMonster {
 			return new(dto.DungeonMonster).FromModel(from)
 		})
-	log.Infof("dtos %v", dtos)
-	resp.Append(dtos...).Response(c)
+	log.Infof("got monsters= %v", dtoMonsters)
+	resp.Append(dtoMonsters...).Response(c)
 }
 
 // SubmitCampaignResult handles reporting the result of a specific monster recall

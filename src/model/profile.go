@@ -2,9 +2,8 @@ package model
 
 import (
 	"errors"
-	"time"
-
 	"github.com/bagaking/memorianexus/src/def"
+	"time"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 
@@ -18,13 +17,13 @@ import (
 type Profile struct {
 	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
-
 	Nickname  string `gorm:"nickname,size:255"`
 	Email     string `gorm:"email,size:255;not null;unique"`
 	AvatarURL string `gorm:"avatar_url,size:255"`
 	Bio       string `gorm:"bio,type:text"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
@@ -101,11 +100,11 @@ func (p *Profile) CreateProfile(db *gorm.DB) error {
 }
 
 // UpdateProfile 更新现有用户资料
-func (p *Profile) UpdateProfile(db *gorm.DB, updateData *Profile) error {
-	// 使用Clauses提供onConflict来避免select的更新为空值的字段
+func (p *Profile) UpdateProfile(db *gorm.DB) error {
 	return db.Clauses(clause.OnConflict{
-		DoUpdates: clause.AssignmentColumns([]string{"nickname", "email", "avatar_url", "bio"}),
-	}).Model(p).Where("id = ?", p.ID).Updates(updateData).Error
+		Columns:   []clause.Column{{Name: "id"}}, // 指定冲突的列
+		UpdateAll: true,                          // 在冲突时更新所有列
+	}).Create(p).Error
 }
 
 // EnsureLoadProfile 从数据库中加载用户个人信息
@@ -113,38 +112,25 @@ func EnsureLoadProfile(db *gorm.DB, uid utils.UInt64) (*Profile, error) {
 	p := &Profile{
 		ID: uid,
 	}
-	result := db.FirstOrInit(p, p)
+	result := db.Where("id = ?", uid).FirstOrCreate(p)
 	if result.Error != nil {
 		return nil, irr.Wrap(result.Error, "search for profile failed")
-	}
-
-	// 如果是新初始化的对象，保存到数据库
-	if result.RowsAffected == 0 {
-		if err := db.Save(p).Error; err != nil {
-			return nil, irr.Wrap(err, "create profile failed")
-		}
 	}
 
 	return p, nil
 }
 
 // EnsureLoadProfileSettingsMemorization 从数据库中"懒加载"用户记忆设置
+// EnsureLoadProfileSettingsMemorization 从数据库中"懒加载"用户记忆设置
 func (p *Profile) EnsureLoadProfileSettingsMemorization(db *gorm.DB) (*ProfileMemorizationSetting, error) {
 	if p.settingsMemorization != nil {
 		return p.settingsMemorization, nil
 	}
 
-	p.settingsMemorization = &ProfileMemorizationSetting{ID: p.ID}
-	result := db.FirstOrInit(p.settingsMemorization, ProfileMemorizationSetting{ID: p.ID})
+	cond := &ProfileMemorizationSetting{ID: p.ID}
+	result := db.Where(cond).FirstOrCreate(p.settingsMemorization, cond)
 	if result.Error != nil {
 		return nil, result.Error
-	}
-
-	// 如果是新初始化的对象，保存到数据库
-	if result.RowsAffected == 0 {
-		if err := db.Save(p.settingsMemorization).Error; err != nil {
-			return nil, err
-		}
 	}
 
 	return p.settingsMemorization, nil
@@ -156,17 +142,10 @@ func (p *Profile) EnsureLoadProfileSettingsAdvance(db *gorm.DB) (*ProfileAdvance
 		return p.settingsAdvance, nil
 	}
 
-	p.settingsAdvance = &ProfileAdvanceSetting{ID: p.ID}
-	result := db.FirstOrInit(p.settingsAdvance, ProfileAdvanceSetting{ID: p.ID})
+	cond := &ProfileAdvanceSetting{ID: p.ID}
+	result := db.Where(cond).FirstOrCreate(p.settingsAdvance, cond)
 	if result.Error != nil {
 		return nil, result.Error
-	}
-
-	// 如果是新初始化的对象，保存到数据库
-	if result.RowsAffected == 0 {
-		if err := db.Save(p.settingsAdvance).Error; err != nil {
-			return nil, err
-		}
 	}
 
 	return p.settingsAdvance, nil

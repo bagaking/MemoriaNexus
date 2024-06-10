@@ -38,3 +38,25 @@ func GinMustGetUserID(c *gin.Context) (id UInt64) {
 	}
 	return UInt64(idu)
 }
+
+func GinGetPagerFromQuery(c *gin.Context) (pager *Pager) {
+	pageStr := c.DefaultQuery("page", "1")
+	offsetStr := c.DefaultQuery("offset", "0")
+	limitStr := c.DefaultQuery("limit", "10")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			offset = 0
+		}
+		return new(Pager).SetOffsetAndLimit(offset, limit)
+	}
+
+	return new(Pager).SetPageAndLimit(page, limit)
+}

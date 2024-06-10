@@ -35,17 +35,11 @@ func (p *Profile) EnsureLoadProfilePoints(db *gorm.DB) (*ProfilePoints, error) {
 // EnsureLoadProfilePoints 从数据库中加载用户积分信息
 func EnsureLoadProfilePoints(db *gorm.DB, uid utils.UInt64) (*ProfilePoints, error) {
 	points := &ProfilePoints{ID: uid}
-	result := db.FirstOrInit(points, points)
+	result := db.FirstOrCreate(points, points)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	// 如果是新初始化的对象，保存到数据库
-	if result.RowsAffected == 0 {
-		if err := db.Save(points).Error; err != nil {
-			return nil, err
-		}
-	}
 	return points, nil
 }
 

@@ -1,12 +1,10 @@
 package book
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/got/util/typer"
+	"net/http"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
@@ -24,36 +22,12 @@ import (
 // @Success 200 {object} dto.RespBooks "Successfully retrieved list of books"
 // @Router /books [get]
 func (svr *Service) ListBooks(c *gin.Context) {
-	log := wlog.ByCtx(c, "ListBooks")
 	userID := utils.GinMustGetUserID(c)
-
-	pageStr := c.DefaultQuery("page", "1")
-	limitStr := c.DefaultQuery("limit", "10")
-
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		log.WithError(err).Error("Invalid page number")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
-		return
-	}
-
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		log.WithError(err).Error("Invalid limit number")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
-		return
-	}
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := (page - 1) * limit
+	pager := utils.GinGetPagerFromQuery(c)
+	log := wlog.ByCtx(c, "ListBooks").WithField("user_id", userID).WithField("pager", pager)
 
 	var books []*model.Book
-	result := svr.db.Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&books)
+	result := svr.db.Where("user_id = ?", userID).Offset(pager.Offset).Limit(pager.Limit).Find(&books)
 
 	if result.Error != nil {
 		log.WithError(result.Error).Errorf("Failed to fetch books for user %v", userID)
@@ -61,7 +35,7 @@ func (svr *Service) ListBooks(c *gin.Context) {
 		return
 	}
 
-	resp := new(dto.RespBooks).SetPageAndLimit(page, limit).Append(
+	resp := new(dto.RespBooks).WithPager(pager).Append(
 		typer.SliceMap(books, func(book *model.Book) dto.Book {
 			return *(&dto.Book{}).FromModel(book)
 		})...)

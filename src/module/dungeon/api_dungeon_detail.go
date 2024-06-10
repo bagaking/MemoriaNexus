@@ -1,6 +1,7 @@
 package dungeon
 
 import (
+	"github.com/bagaking/memorianexus/src/module/dto"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -84,17 +85,21 @@ func (svr *Service) GetDungeonItemsDetail(c *gin.Context) {
 	log := wlog.ByCtx(c, "GetDungeonItemsDetail").WithField("user_id", userID).WithField("dungeon_id", id)
 
 	var dungeon model.Dungeon
-
 	if err := svr.db.Where("id = ?", id).First(&dungeon).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
 		return
 	}
 
-	items, err := model.GetDungeonItemIDs(svr.db, dungeon.ID)
+	pager := utils.GinGetPagerFromQuery(c)
+	monsters, err := dungeon.GetDungeonMonsters(svr.db, pager.Offset, pager.Limit)
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon tags")
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon monsters")
 		return
 	}
 
-	c.JSON(http.StatusOK, items)
+	resp := new(dto.RespMonsterList)
+	for _, dm := range monsters {
+		resp = resp.Append(new(dto.DungeonMonster).FromModel(dm))
+	}
+	resp.Response(c, "got dungeon monsters")
 }

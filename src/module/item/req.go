@@ -27,8 +27,6 @@ type (
 		UserID utils.UInt64 `form:"user_id"`
 		BookID utils.UInt64 `form:"book_id"`
 		Type   string       `form:"type"`
-		Page   int          `form:"page"`
-		Limit  int          `form:"limit"`
 	}
 )
 

@@ -32,35 +32,20 @@ import (
 func (svr *Service) GetItemsOfBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	bookID := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetItemsOfBook").WithField("user_id", userID)
+	pager := utils.GinGetPagerFromQuery(c)
+	log := wlog.ByCtx(c, "GetItemsOfBook").WithField("user_id", userID).WithField("pager", pager)
 
-	var req ReqGetBookItemsQuery
-	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid query parameters")
-		return
-	}
-	// Set default values for pagination.
-	if req.Page < 1 {
-		req.Page = 1
-	}
-
-	if req.Limit < 1 {
-		req.Limit = 10
-	}
-
-	// 3, 2
-	resp := new(dto.RespItemList)
-	pager := resp.SetPageAndLimit(req.Page, req.Limit)
-
-	items, err := model.GetItemsOfBook(svr.db, bookID, pager.Offset, req.Limit)
+	items, err := model.GetItemsOfBook(svr.db, bookID, pager.Offset, pager.Limit)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to fetch books for user %v", userID)
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "error when fetching book items")
 	}
+
+	resp := new(dto.RespItemList)
 	for _, item := range items {
-		pager.Append(new(dto.Item).FromModel(item))
+		resp.Append(new(dto.Item).FromModel(item))
 	}
-	log.Infof("get book items, offset= %v, limit= %v, items_len= %v, req= %v", pager.Offset, pager.Limit, len(items), req)
+	log.Infof("get book items, offset= %v, limit= %v, items_len= %v", pager.Offset, pager.Limit, len(items))
 
 	if err = svr.db.Model(&model.BookItem{}).Where(model.BookItem{BookID: bookID}).Count(&pager.Total).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -148,7 +133,7 @@ func (svr *Service) RemoveItemsFromBook(c *gin.Context) {
 		itemIDsUInt64 = append(itemIDsUInt64, id)
 	}
 
-	if err := svr.db.Where("book_id = ? AND item_id IN ?", bookID, itemIDsUInt64).Delete(&model.BookItem{}).Error; err != nil {
+	if err := svr.db.Where("book_id = ? AND item_id IN ( ? )", bookID, itemIDsUInt64).Delete(&model.BookItem{}).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "failed to remove book items")
 		return
 	}

@@ -6,6 +6,17 @@ definitions:
           type: integer
         type: array
     type: object
+  book.ReqCreateOrUpdateBook:
+    properties:
+      description:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
   def.AttackResult:
     enum:
     - defeat
@@ -106,6 +117,10 @@ definitions:
         type: string
       id:
         type: integer
+      tags:
+        items:
+          type: string
+        type: array
       title:
         type: string
       updated_at:
@@ -148,6 +163,9 @@ definitions:
     type: object
   dto.DungeonMonster:
     properties:
+      avatar:
+        description: 怪物头像
+        type: string
       created_at:
         type: string
       difficulty:
@@ -169,7 +187,7 @@ definitions:
         description: 下次复习时间
         type: string
       practice_at:
-        description: 上次复习时间的记录
+        description: 用于 runtime
         type: string
       practice_count:
         description: 复习次数 (考虑到可能会有 merge 次数等逻辑，这里先用一个相对大的空间）
@@ -179,7 +197,7 @@ definitions:
       source_type:
         $ref: '#/definitions/model.MonsterSource'
       visibility:
-        description: 用于 runtime
+        description: Visibility 显影程度，根据复习次数变化
         type: integer
     type: object
   dto.Item:
@@ -227,17 +245,6 @@ definitions:
       id:
         type: integer
       nickname:
-        type: string
-    type: object
-  dto.ReqCreateBook:
-    properties:
-      description:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      title:
         type: string
     type: object
   dto.RespBookCreate:
@@ -624,7 +631,7 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/dto.ReqCreateBook'
+          $ref: '#/definitions/book.ReqCreateOrUpdateBook'
       produces:
       - application/json
       responses:
@@ -695,7 +702,7 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/dto.ReqCreateBook'
+          $ref: '#/definitions/book.ReqCreateOrUpdateBook'
       produces:
       - application/json
       responses:
@@ -813,9 +820,9 @@ paths:
         name: sort_by
         required: true
         type: string
-      - description: Offset for pagination
+      - description: page for pagination
         in: query
-        name: offset
+        name: page
         required: true
         type: integer
       - description: Limit for pagination
@@ -1343,11 +1350,6 @@ paths:
         name: id
         required: true
         type: integer
-      - description: Sort by field (familiarity, difficulty, importance)
-        in: query
-        name: sort_by
-        required: true
-        type: string
       - description: Offset for pagination
         in: query
         name: offset

@@ -96,13 +96,13 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 	}
 
 	var req ReqAddDungeonItems
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "parse request body failed"), "Invalid request body")
 		return
 	}
 
 	dungeon := model.Dungeon{ID: utils.UInt64(dungeonID)}
-	if err := svr.db.First(&dungeon).Error; err != nil {
+	if err = svr.db.First(&dungeon).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
 		} else {
@@ -111,8 +111,8 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 		return
 	}
 
-	if err := dungeon.AddMonster(svr.db, model.MonsterSourceItem, req.Items); err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to add items to dungeon")
+	if err = dungeon.AddMonster(svr.db, model.MonsterSourceItem, req.Items); err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to add items to dungeon")
 		return
 	}
 

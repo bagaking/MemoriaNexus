@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ReqCreateBook"
+                            "$ref": "#/definitions/book.ReqCreateOrUpdateBook"
                         }
                     }
                 ],
@@ -149,7 +149,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ReqCreateBook"
+                            "$ref": "#/definitions/book.ReqCreateOrUpdateBook"
                         }
                     }
                 ],
@@ -359,8 +359,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Offset for pagination",
-                        "name": "offset",
+                        "description": "page for pagination",
+                        "name": "page",
                         "in": "query",
                         "required": true
                     },
@@ -1153,13 +1153,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Sort by field (familiarity, difficulty, importance)",
-                        "name": "sort_by",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "type": "integer",
                         "description": "Offset for pagination",
                         "name": "offset",
@@ -1734,6 +1727,23 @@ const docTemplate = `{
                 }
             }
         },
+        "book.ReqCreateOrUpdateBook": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "def.AttackResult": {
             "type": "string",
             "enum": [
@@ -1852,6 +1862,12 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "title": {
                     "type": "string"
                 },
@@ -1916,6 +1932,10 @@ const docTemplate = `{
         "dto.DungeonMonster": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "description": "怪物头像",
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1950,7 +1970,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "practice_at": {
-                    "description": "上次复习时间的记录",
+                    "description": "用于 runtime",
                     "type": "string"
                 },
                 "practice_count": {
@@ -1964,7 +1984,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.MonsterSource"
                 },
                 "visibility": {
-                    "description": "用于 runtime",
+                    "description": "Visibility 显影程度，根据复习次数变化",
                     "type": "integer"
                 }
             }
@@ -2037,23 +2057,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "nickname": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ReqCreateBook": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
                     "type": "string"
                 }
             }

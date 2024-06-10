@@ -3,8 +3,6 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/src/def"
-
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/goulp/wlog"
@@ -14,21 +12,6 @@ import (
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )
-
-// ReqUpdateUserSettingsMemorization defines the request format for updating user settings.
-type ReqUpdateUserSettingsMemorization struct {
-	ReviewIntervalSetting *def.RecallIntervalLevel `json:"review_interval"`
-	DifficultyPreference  *utils.Percentage        `json:"difficulty_preference"`
-	QuizMode              *string                  `json:"quiz_mode"`
-}
-
-// ReqUpdateUserSettingsAdvance defines the request to update advanced settings.
-type ReqUpdateUserSettingsAdvance struct {
-	Theme              *string `json:"theme"`
-	Language           *string `json:"language"`
-	EmailNotifications *bool   `json:"email_notifications"`
-	PushNotifications  *bool   `json:"push_notifications"`
-}
 
 // GetUserSettingsMemorization handles a request to get the current user's settings.
 // @Summary Get user settings

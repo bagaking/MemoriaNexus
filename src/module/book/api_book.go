@@ -125,7 +125,14 @@ func (svr *Service) ReadBook(c *gin.Context) {
 		return
 	}
 
-	new(dto.RespBookGet).With(new(dto.Book).FromModel(book)).Response(c, "book found")
+	tags, err := model.GetBookTagNames(c, svr.db, book.ID)
+	if err != nil {
+		log.WithError(err).Warnf("Failed to fetch book tags, book_id= %v", book.ID)
+	}
+	dBook := new(dto.Book).FromModel(book)
+	dBook.Tags = tags
+
+	new(dto.RespBookGet).With(dBook).Response(c, "book found")
 }
 
 // UpdateBook handles updating a book's information.
@@ -140,9 +147,9 @@ func (svr *Service) ReadBook(c *gin.Context) {
 // @Router /books/{id} [put]
 func (svr *Service) UpdateBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
-	id := utils.GinMustGetID(c)
+	bookID := utils.GinMustGetID(c)
 
-	log := wlog.ByCtx(c, "UpdateBook").WithField("user_id", userID).WithField("book_id", id)
+	log := wlog.ByCtx(c, "UpdateBook").WithField("user_id", userID).WithField("book_id", bookID)
 
 	var req ReqCreateOrUpdateBook
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -155,7 +162,7 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 	}
-	result := svr.db.Model(updater).Where("id = ? AND user_id = ?", id, userID).Updates(updater)
+	result := svr.db.Model(updater).Where("id = ? AND user_id = ?", bookID, userID).Updates(updater)
 
 	// 处理错误
 	if err := result.Error; err != nil {
@@ -165,8 +172,14 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 
 	// 检查是否实际修改了记录
 	if result.RowsAffected == 0 {
-		err := irr.Error("Book not found or permission denied")
+		err := irr.Error("book not found or permission denied")
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "nothing changed")
+		return
+	}
+
+	// todo: 这里要考虑下直接在 update 里更新是不是安全
+	if err := model.UpdateBookTagsRef(c, svr.db, bookID, req.Tags); err != nil {
+		utils.GinHandleError(c, log, http.StatusNotFound, irr.Wrap(err, "update tags failed"), "tags are unchanged")
 		return
 	}
 

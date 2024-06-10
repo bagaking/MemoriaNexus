@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/khicago/irr"
 	"net/http"
 	"runtime"
 	"strings"
@@ -90,6 +91,10 @@ func GinHandleError(c *gin.Context, log logrus.FieldLogger, status int, err erro
 		"contents": opts.requestContents,
 
 		"stacktrace": getGinSimplifiedStackTrace(), // Add stack trace
+	}
+
+	if ir, ok := err.(irr.IRR); ok {
+		fields["irr.track"] = ir.ToString(true, " ++ ")
 	}
 
 	// Log the error with different levels based on the status code

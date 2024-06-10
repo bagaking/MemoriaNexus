@@ -51,8 +51,12 @@ CREATE TABLE `dungeon_monsters` (
     `importance` TINYINT UNSIGNED COMMENT "Importance",
     `difficulty` TINYINT UNSIGNED COMMENT "Difficulty",
 
-    -- runtime
+
+    -- gaming
     `visibility` TINYINT UNSIGNED NOT NULL COMMENT "percentage: 0-100",
+    `avatar` VARCHAR(255) NOT NULL COMMENT "avatar of the monster",
+
+    -- runtime
     `practice_at` DATETIME DEFAULT NULL,
     `next_practice_at` DATETIME DEFAULT CURRENT_TIMESTAMP, -- set to current_time for initial
     `practice_count` INT UNSIGNED DEFAULT 0,

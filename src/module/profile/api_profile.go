@@ -1,27 +1,16 @@
 package profile
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/bagaking/goulp/wlog"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
-
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
-
-// ReqUpdateProfile defines the request format for the UpdateUserProfile endpoint.
-type ReqUpdateProfile struct {
-	Nickname  string `json:"nickname,omitempty"`
-	Email     string `json:"email,omitempty"`
-	AvatarURL string `json:"avatar_url,omitempty"`
-	Bio       string `json:"bio,omitempty"`
-}
 
 // GetUserProfile handles a request to retrieve a user's profile information.
 // @Summary Get the current user's profile
@@ -42,10 +31,6 @@ func (svr *Service) GetUserProfile(c *gin.Context) {
 	// Use the ID to load the profile from the database.
 	profile, err := model.EnsureLoadProfile(svr.db, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
-			return
-		}
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Error retrieving profile")
 		return
 	}
@@ -88,10 +73,12 @@ func (svr *Service) UpdateUserProfile(c *gin.Context) {
 	}
 
 	// Perform the update operation in the repository.
-	if err := svr.db.Model(updater).Where("id = ?", userID).Updates(updater).Error; err != nil {
+	// todo: its not work for now
+	if err := updater.UpdateProfile(svr.db); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update profile")
 		return
 	}
+	log.Infof("profile updated, updater= %v", updater)
 
 	new(dto.RespProfile).With(new(dto.Profile).FromModel(updater)).Response(c, "profile updated")
 }

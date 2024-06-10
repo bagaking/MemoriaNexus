@@ -8,7 +8,7 @@ CREATE TABLE profiles (
     id BIGINT UNSIGNED PRIMARY KEY COMMENT "Profile unique identifier, equal to id from iam service",
 
     nickname VARCHAR(255) COMMENT "User's nick name",
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) UNIQUE default NULL,
     avatar_url VARCHAR(255) COMMENT "URL to user's avatar",
     bio TEXT,
 

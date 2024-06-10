@@ -29,20 +29,13 @@ import (
 // @Router /items [get]
 func (svr *Service) GetItems(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
-	log := wlog.ByCtx(c, "GetItems").WithField("user_id", userID)
+	pager := utils.GinGetPagerFromQuery(c)
+	log := wlog.ByCtx(c, "GetItems").WithField("user_id", userID).WithField("pager", pager)
 
 	var req ReqGetItems
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid query parameters")
 		return
-	}
-
-	// Set default values for pagination.
-	if req.Page < 1 {
-		req.Page = 1
-	}
-	if req.Limit < 1 {
-		req.Limit = 10
 	}
 
 	query := svr.db.Model(&model.Item{})
@@ -54,20 +47,20 @@ func (svr *Service) GetItems(c *gin.Context) {
 		query = query.Where("type = ?", req.Type)
 	}
 
-	var total int64
-	if err := query.Count(&total).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to count items")
-		return
-	}
-
-	pager := new(dto.RespItemList).SetPageAndLimit(req.Page, req.Limit).SetTotal(total)
-
 	var items []model.Item
-	if err := query.Offset(pager.Offset).Limit(req.Limit).Find(&items).Error; err != nil {
+	if err := query.Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to retrieve items")
 		return
 	}
 
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		log.WithError(err).Warnf("Failed to count items")
+		return
+	}
+	pager = pager.SetTotal(total)
+
+	resp := new(dto.RespItemList).WithPager(pager)
 	// 转换 Item 为 Item
 	for _, item := range items {
 		tags, err := model.GetItemTagNames(c, svr.db, item.ID)
@@ -75,7 +68,7 @@ func (svr *Service) GetItems(c *gin.Context) {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to get item tag names")
 			return
 		}
-		pager.Append(new(dto.Item).FromModel(&item, tags...))
+		resp.Append(new(dto.Item).FromModel(&item, tags...))
 	}
-	pager.Response(c, "items found")
+	resp.Response(c, "items found")
 }

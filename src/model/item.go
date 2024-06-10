@@ -81,8 +81,8 @@ func (i *Item) BeforeDelete(tx *gorm.DB) (err error) {
 	return nil
 }
 
-// GetItemsOfBooks 获取 book 关联的 items
-func GetItemsOfBooks(tx *gorm.DB, bookIDs []utils.UInt64) (itemBookMap map[utils.UInt64]utils.UInt64, err error) {
+// GetItemIDsOfBooks 获取 book 关联的 items
+func GetItemIDsOfBooks(tx *gorm.DB, bookIDs []utils.UInt64) (itemBookMap map[utils.UInt64]utils.UInt64, err error) {
 	var bookItems []BookItem
 	if err = tx.Where("book_id IN (?)", bookIDs).Find(&bookItems).Error; err != nil {
 		return nil, err
@@ -112,16 +112,18 @@ func GetItemsOfBook(tx *gorm.DB, bookID utils.UInt64, offset, limit int) (items 
 	if err != nil {
 		return nil, irr.Wrap(err, "get item ids for book failed")
 	}
-	if err = tx.Where("id in (?)", ids).Find(&items).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, irr.Wrap(err, "get items from ids failed")
-		}
+	return GetItemsByID(tx, ids)
+}
+
+func GetItemsByID(tx *gorm.DB, itemIDs []utils.UInt64) (items []*Item, err error) {
+	if err = tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+		return nil, irr.Wrap(err, "get items from ids failed")
 	}
 	return items, nil
 }
 
-// GetItemsOfTags 获取 tag 关联的 items
-func GetItemsOfTags(tx *gorm.DB, tagIDs []utils.UInt64) (map[utils.UInt64]utils.UInt64, error) {
+// GetItemIDsOfTags 获取 tag 关联的 items
+func GetItemIDsOfTags(tx *gorm.DB, tagIDs []utils.UInt64) (map[utils.UInt64]utils.UInt64, error) {
 	var tagItems []ItemTag
 	if err := tx.Where("tag_id IN (?)", tagIDs).Find(&tagItems).Error; err != nil {
 		return nil, err
