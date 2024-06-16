@@ -268,6 +268,21 @@ definitions:
       message:
         type: string
     type: object
+  dto.RespBookList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Book'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   dto.RespBookUpdate:
     properties:
       data:
@@ -393,6 +408,21 @@ definitions:
     type: object
   dto.RespSettingsMemorization:
     type: object
+  dto.RespTagList:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Tag'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   dto.SettingsAdvance:
     properties:
       email_notifications:
@@ -408,6 +438,13 @@ definitions:
     properties:
       data: {}
       message:
+        type: string
+    type: object
+  dto.Tag:
+    properties:
+      id:
+        type: integer
+      name:
         type: string
     type: object
   dungeon.ReqAddDungeonBooks:
@@ -1715,4 +1752,144 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user settings
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all tags.
+      parameters:
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved tags
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespTagList'
+            type: array
+      summary: Get all tags
+      tags:
+      - tag
+  /tags/{id}/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of items associated with a specific tag.
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved items
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespItemList'
+            type: array
+      summary: Get items by tag
+      tags:
+      - tag
+  /tags/name/{name}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a tag by its name.
+      parameters:
+      - description: Tag Name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved tag
+          schema:
+            $ref: '#/definitions/dto.Tag'
+      summary: Get tag by name
+      tags:
+      - tag
+  /tags/name/{name}/books:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of books associated with a specific tag name.
+      parameters:
+      - description: Tag Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved books
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespBookList'
+            type: array
+      summary: Get books by tag name
+      tags:
+      - tag
+  /tags/name/{name}/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of items associated with a specific tag name.
+      parameters:
+      - description: Tag Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved items
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespItemList'
+            type: array
+      summary: Get items by tag name
+      tags:
+      - tag
 swagger: "2.0"

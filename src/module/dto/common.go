@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/bagaking/memorianexus/internal/utils"
 	"net/http"
+
+	"github.com/bagaking/memorianexus/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,10 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/khicago/irr"
 	"net/http"
 	"runtime"
 	"strings"
+
+	"github.com/khicago/irr"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

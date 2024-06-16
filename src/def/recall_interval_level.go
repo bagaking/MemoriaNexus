@@ -11,16 +11,18 @@ import (
 )
 
 var (
-	day     = 24 * time.Hour
+	minute  = time.Minute
+	hour    = time.Hour
+	day     = 24 * hour
 	week    = 7 * day
 	quarter = 13 * week
 )
 
 // DefaultRecallIntervals 艾宾浩斯记忆曲线的默认复习间隔策略
 var DefaultRecallIntervals = RecallIntervalLevel{
-	5 * time.Minute,
-	30 * time.Minute,
-	12 * time.Hour,
+	5 * minute,
+	30 * minute,
+	12 * hour,
 	1 * day,
 	2 * day,
 	4 * day,
@@ -32,6 +34,7 @@ var DefaultRecallIntervals = RecallIntervalLevel{
 }
 
 // RecallIntervalLevel 定义了复习间隔的级别
+// @Description RecallIntervalLevel is a slice of durations in Go duration format (e.g., '1h30m')
 type RecallIntervalLevel []time.Duration
 
 // UnmarshalJSON 实现 JSON 反序列化
@@ -51,7 +54,7 @@ func (r *RecallIntervalLevel) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
-		(*r)[i] = interval
+		(*r)[i] = time.Duration(interval)
 	}
 
 	return nil

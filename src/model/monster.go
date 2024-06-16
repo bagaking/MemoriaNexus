@@ -73,7 +73,6 @@ func (ms MonsterSource) String() string {
 }
 
 func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs []utils.UInt64) error {
-
 	// Validate the existence of resources
 	if err := validateExistence(tx, source, sourceEntityIDs); err != nil {
 		return irr.Track(err, "add monster to dungeon failed, source= %v, ids= %v", source, sourceEntityIDs)

@@ -21,6 +21,8 @@ type (
 
 		Tags []string `json:"tags,omitempty"`
 	}
+
+	RespBookList = RespSuccessPage[*Book]
 )
 
 func (b *Book) FromModel(m *model.Book) *Book {

@@ -28,7 +28,7 @@ import (
 func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 	id := c.Param("id")
 
-	//sortBy := c.DefaultQuery("sort_by", "familiarity") // (familiarity, difficulty, importance)
+	// sortBy := c.DefaultQuery("sort_by", "familiarity") // (familiarity, difficulty, importance)
 	offsetStr := c.DefaultQuery("offset", "0")
 	limitStr := c.DefaultQuery("limit", "10")
 	offset, err := strconv.Atoi(offsetStr)

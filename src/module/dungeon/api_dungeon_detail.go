@@ -1,8 +1,9 @@
 package dungeon
 
 import (
-	"github.com/bagaking/memorianexus/src/module/dto"
 	"net/http"
+
+	"github.com/bagaking/memorianexus/src/module/dto"
 
 	"github.com/gin-gonic/gin"
 

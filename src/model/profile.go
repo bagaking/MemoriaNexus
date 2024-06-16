@@ -2,8 +2,9 @@ package model
 
 import (
 	"errors"
-	"github.com/bagaking/memorianexus/src/def"
 	"time"
+
+	"github.com/bagaking/memorianexus/src/def"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 
@@ -109,15 +110,15 @@ func (p *Profile) UpdateProfile(db *gorm.DB) error {
 
 // EnsureLoadProfile 从数据库中加载用户个人信息
 func EnsureLoadProfile(db *gorm.DB, uid utils.UInt64) (*Profile, error) {
-	p := &Profile{
+	cond := &Profile{
 		ID: uid,
 	}
-	result := db.Where("id = ?", uid).FirstOrCreate(p)
+	result := db.Where("id = ?", uid).FirstOrCreate(cond)
 	if result.Error != nil {
 		return nil, irr.Wrap(result.Error, "search for profile failed")
 	}
 
-	return p, nil
+	return cond, nil
 }
 
 // EnsureLoadProfileSettingsMemorization 从数据库中"懒加载"用户记忆设置
@@ -128,11 +129,12 @@ func (p *Profile) EnsureLoadProfileSettingsMemorization(db *gorm.DB) (*ProfileMe
 	}
 
 	cond := &ProfileMemorizationSetting{ID: p.ID}
-	result := db.Where(cond).FirstOrCreate(p.settingsMemorization, cond)
+	result := db.Where("id = ?", p.ID).FirstOrCreate(cond)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
+	p.settingsMemorization = cond
 	return p.settingsMemorization, nil
 }
 
@@ -143,11 +145,11 @@ func (p *Profile) EnsureLoadProfileSettingsAdvance(db *gorm.DB) (*ProfileAdvance
 	}
 
 	cond := &ProfileAdvanceSetting{ID: p.ID}
-	result := db.Where(cond).FirstOrCreate(p.settingsAdvance, cond)
+	result := db.Where("id = ?", cond.ID).FirstOrCreate(cond)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
+	p.settingsAdvance = cond
 	return p.settingsAdvance, nil
 }
 
