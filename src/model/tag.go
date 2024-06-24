@@ -71,12 +71,59 @@ func (ty TagRefType) CreateAssociate(entityID, tagID utils.UInt64) ITagAssociate
 }
 
 // FindTagsByName fetches tag IDs associated with an entity.
-func FindTagsByName(tx *gorm.DB, names []string) ([]Tag, error) {
+func FindTagsByName(ctx context.Context, tx *gorm.DB, names []string) ([]Tag, error) {
 	var tags []Tag
 	if err := tx.Where("name in (?)", names).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 	return tags, nil
+}
+
+// FindTagByName fetches tag IDs associated with an entity.
+func FindTagByName(ctx context.Context, tx *gorm.DB, name string) (*Tag, error) {
+	var tag Tag
+	if err := tx.Where("name = ?", name).First(&tag).Error; err != nil {
+		return nil, err
+	}
+	return &tag, nil
+}
+
+// FindItemsOfTag returns the items
+func FindItemsOfTag(ctx context.Context, tx *gorm.DB, tagID utils.UInt64, pager *utils.Pager) ([]Item, error) {
+	var itemTags []ItemTag
+	if err := tx.Where("tag_id = ?", tagID).Offset(pager.Offset).Limit(pager.Limit).Find(&itemTags).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to find item_ids of tag_id= %v", tagID)
+	}
+
+	var itemIDs []utils.UInt64
+	for _, itemTag := range itemTags {
+		itemIDs = append(itemIDs, itemTag.ItemID)
+	}
+
+	var items []Item
+	if err := tx.Where("id IN (?)", itemIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to fetch items by id in %v", itemIDs)
+	}
+	return items, nil
+}
+
+// FindBooksOfTag returns the items
+func FindBooksOfTag(ctx context.Context, tx *gorm.DB, tagID utils.UInt64, pager *utils.Pager) ([]Book, error) {
+	var bookTags []BookTag
+	if err := tx.Where("tag_id = ?", tagID).Offset(pager.Offset).Limit(pager.Limit).Find(&bookTags).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to find book_ids of tag_id= %v", tagID)
+	}
+
+	var bookIDs []utils.UInt64
+	for _, book := range bookTags {
+		bookIDs = append(bookIDs, book.BookID)
+	}
+
+	var books []Book
+	if err := tx.Where("id IN (?)", bookIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&books).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to fetch books by id in %v", bookIDs)
+	}
+	return books, nil
 }
 
 // FindTagsIDByName fetches tag IDs associated with an entity.
@@ -162,8 +209,8 @@ func updateTagsRef[T ITagAssociate](ctx context.Context, tx *gorm.DB, entityID u
 		return irr.Wrap(err, "failed to generate IDs for tags")
 	}
 
-	model := typer.ZeroVal[T]()
-	existingTagMap, err := getExistingTagMap(ctx, tx, model.Type(), entityID)
+	mm := typer.ZeroVal[T]()
+	existingTagMap, err := getExistingTagMap(ctx, tx, mm.Type(), entityID)
 	if err != nil {
 		return err
 	}
@@ -181,10 +228,10 @@ func updateTagsRef[T ITagAssociate](ctx context.Context, tx *gorm.DB, entityID u
 			}
 			tagID = tag.ID
 		}
-		tagsToAssociate = append(tagsToAssociate, model.Associate(entityID, tagID).(T))
+		tagsToAssociate = append(tagsToAssociate, mm.Associate(entityID, tagID).(T))
 	}
 	// 删除旧的关联
-	if err = removeObsoleteTags(ctx, tx, model.Type(), entityID, existingTagMap, tags); err != nil {
+	if err = removeObsoleteTags(ctx, tx, mm.Type(), entityID, existingTagMap, tags); err != nil {
 		return err
 	}
 	// 插入新的关联
@@ -197,7 +244,7 @@ func updateTagsRef[T ITagAssociate](ctx context.Context, tx *gorm.DB, entityID u
 		}
 	}
 
-	log.Infof("TagNames updated successfully for entity %d of type %d", entityID, model.Type())
+	log.Infof("TagNames updated successfully for entity %d of type %d", entityID, mm.Type())
 	return nil
 }
 

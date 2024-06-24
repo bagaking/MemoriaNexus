@@ -1,4 +1,6 @@
 entry = [
+    "./src/module/**/init.go",
+    "./src/module/gw/*.go",
     "./doc/**/*.http",
     "./doc/DESIGN.md",
     "./doc/API_SPEC.md",

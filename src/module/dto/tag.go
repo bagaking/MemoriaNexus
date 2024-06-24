@@ -15,7 +15,7 @@ type (
 	RespTagList = RespSuccessPage[*Tag]
 )
 
-func (t *Tag) FromModel(tag model.Tag) *Tag {
+func (t *Tag) FromModel(tag *model.Tag) *Tag {
 	t.ID = tag.ID
 	t.Name = tag.Name
 	return t

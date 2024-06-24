@@ -1778,6 +1778,37 @@ paths:
       summary: Get all tags
       tags:
       - tag
+  /tags/{id}/books:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of books associated with a specific tag id.
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved books
+          schema:
+            items:
+              $ref: '#/definitions/dto.RespBookList'
+            type: array
+      summary: Get books by tag
+      tags:
+      - tag
   /tags/{id}/items:
     get:
       consumes:

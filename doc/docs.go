@@ -1880,6 +1880,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/tags/{id}/books": {
+            "get": {
+                "description": "Retrieves a list of books associated with a specific tag id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tag"
+                ],
+                "summary": "Get books by tag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved books",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.RespBookList"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/tags/{id}/items": {
             "get": {
                 "description": "Retrieves a list of items associated with a specific tag.",
