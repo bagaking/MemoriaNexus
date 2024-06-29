@@ -15,7 +15,7 @@ import (
 // GetUserPoints retrieves the points for the authenticated user.
 // @Summary Get user points
 // @Description Retrieves points information for the current user.
-// @TagNames profile
+// @Tags profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} dto.RespPoints "Successfully retrieved user points"

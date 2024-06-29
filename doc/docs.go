@@ -714,6 +714,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get the books of a specific dungeon",
                 "parameters": [
                     {
@@ -755,6 +758,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Add books to an existing dungeon",
                 "parameters": [
@@ -803,6 +809,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Remove books from a specific dungeon",
                 "parameters": [
@@ -857,6 +866,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get the items of a specific dungeon",
                 "parameters": [
                     {
@@ -898,6 +910,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Add items to an existing dungeon",
                 "parameters": [
@@ -946,6 +961,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Remove items from a specific dungeon",
                 "parameters": [
@@ -1000,6 +1018,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "dungeon"
+                ],
                 "summary": "Get the tags of a specific dungeon",
                 "parameters": [
                     {
@@ -1041,6 +1062,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Add tags to an existing dungeon",
                 "parameters": [
@@ -1089,6 +1113,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Remove tags from a specific dungeon",
                 "parameters": [
@@ -1142,6 +1169,9 @@ const docTemplate = `{
                 "description": "获取复习计划的所有Monsters及其关联的 Items, Books, TagNames",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "dungeon"
                 ],
                 "summary": "Get all the monsters of a specific endless dungeon with associations",
                 "parameters": [
@@ -1198,6 +1228,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "item"
+                ],
                 "summary": "Get a list of items with optional filters",
                 "parameters": [
                     {
@@ -1248,6 +1281,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "item"
+                ],
                 "summary": "Create a new item",
                 "parameters": [
                     {
@@ -1269,6 +1305,44 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request if too many books or tags, or bad data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/items/upload": {
+            "post": {
+                "description": "Upload a file to create multiple items in the system.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Upload items from a file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File containing items data, support csv and toml file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created items from file",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RespItemList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -1321,6 +1395,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "item"
+                ],
                 "summary": "Update an item",
                 "parameters": [
                     {
@@ -1369,6 +1446,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "item"
+                ],
                 "summary": "Delete an item",
                 "parameters": [
                     {
@@ -1408,6 +1488,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "profile"
                 ],
                 "summary": "Get the current user's profile",
                 "responses": {
@@ -1449,6 +1532,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "profile"
                 ],
                 "summary": "Update user profile",
                 "parameters": [
@@ -1501,6 +1587,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "profile"
+                ],
                 "summary": "Get user points",
                 "responses": {
                     "200": {
@@ -1540,6 +1629,9 @@ const docTemplate = `{
                 "description": "Retrieves advanced settings information for the current user.",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "profile"
                 ],
                 "summary": "Get user advanced settings",
                 "responses": {
@@ -1581,6 +1673,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "profile"
                 ],
                 "summary": "Update user advanced settings",
                 "parameters": [
@@ -1633,6 +1728,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "profile"
+                ],
                 "summary": "Get user settings",
                 "responses": {
                     "200": {
@@ -1673,6 +1771,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "profile"
                 ],
                 "summary": "Update user settings",
                 "parameters": [

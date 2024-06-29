@@ -15,7 +15,7 @@ import (
 // GetUserProfile handles a request to retrieve a user's profile information.
 // @Summary Get the current user's profile
 // @Description Retrieves the profile information for the user who made the request.
-// @TagNames profile
+// @Tags profile
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
@@ -44,7 +44,7 @@ func (svr *Service) GetUserProfile(c *gin.Context) {
 // UpdateUserProfile handles a request to update the current user's profile information.
 // @Summary Update user profile
 // @Description Updates the profile information for the user who made the request.
-// @TagNames profile
+// @Tags profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth

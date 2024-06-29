@@ -34,7 +34,7 @@ type ReqAddDungeonTags struct {
 // AppendBooksToDungeon handles adding books to an existing dungeon
 // @Summary Add books to an existing dungeon
 // @Description 向现有复习计划添加书籍
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"
@@ -78,7 +78,7 @@ func (svr *Service) AppendBooksToDungeon(c *gin.Context) {
 // AppendItemsToDungeon handles adding items to an existing dungeon
 // @Summary Add items to an existing dungeon
 // @Description 向现有复习计划添加学习材料
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"
@@ -122,7 +122,7 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 // AppendTagsToDungeon handles adding tags to an existing dungeon
 // @Summary Add tags to an existing dungeon
 // @Description 向现有复习计划添加标签
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"

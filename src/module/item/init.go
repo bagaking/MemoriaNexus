@@ -18,6 +18,7 @@ func NewService(repo *gorm.DB) *Service {
 
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.POST("", svr.CreateItem)
+	group.POST("upload", svr.UploadItems)
 	group.GET("", svr.GetItems)
 
 	idGroup := group.Group("/:id").Use(utils.GinMWParseID())

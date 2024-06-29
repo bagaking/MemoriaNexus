@@ -17,7 +17,7 @@ import (
 // CreateItem handles creating a new item with optional book affiliations and tags.
 // @Summary Create a new item
 // @Description Create a new item in the system with optional book affiliations and tags.
-// @TagNames item
+// @Tags item
 // @Accept json
 // @Produce json
 // @Param item body ReqCreateItem true "Item creation data"
@@ -132,7 +132,7 @@ func (svr *Service) ReadItem(c *gin.Context) {
 // UpdateItem handles updating an existing item's information and associated tags.
 // @Summary Update an item
 // @Description Update an item's type, content, or associated tags.
-// @TagNames item
+// @Tags item
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Item ID"
@@ -189,7 +189,7 @@ func (svr *Service) UpdateItem(c *gin.Context) {
 // DeleteItem handles the deletion of an item.
 // @Summary Delete an item
 // @Description Delete an item from the system by ID.
-// @TagNames item
+// @Tags item
 // @Accept json
 // @Produce json
 // @Param id path uint64 true "Item ID"

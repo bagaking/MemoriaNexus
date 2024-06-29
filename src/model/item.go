@@ -1,8 +1,12 @@
 package model
 
 import (
+	"context"
 	"errors"
+	"strings"
 	"time"
+
+	"github.com/khicago/got/util/typer"
 
 	"github.com/bagaking/memorianexus/internal/utils"
 
@@ -30,6 +34,12 @@ type Item struct {
 
 	DeletedAt gorm.DeletedAt
 }
+
+const (
+	TyItemFlashCard      = "flash_card"
+	TyItemMultipleChoice = "multiple_choice"
+	TyItemCompletion     = "completion"
+)
 
 func (i *Item) TableName() string {
 	return "items"
@@ -133,4 +143,27 @@ func GetItemIDsOfTags(tx *gorm.DB, tagIDs []utils.UInt64) (map[utils.UInt64]util
 		itemTagMap[tagItem.ItemID] = tagItem.TagID
 	}
 	return itemTagMap, nil
+}
+
+func CreateItems(ctx context.Context, tx *gorm.DB, items []*Item, itemTagRef map[*Item][]string) error {
+	log := wlog.ByCtx(ctx, "model.save_items")
+
+	for _, item := range items {
+		if err := tx.Create(item).Error; err != nil {
+			return err
+		}
+		if itemTagRef == nil {
+			continue
+		}
+		if tags, ok := itemTagRef[item]; ok && len(tags) > 0 {
+			tags = typer.SliceFilter(tags, func(s string) bool {
+				return strings.TrimSpace(s) != ""
+			})
+			if err := UpdateItemTagsRef(ctx, tx, item.ID, tags); err != nil {
+				return irr.Wrap(err, "update item tags failed")
+			}
+		}
+	}
+	log.Infof("Successfully saved %d items", len(items))
+	return nil
 }

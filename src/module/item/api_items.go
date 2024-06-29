@@ -17,7 +17,7 @@ import (
 // GetItems handles retrieving a list of items with optional filters and pagination.
 // @Summary Get a list of items with optional filters
 // @Description Get a list of items for the user with optional filters for book and type and support for pagination.
-// @TagNames item
+// @Tags item
 // @Accept json
 // @Produce json
 // @Param user_id query uint64 false "User ID"

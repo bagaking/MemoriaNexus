@@ -16,7 +16,7 @@ import (
 // GetUserSettingsMemorization handles a request to get the current user's settings.
 // @Summary Get user settings
 // @Description Retrieves settings information for the user who made the request.
-// @TagNames profile
+// @Tags profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} dto.RespSettingsMemorization "Successfully retrieved user settings"
@@ -46,7 +46,7 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 // GetUserSettingsAdvance retrieves advanced settings for the authenticated user.
 // @Summary Get user advanced settings
 // @Description Retrieves advanced settings information for the current user.
-// @TagNames profile
+// @Tags profile
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {object} dto.RespSettingsAdvance "Successfully retrieved user advanced settings"
@@ -77,7 +77,7 @@ func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
 // UpdateUserSettingsMemorization handles a request to update the current user's settings.
 // @Summary Update user settings
 // @Description Updates the settings for the user who made the request.
-// @TagNames profile
+// @Tags profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
@@ -130,7 +130,7 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 // UpdateUserSettingsAdvance updates the advanced settings for the current user.
 // @Summary Update user advanced settings
 // @Description Updates advanced settings for the authenticated user.
-// @TagNames profile
+// @Tags profile
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth

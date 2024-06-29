@@ -15,7 +15,7 @@ import (
 // GetDungeonBooksDetail handles fetching the books of a specific dungeon
 // @Summary Get the books of a specific dungeon
 // @Description 获取复习计划的 Books
-// @TagNames dungeon
+// @Tags dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
 // @Success 200 {array} utils.UInt64
@@ -45,7 +45,7 @@ func (svr *Service) GetDungeonBooksDetail(c *gin.Context) {
 // GetDungeonTagsDetail handles fetching the tags of a specific dungeon
 // @Summary Get the tags of a specific dungeon
 // @Description 获取复习计划的 TagNames
-// @TagNames dungeon
+// @Tags dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
 // @Success 200 {array} utils.UInt64
@@ -74,7 +74,7 @@ func (svr *Service) GetDungeonTagsDetail(c *gin.Context) {
 // GetDungeonItemsDetail handles fetching the items of a specific dungeon
 // @Summary Get the items of a specific dungeon
 // @Description 获取复习计划的 Items
-// @TagNames dungeon
+// @Tags dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
 // @Success 200 {array} utils.UInt64

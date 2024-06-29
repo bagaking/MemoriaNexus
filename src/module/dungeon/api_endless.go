@@ -16,7 +16,7 @@ import (
 // GetMonstersOfEndlessDungeon handles fetching all the monsters of a specific endless dungeon with associations
 // @Summary Get all the monsters of a specific endless dungeon with associations
 // @Description 获取复习计划的所有Monsters及其关联的 Items, Books, TagNames
-// @TagNames dungeon
+// @Tags dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
 // @Param offset query int true "Offset for pagination"

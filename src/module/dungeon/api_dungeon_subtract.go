@@ -31,7 +31,7 @@ type ReqRemoveDungeonTags struct {
 // SubtractDungeonBooks handles removing books from a specific dungeon
 // @Summary Remove books from a specific dungeon
 // @Description 删除复习计划的 Books
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"
@@ -81,7 +81,7 @@ func (svr *Service) SubtractDungeonBooks(c *gin.Context) {
 // SubtractDungeonTags handles removing tags from a specific dungeon
 // @Summary Remove tags from a specific dungeon
 // @Description 删除复习计划的 TagNames
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"
@@ -131,7 +131,7 @@ func (svr *Service) SubtractDungeonTags(c *gin.Context) {
 // SubtractDungeonItems handles removing items from a specific dungeon
 // @Summary Remove items from a specific dungeon
 // @Description 删除复习计划的 Items
-// @TagNames dungeon
+// @Tags dungeon
 // @Accept json
 // @Produce json
 // @Param id path string true "Dungeon ID"

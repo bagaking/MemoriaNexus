@@ -1130,6 +1130,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Remove books from a specific dungeon
+      tags:
+      - dungeon
     get:
       description: 获取复习计划的 Books
       parameters:
@@ -1156,6 +1158,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get the books of a specific dungeon
+      tags:
+      - dungeon
     post:
       consumes:
       - application/json
@@ -1188,6 +1192,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Add books to an existing dungeon
+      tags:
+      - dungeon
   /dungeon/dungeons/{id}/items:
     delete:
       consumes:
@@ -1225,6 +1231,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Remove items from a specific dungeon
+      tags:
+      - dungeon
     get:
       description: 获取复习计划的 Items
       parameters:
@@ -1251,6 +1259,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get the items of a specific dungeon
+      tags:
+      - dungeon
     post:
       consumes:
       - application/json
@@ -1283,6 +1293,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Add items to an existing dungeon
+      tags:
+      - dungeon
   /dungeon/dungeons/{id}/tags:
     delete:
       consumes:
@@ -1320,6 +1332,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Remove tags from a specific dungeon
+      tags:
+      - dungeon
     get:
       description: 获取复习计划的 TagNames
       parameters:
@@ -1346,6 +1360,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get the tags of a specific dungeon
+      tags:
+      - dungeon
     post:
       consumes:
       - application/json
@@ -1378,6 +1394,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Add tags to an existing dungeon
+      tags:
+      - dungeon
   /dungeon/endless/{id}/monsters:
     get:
       description: 获取复习计划的所有Monsters及其关联的 Items, Books, TagNames
@@ -1413,6 +1431,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all the monsters of a specific endless dungeon with associations
+      tags:
+      - dungeon
   /items:
     get:
       consumes:
@@ -1448,6 +1468,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Get a list of items with optional filters
+      tags:
+      - item
     post:
       consumes:
       - application/json
@@ -1472,6 +1494,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Create a new item
+      tags:
+      - item
   /items/{id}:
     delete:
       consumes:
@@ -1495,6 +1519,8 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Delete an item
+      tags:
+      - item
     get:
       consumes:
       - application/json
@@ -1551,6 +1577,33 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Update an item
+      tags:
+      - item
+  /items/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to create multiple items in the system.
+      parameters:
+      - description: File containing items data, support csv and toml file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created items from file
+          schema:
+            $ref: '#/definitions/dto.RespItemList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Upload items from a file
+      tags:
+      - item
   /profile/me:
     get:
       consumes:
@@ -1578,6 +1631,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get the current user's profile
+      tags:
+      - profile
     put:
       consumes:
       - application/json
@@ -1611,6 +1666,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user profile
+      tags:
+      - profile
   /profile/points:
     get:
       description: Retrieves points information for the current user.
@@ -1636,6 +1693,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get user points
+      tags:
+      - profile
   /profile/settings/advance:
     get:
       description: Retrieves advanced settings information for the current user.
@@ -1661,6 +1720,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get user advanced settings
+      tags:
+      - profile
     put:
       consumes:
       - application/json
@@ -1694,6 +1755,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user advanced settings
+      tags:
+      - profile
   /profile/settings/memorization:
     get:
       description: Retrieves settings information for the user who made the request.
@@ -1719,6 +1782,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get user settings
+      tags:
+      - profile
     put:
       consumes:
       - application/json
@@ -1752,6 +1817,8 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user settings
+      tags:
+      - profile
   /tags:
     get:
       consumes:
