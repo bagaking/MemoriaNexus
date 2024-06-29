@@ -2459,6 +2459,7 @@
                         "$ref": "#/definitions/dto.Book"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2493,6 +2494,7 @@
                         "$ref": "#/definitions/dto.Book"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2527,6 +2529,7 @@
                         "$ref": "#/definitions/dto.Dungeon"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2583,6 +2586,7 @@
                         "$ref": "#/definitions/dto.Item"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2617,6 +2621,7 @@
                         "$ref": "#/definitions/dto.DungeonMonster"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2676,6 +2681,7 @@
                         "$ref": "#/definitions/dto.Tag"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },

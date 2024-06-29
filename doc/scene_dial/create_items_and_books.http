@@ -54,6 +54,15 @@ Authorization: Bearer {{ACCESS_TOKEN}}
 GET http://localhost:8080/api/v1/items
 Authorization: Bearer {{ACCESS_TOKEN}}
 
+
+### 获取所有学习材料
+GET http://localhost:8080/api/v1/items?page=1&limit=10
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+### 获取所有学习材料
+GET http://localhost:8080/api/v1/items?page=2&limit=10
+Authorization: Bearer {{ACCESS_TOKEN}}
+
 ### 获取某个学习材料的详细信息
 GET http://localhost:8080/api/v1/items/{{ITEM_ID}}
 Authorization: Bearer {{ACCESS_TOKEN}}

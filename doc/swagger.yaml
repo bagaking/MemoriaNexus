@@ -274,6 +274,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.Book'
         type: array
+      extra: {}
       limit:
         type: integer
       message:
@@ -296,6 +297,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.Book'
         type: array
+      extra: {}
       limit:
         type: integer
       message:
@@ -318,6 +320,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.Dungeon'
         type: array
+      extra: {}
       limit:
         type: integer
       message:
@@ -354,6 +357,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.Item'
         type: array
+      extra: {}
       limit:
         type: integer
       message:
@@ -376,6 +380,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.DungeonMonster'
         type: array
+      extra: {}
       limit:
         type: integer
       message:
@@ -414,6 +419,7 @@ definitions:
         items:
           $ref: '#/definitions/dto.Tag'
         type: array
+      extra: {}
       limit:
         type: integer
       message:

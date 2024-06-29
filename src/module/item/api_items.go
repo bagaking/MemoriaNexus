@@ -38,23 +38,22 @@ func (svr *Service) GetItems(c *gin.Context) {
 		return
 	}
 
-	query := svr.db.Model(&model.Item{})
 	if req.UserID <= 0 { // 如果不指定用户，搜索的就是自己的
 		req.UserID = userID
 	}
-	query = query.Where("creator_id = ?", req.UserID)
-	if req.Type != "" {
-		query = query.Where("type = ?", req.Type)
+	query := &model.Item{
+		CreatorID: req.UserID,
+		Type:      req.Type,
 	}
-
 	var items []model.Item
-	if err := query.Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
+	if err := svr.db.Model(query).Where(query).Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to retrieve items")
 		return
 	}
 
+	// todo: cache this
 	var total int64
-	if err := query.Count(&total).Error; err != nil {
+	if err := svr.db.Model(query).Where(query).Count(&total).Error; err != nil {
 		log.WithError(err).Warnf("Failed to count items")
 		return
 	}

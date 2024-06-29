@@ -2470,6 +2470,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.Book"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2504,6 +2505,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.Book"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2538,6 +2540,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.Dungeon"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2594,6 +2597,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.Item"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2628,6 +2632,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.DungeonMonster"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
@@ -2687,6 +2692,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.Tag"
                     }
                 },
+                "extra": {},
                 "limit": {
                     "type": "integer"
                 },
