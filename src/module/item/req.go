@@ -28,6 +28,10 @@ type (
 		BookID utils.UInt64 `form:"book_id"`
 		Type   string       `form:"type"`
 	}
+
+	ReqUploadItems struct {
+		BookID *utils.UInt64 `form:"book_id,omitempty"`
+	}
 )
 
 const (

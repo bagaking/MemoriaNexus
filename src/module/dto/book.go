@@ -35,6 +35,11 @@ func (b *Book) FromModel(m *model.Book) *Book {
 	return b
 }
 
+func (b *Book) SetTags(tags []string) *Book {
+	b.Tags = tags
+	return b
+}
+
 // responses
 type (
 	RespBookGet    = RespSuccess[*Book]

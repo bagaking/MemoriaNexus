@@ -31,6 +31,7 @@ import (
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File containing items data, support csv and toml file"
+// @Param book_id query string false "Book ID"
 // @Success 201 {object} dto.RespItemList "Successfully created items from file"
 // @Failure 400 {object} utils.ErrorResponse "Bad Request"
 // @Router /items/upload [post]
@@ -38,9 +39,25 @@ func (svr *Service) UploadItems(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "UploadItems").WithField("user_id", userID)
 
+	var req ReqUploadItems
+	if err := c.ShouldBindQuery(&req); err != nil {
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid query parameters")
+		return
+	}
+
+	var book *model.Book
+	if req.BookID != nil {
+		b, err := model.FindBook(c, svr.db, *req.BookID)
+		if err != nil {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find the book")
+			return
+		}
+		book = b
+	}
+
 	file, err := c.FormFile("file")
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Failed to get file")
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "failed to get file")
 		return
 	}
 
@@ -74,6 +91,18 @@ func (svr *Service) UploadItems(c *gin.Context) {
 	if err = model.CreateItems(c, svr.db, items, itemTagRef); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to save items")
 		return
+	}
+
+	if book != nil {
+		successItemIDs, err := book.MPutItems(c, svr.db, typer.SliceMap(items, func(from *model.Item) utils.UInt64 {
+			return from.ID
+		}))
+		if err != nil {
+			log.WithError(err).Errorf("mput items failed, success= %v", successItemIDs)
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to save items")
+			return
+		}
+		log.Infof("mput items successfully, success= %v", successItemIDs)
 	}
 
 	new(dto.RespItemList).Append(typer.SliceMap(items, func(from *model.Item) *dto.Item {

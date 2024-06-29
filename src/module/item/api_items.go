@@ -60,7 +60,7 @@ func (svr *Service) GetItems(c *gin.Context) {
 	}
 	pager = pager.SetTotal(total)
 
-	resp := new(dto.RespItemList).WithPager(pager)
+	resp := new(dto.RespItemList)
 	// 转换 Item 为 Item
 	for _, item := range items {
 		tags, err := model.GetItemTagNames(c, svr.db, item.ID)
@@ -70,5 +70,5 @@ func (svr *Service) GetItems(c *gin.Context) {
 		}
 		resp.Append(new(dto.Item).FromModel(&item, tags...))
 	}
-	resp.Response(c, "items found")
+	resp.WithPager(pager).Response(c, "items found")
 }

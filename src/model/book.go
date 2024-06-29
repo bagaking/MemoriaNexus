@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -22,7 +23,6 @@ type Book struct {
 
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	Tags  []*Tag  `gorm:"many2many:BookTag;"`
 	Items []*Item `gorm:"many2many:BookItem;"`
 }
 
@@ -83,4 +83,32 @@ func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
 	}
 
 	return nil
+}
+
+func FindBook(ctx context.Context, tx *gorm.DB, id utils.UInt64) (*Book, error) {
+	book := &Book{}
+	result := tx.Where("id = ?", id).First(book)
+	if err := result.Error; err != nil {
+		return nil, err
+	}
+	return book, nil
+}
+
+func (b *Book) GetTagsName(ctx context.Context, tx *gorm.DB) ([]string, error) {
+	return GetBookTagNames(ctx, tx, b.ID)
+}
+
+func (b *Book) MPutItems(ctx context.Context, tx *gorm.DB, itemIDs []utils.UInt64) (successItemIDs []utils.UInt64, err error) {
+	successItemIDs = make([]utils.UInt64, 0, len(itemIDs))
+	for _, id := range itemIDs {
+		bookItem := &BookItem{
+			BookID: b.ID,
+			ItemID: id,
+		}
+		if err = tx.Where(bookItem).FirstOrCreate(bookItem).Error; err != nil {
+			return successItemIDs, irr.Wrap(err, "failed to add item to book")
+		}
+		successItemIDs = append(successItemIDs, id)
+	}
+	return successItemIDs, nil
 }

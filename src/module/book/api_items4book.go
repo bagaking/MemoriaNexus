@@ -41,7 +41,7 @@ func (svr *Service) GetItemsOfBook(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "error when fetching book items")
 	}
 
-	resp := new(dto.RespItemList)
+	resp := new(dto.RespItemList).WithPager(pager)
 	for _, item := range items {
 		resp.Append(new(dto.Item).FromModel(item))
 	}

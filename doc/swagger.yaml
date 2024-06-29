@@ -1590,6 +1590,10 @@ paths:
         name: file
         required: true
         type: file
+      - description: Book ID
+        in: query
+        name: book_id
+        type: string
       produces:
       - application/json
       responses:

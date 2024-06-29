@@ -99,7 +99,7 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// ReadBook handles retrieving a single book by ID.
+// GetBook handles retrieving a single book by ID.
 // @Summary Get a book by ID
 // @Description Get detailed information about a book.
 // @Tags book
@@ -108,31 +108,35 @@ func (svr *Service) CreateBook(c *gin.Context) {
 // @Param id path uint64 true "Book ID"
 // @Success 200 {object} dto.RespBookGet "Successfully retrieved book"
 // @Router /books/{id} [get]
-func (svr *Service) ReadBook(c *gin.Context) {
-	log := wlog.ByCtx(c, "ReadBook")
+func (svr *Service) GetBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	id := utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "GetBook").WithField("user_id", userID).WithField("id", id)
 
-	book := &model.Book{}
-	result := svr.db.Where("id = ? AND user_id = ?", id, userID).First(book)
-	if err := result.Error; err != nil {
+	book, err := model.FindBook(c, svr.db, id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found or permission denied"})
-		} else {
-			log.WithError(err).Errorf("Failed to fetch books for user %v", userID)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching book"})
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "book not found")
+			return
 		}
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch books")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching book"})
 		return
 	}
 
-	tags, err := model.GetBookTagNames(c, svr.db, book.ID)
-	if err != nil {
-		log.WithError(err).Warnf("Failed to fetch book tags, book_id= %v", book.ID)
+	if book.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Error fetching book"})
+		return
 	}
-	dBook := new(dto.Book).FromModel(book)
-	dBook.Tags = tags
 
-	new(dto.RespBookGet).With(dBook).Response(c, "book found")
+	tags, err := book.GetTagsName(c, svr.db)
+	if err != nil {
+		log.WithError(err).Warnf("Failed to fetch book tags")
+	}
+
+	new(dto.RespBookGet).With(
+		new(dto.Book).FromModel(book).SetTags(tags),
+	).Response(c, "book found")
 }
 
 // UpdateBook handles updating a book's information.
