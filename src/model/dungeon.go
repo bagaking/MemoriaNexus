@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -70,10 +71,18 @@ func (d *Dungeon) BeforeDelete(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func GetDungeonBookIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, error) {
+func FindDungeon(ctx context.Context, tx *gorm.DB, dungeonID utils.UInt64) (*Dungeon, error) {
+	dungeon := &Dungeon{}
+	if err := tx.Where("id = ?", dungeonID).First(dungeon).Error; err != nil {
+		return nil, err
+	}
+	return dungeon, nil
+}
+
+func (d *Dungeon) GetBookIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, error) {
 	var books []utils.UInt64
 
-	tx = tx.Model(&DungeonBook{}).Select("book_id").Where("dungeon_id = ?", dungeonID)
+	tx = tx.Model(&DungeonBook{}).Select("book_id").Where("dungeon_id = ?", d.ID)
 	rows, err := tx.Rows()
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch book ids")
@@ -90,9 +99,9 @@ func GetDungeonBookIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, err
 	return books, nil
 }
 
-func GetDungeonItemIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, error) {
+func (d *Dungeon) GetItemIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, error) {
 	var items []utils.UInt64
-	tx = tx.Model(&DungeonMonster{}).Select("item_id").Where("dungeon_id = ?", dungeonID)
+	tx = tx.Model(&DungeonMonster{}).Select("item_id").Where("dungeon_id = ?", d.ID)
 	rows, err := tx.Rows()
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch item ids")
@@ -109,10 +118,10 @@ func GetDungeonItemIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, err
 	return items, nil
 }
 
-func GetDungeonTagIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, error) {
+func (d *Dungeon) GetTagIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, error) {
 	var tags []utils.UInt64
 
-	tx = tx.Model(&DungeonTag{}).Select("tag_id").Where("dungeon_id = ?", dungeonID)
+	tx = tx.Model(&DungeonTag{}).Select("tag_id").Where("dungeon_id = ?", d.ID)
 	rows, err := tx.Rows()
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch tag ids")
@@ -129,16 +138,28 @@ func GetDungeonTagIDs(tx *gorm.DB, dungeonID utils.UInt64) ([]utils.UInt64, erro
 	return tags, nil
 }
 
-// GetDungeonAssociations Helper function to get associated books, items, and tags for a dungeon
-func GetDungeonAssociations(tx *gorm.DB, dungeonID utils.UInt64) (books, items, tags []utils.UInt64, err error) {
-	if books, err = GetDungeonBookIDs(tx, dungeonID); err != nil {
+// GetAssociations Helper function to get associated books, items, and tags for a dungeon
+func (d *Dungeon) GetAssociations(ctx context.Context, tx *gorm.DB) (books, items, tags []utils.UInt64, err error) {
+	if books, err = d.GetBookIDs(ctx, tx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-book associations")
 	}
-	if tags, err = GetDungeonTagIDs(tx, dungeonID); err != nil {
+	if tags, err = d.GetTagIDs(ctx, tx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-tag associations")
 	}
-	if items, err = GetDungeonItemIDs(tx, dungeonID); err != nil { // todo: 先不分页
+	if items, err = d.GetItemIDs(ctx, tx); err != nil { // todo: 先不分页
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-item associations")
 	}
 	return books, items, tags, nil
+}
+
+func (d *Dungeon) SubtractBooks(ctx context.Context, tx *gorm.DB, books []utils.UInt64) (successIDs []utils.UInt64, err error) {
+	successIDs = make([]utils.UInt64, 0, len(books))
+	for _, bookID := range books {
+		// 删除关联
+		if err = tx.Where("dungeon_id = ? AND book_id = ?", d.ID, bookID).Delete(&DungeonBook{}).Error; err != nil {
+			return successIDs, err
+		}
+		successIDs = append(successIDs, bookID)
+	}
+	return successIDs, nil
 }

@@ -3,7 +3,6 @@ package dungeon
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"gorm.io/gorm"
 
@@ -44,12 +43,8 @@ type ReqAddDungeonTags struct {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/books [post]
 func (svr *Service) AppendBooksToDungeon(c *gin.Context) {
-	log := wlog.ByCtx(c, "AppendBooksToDungeon")
-	dungeonID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid dungeon ID")
-		return
-	}
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "AppendBooksToDungeon").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
 	var req ReqAddDungeonBooks
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -57,22 +52,29 @@ func (svr *Service) AppendBooksToDungeon(c *gin.Context) {
 		return
 	}
 
-	dungeon := model.Dungeon{ID: utils.UInt64(dungeonID)}
-	if err := svr.db.First(&dungeon).Error; err != nil {
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
 		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
 		}
 		return
 	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
+		return
+	}
+	if dungeon.UserID != userID {
+		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
+	}
 
-	if err := dungeon.AddMonster(svr.db, model.MonsterSourceBook, req.Books); err != nil {
+	if err = dungeon.AddMonster(svr.db, model.MonsterSourceBook, req.Books); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to add books to dungeon")
 		return
 	}
 
-	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon)).Response(c)
+	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(dungeon)).Response(c)
 }
 
 // AppendItemsToDungeon handles adding items to an existing dungeon
@@ -88,27 +90,30 @@ func (svr *Service) AppendBooksToDungeon(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/items [post]
 func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
-	log := wlog.ByCtx(c, "AppendItemsToDungeon")
-	dungeonID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid dungeon ID")
-		return
-	}
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "AppendItemsToDungeon").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
 	var req ReqAddDungeonItems
-	if err = c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "parse request body failed"), "Invalid request body")
 		return
 	}
 
-	dungeon := model.Dungeon{ID: utils.UInt64(dungeonID)}
-	if err = svr.db.First(&dungeon).Error; err != nil {
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
 		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
 		}
 		return
+	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
+		return
+	}
+	if dungeon.UserID != userID {
+		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
 	}
 
 	if err = dungeon.AddMonster(svr.db, model.MonsterSourceItem, req.Items); err != nil {
@@ -116,7 +121,7 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 		return
 	}
 
-	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon)).Response(c)
+	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(dungeon)).Response(c)
 }
 
 // AppendTagsToDungeon handles adding tags to an existing dungeon
@@ -132,12 +137,8 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/tags [post]
 func (svr *Service) AppendTagsToDungeon(c *gin.Context) {
-	log := wlog.ByCtx(c, "AppendTagsToDungeon")
-	dungeonID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid dungeon ID")
-		return
-	}
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "AppendTagsToDungeon").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
 	var req ReqAddDungeonTags
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -145,14 +146,21 @@ func (svr *Service) AppendTagsToDungeon(c *gin.Context) {
 		return
 	}
 
-	dungeon := model.Dungeon{ID: utils.UInt64(dungeonID)}
-	if err := svr.db.First(&dungeon).Error; err != nil {
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
 		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
 		}
 		return
+	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
+		return
+	}
+	if dungeon.UserID != userID {
+		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
 	}
 
 	tagIDs, err := model.FindTagsIDByName(svr.db, req.TagNames)
@@ -161,10 +169,10 @@ func (svr *Service) AppendTagsToDungeon(c *gin.Context) {
 		return
 	}
 
-	if err := dungeon.AddMonster(svr.db, model.MonsterSourceTag, tagIDs); err != nil {
+	if err = dungeon.AddMonster(svr.db, model.MonsterSourceTag, tagIDs); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to add tags to dungeon")
 		return
 	}
 
-	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon)).Response(c)
+	new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(dungeon)).Response(c)
 }

@@ -135,8 +135,10 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons [get]
 func (svr *Service) GetDungeons(c *gin.Context) {
+	l, ctx := wlog.ByCtxAndCache(c, "GetDungeons")
 	userID := utils.GinMustGetUserID(c)
-	log := wlog.ByCtx(c, "GetDungeons").WithField("user_id", userID)
+
+	log := l.WithField("user_id", userID)
 
 	var req ReqGetDungeon
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -159,7 +161,7 @@ func (svr *Service) GetDungeons(c *gin.Context) {
 	resp := new(dto.RespDungeonList).WithPager(pager)
 	for i := range dungeons {
 		dungeon := dungeons[i]
-		books, items, tags, err := model.GetDungeonAssociations(svr.db, dungeon.ID)
+		books, items, tags, err := dungeon.GetAssociations(ctx, svr.db)
 		if err != nil {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon associations")
 			return
@@ -184,9 +186,11 @@ func (svr *Service) GetDungeons(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id} [get]
 func (svr *Service) GetDungeon(c *gin.Context) {
+	l, ctx := wlog.ByCtxAndCache(c, "GetDungeon")
 	userID := utils.GinMustGetUserID(c)
+
 	id := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetDungeon").WithField("user_id", userID).WithField("dungeon_id", id)
+	log := l.WithField("user_id", userID).WithField("dungeon_id", id)
 
 	var dungeon model.Dungeon
 	if err := svr.db.Where("user_id = ? and id = ?", userID, id).First(&dungeon).Error; err != nil {
@@ -194,7 +198,7 @@ func (svr *Service) GetDungeon(c *gin.Context) {
 		return
 	}
 
-	books, items, tags, err := model.GetDungeonAssociations(svr.db, dungeon.ID)
+	books, items, tags, err := dungeon.GetAssociations(ctx, svr.db)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon associations")
 		return

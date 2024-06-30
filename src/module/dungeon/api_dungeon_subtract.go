@@ -43,38 +43,39 @@ type ReqRemoveDungeonTags struct {
 // @Router /dungeon/dungeons/{id}/books [delete]
 func (svr *Service) SubtractDungeonBooks(c *gin.Context) {
 	log := wlog.ByCtx(c, "SubtractDungeonBooks")
-	dungeonID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Invalid dungeon ID")
-		return
-	}
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
 
 	var req ReqRemoveDungeonBooks
-	if err = c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "parse request body failed"), "Invalid request body")
 		return
 	}
 
-	dungeon := model.Dungeon{ID: utils.UInt64(dungeonID)}
-	if err = svr.db.First(&dungeon).Error; err != nil {
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
 		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
 		}
 		return
 	}
-
-	for _, bookID := range req.Books {
-		// 删除关联
-		if err = svr.db.Where("dungeon_id = ? AND book_id = ?", dungeon.ID, bookID).Delete(&model.DungeonBook{}).Error; err != nil {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to remove book from dungeon")
-			return
-		}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
+		return
+	}
+	if dungeon.UserID != userID {
+		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
 	}
 
+	successIDs, err := dungeon.SubtractBooks(c, svr.db, req.Books)
+	if err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to remove book from dungeon", utils.GinErrWithExtra("successIDs", successIDs))
+		return
+	}
 	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Books removed from dungeon",
+		Message: "books removed from dungeon",
+		Data:    successIDs,
 	})
 }
 

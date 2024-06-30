@@ -24,12 +24,23 @@ type GinHandleErrorOption func(*ginHandleErrorOptions)
 // ginHandleErrorOptions holds the options for GinHandleError.
 type ginHandleErrorOptions struct {
 	requestContents map[string]any
+	extra           map[string]any
 }
 
 // GinErrWithReqContents sets the requestContents option.
 func GinErrWithReqContents(params map[string]any) GinHandleErrorOption {
 	return func(opts *ginHandleErrorOptions) {
 		opts.requestContents = params
+	}
+}
+
+// GinErrWithExtra sets the requestContents option.
+func GinErrWithExtra(key string, val any) GinHandleErrorOption {
+	return func(opts *ginHandleErrorOptions) {
+		if opts.extra == nil {
+			opts.extra = make(map[string]any)
+		}
+		opts.extra[key] = val
 	}
 }
 
@@ -90,6 +101,7 @@ func GinHandleError(c *gin.Context, log logrus.FieldLogger, status int, err erro
 		"queries":  queries,
 		"params":   params,
 		"contents": opts.requestContents,
+		"extra":    opts.extra,
 
 		"stacktrace": getGinSimplifiedStackTrace(), // Add stack trace
 	}

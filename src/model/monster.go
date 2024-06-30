@@ -292,8 +292,8 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strat
 	return dungeonMonsters, nil
 }
 
-// GetDungeonMonsters - 获取当前 Dungeon 的 DungeonMonster，不会尝试解析 books 和 tags 的关联
-func (d *Dungeon) GetDungeonMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
+// GetDirectMonsters - 获取当前 Dungeon 的 DungeonMonster，不会尝试解析 books 和 tags 的关联
+func (d *Dungeon) GetDirectMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
 	var monsters []DungeonMonster
 	err := tx.Where("dungeon_id = ?", d.ID).Order("item_id ASC").Offset(offset).Limit(limit).Find(&monsters).Error
 	if err != nil {
@@ -302,10 +302,10 @@ func (d *Dungeon) GetDungeonMonsters(tx *gorm.DB, offset, limit int) ([]DungeonM
 	return monsters, nil
 }
 
-// GetDungeonMonstersWithExpandedAssociations - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
-func (d *Dungeon) GetDungeonMonstersWithExpandedAssociations(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
+// GetMonstersWithExpandedAssociations - 获取当前 Dungeon 的 DungeonMonster 及其关联的 Items, Books, TagNames
+func (d *Dungeon) GetMonstersWithExpandedAssociations(ctx context.Context, tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
 	// 获取关联的 Items, Books, TagNames
-	bookIDs, items, tags, err := GetDungeonAssociations(tx, d.ID)
+	bookIDs, items, tags, err := d.GetAssociations(ctx, tx)
 	if err != nil {
 		return nil, err
 	}

@@ -223,7 +223,7 @@ func (svr *Service) GetCampaignDungeonConclusionOfToday(c *gin.Context) {
 	}
 	//
 	//// 获取所有Monster
-	//monsters, err := model.GetDungeonMonsters(svr.db, dungeon.ID, "", 0, 9999)
+	//monsters, err := model.GetDirectMonsters(svr.db, dungeon.ID, "", 0, 9999)
 	//if err != nil {
 	//	utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon items")
 	//	return

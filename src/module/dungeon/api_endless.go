@@ -46,7 +46,7 @@ func (svr *Service) GetMonstersOfEndlessDungeon(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetDungeonMonstersWithExpandedAssociations(svr.db, offset, limit)
+	monsters, err := dungeon.GetMonstersWithExpandedAssociations(c, svr.db, offset, limit)
 	if err != nil {
 		utils.GinHandleError(c, wlog.ByCtx(c), http.StatusInternalServerError, err, "Failed to fetch dungeon monsters with associations")
 		return

@@ -1,7 +1,10 @@
 package dungeon
 
 import (
+	"errors"
 	"net/http"
+
+	"gorm.io/gorm"
 
 	"github.com/bagaking/memorianexus/src/module/dto"
 
@@ -23,19 +26,26 @@ import (
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/books [get]
 func (svr *Service) GetDungeonBooksDetail(c *gin.Context) {
-	userID, id := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetDungeonBooksDetail").WithField("user_id", userID).WithField("dungeon_id", id)
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "GetDungeonBooksDetail").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
-	var dungeon model.Dungeon
-
-	if err := svr.db.Where("id = ?", id).First(&dungeon).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
+		} else {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
+		}
+		return
+	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
 		return
 	}
 
-	books, err := model.GetDungeonBookIDs(svr.db, dungeon.ID)
+	books, err := dungeon.GetBookIDs(c, svr.db)
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon books")
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch dungeon books")
 		return
 	}
 
@@ -53,16 +63,24 @@ func (svr *Service) GetDungeonBooksDetail(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/tags [get]
 func (svr *Service) GetDungeonTagsDetail(c *gin.Context) {
-	userID, id := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetDungeonTagsDetail").WithField("user_id", userID).WithField("dungeon_id", id)
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "GetDungeonTagsDetail").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
-	var dungeon model.Dungeon
-	if err := svr.db.Where("id = ?", id).First(&dungeon).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
+		} else {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
+		}
+		return
+	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
 		return
 	}
 
-	tags, err := model.GetDungeonTagIDs(svr.db, dungeon.ID)
+	tags, err := dungeon.GetTagIDs(c, svr.db)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon tags")
 		return
@@ -82,17 +100,25 @@ func (svr *Service) GetDungeonTagsDetail(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/dungeons/{id}/items [get]
 func (svr *Service) GetDungeonItemsDetail(c *gin.Context) {
-	userID, id := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetDungeonItemsDetail").WithField("user_id", userID).WithField("dungeon_id", id)
+	userID, dungeonID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
+	log := wlog.ByCtx(c, "GetDungeonItemsDetail").WithField("user_id", userID).WithField("dungeon_id", dungeonID)
 
-	var dungeon model.Dungeon
-	if err := svr.db.Where("id = ?", id).First(&dungeon).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
+	dungeon, err := model.FindDungeon(c, svr.db, dungeonID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
+		} else {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to find dungeon")
+		}
+		return
+	}
+	if dungeon == nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "got nil dungeon")
 		return
 	}
 
 	pager := utils.GinGetPagerFromQuery(c)
-	monsters, err := dungeon.GetDungeonMonsters(svr.db, pager.Offset, pager.Limit)
+	monsters, err := dungeon.GetDirectMonsters(svr.db, pager.Offset, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon monsters")
 		return
@@ -102,5 +128,5 @@ func (svr *Service) GetDungeonItemsDetail(c *gin.Context) {
 	for _, dm := range monsters {
 		resp = resp.Append(new(dto.DungeonMonster).FromModel(dm))
 	}
-	resp.Response(c, "got dungeon monsters")
+	resp.WithPager(pager).Response(c, "got dungeon monsters")
 }
