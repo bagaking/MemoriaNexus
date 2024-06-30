@@ -39,7 +39,7 @@ type (
 
 		// Gaming
 		Visibility utils.Percentage `gorm:"default:0"` // Visibility 显影程度，根据复习次数变化
-		Avatar     string           // 头像
+		Avatar     string           // 头像地址
 
 		// 以下为宽表内容，为了加速查询
 		Familiarity utils.Percentage `gorm:"default:0"` // UserMonster 向 DungeonMonster 单项同步
@@ -48,6 +48,10 @@ type (
 		Importance def.ImportanceLevel `gorm:"default:0x01"` // Item 向 DungeonMonster 单项同步
 
 		CreatedAt time.Time
+
+		// StoryTelling & Gaming
+		Name        string
+		Description string
 	}
 
 	MonsterSource uint8
@@ -72,14 +76,14 @@ func (ms MonsterSource) String() string {
 	}
 }
 
-func (d *Dungeon) AddMonster(tx *gorm.DB, source MonsterSource, sourceEntityIDs []utils.UInt64) error {
+func (d *Dungeon) AddMonster(ctx context.Context, tx *gorm.DB, source MonsterSource, sourceEntityIDs []utils.UInt64) error {
 	// Validate the existence of resources
 	if err := validateExistence(tx, source, sourceEntityIDs); err != nil {
 		return irr.Track(err, "add monster to dungeon failed, source= %v, ids= %v", source, sourceEntityIDs)
 	}
 
 	if source == MonsterSourceItem {
-		if err := createMonstersByItemID(tx, d.ID, sourceEntityIDs); err != nil {
+		if err := createMonstersByItemID(ctx, tx, d.ID, sourceEntityIDs); err != nil {
 			return irr.Track(err, "add monster (from item list) to dungeon failed")
 		}
 	} else {
@@ -115,15 +119,15 @@ func validateExistence(tx *gorm.DB, source MonsterSource, resourceIDs []utils.UI
 	var count int64
 	switch source {
 	case MonsterSourceItem:
-		if err := tx.Model(&Item{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+		if err := tx.Model(&Item{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
 			return irr.Track(err, "find items in ids failed, ids=%v", resourceIDs)
 		}
 	case MonsterSourceBook:
-		if err := tx.Model(&Book{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+		if err := tx.Model(&Book{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
 			return irr.Track(err, "find books in ids failed, ids=%v", resourceIDs)
 		}
 	case MonsterSourceTag:
-		if err := tx.Model(&Tag{}).Where("id IN ( ? )", resourceIDs).Count(&count).Error; err != nil {
+		if err := tx.Model(&Tag{}).Where("id IN ?", resourceIDs).Count(&count).Error; err != nil {
 			return irr.Track(err, "find tags in ids failed, ids=%v", resourceIDs)
 		}
 	default:
@@ -164,11 +168,12 @@ func createDungeonMonster(tx *gorm.DB, dungeonID utils.UInt64, item Item, source
 		DungeonID: dungeonID,
 		ItemID:    item.ID,
 
+		// system
 		SourceType: source,
 		SourceID:   sourceEntityID,
+		CreatedAt:  time.Now(),
 
 		// 用于 runtime
-		Visibility:     0,
 		PracticeCount:  0,
 		PracticeAt:     time.Now(),
 		NextPracticeAt: time.Now(),
@@ -178,7 +183,10 @@ func createDungeonMonster(tx *gorm.DB, dungeonID utils.UInt64, item Item, source
 		Difficulty:  item.Difficulty,
 		Importance:  item.Importance,
 
-		CreatedAt: time.Now(),
+		// Gaming
+		Visibility:  0,
+		Name:        "", // todo: created by id
+		Description: "", // todo: created by id
 	}
 	if err := tx.Where("dungeon_id = ? AND item_id = ?", dungeonID, item.ID).FirstOrCreate(&dungeonMonster).Error; err != nil {
 		return err
@@ -197,7 +205,7 @@ func createMonstersForBook(tx *gorm.DB, dungeonID, bookID utils.UInt64) error {
 	})
 
 	var items []Item
-	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+	if err := tx.Where("id in ?", itemIDs).Find(&items).Error; err != nil {
 		return err
 	}
 
@@ -220,7 +228,7 @@ func createMonstersForTag(tx *gorm.DB, dungeonID, tagID utils.UInt64) error {
 	})
 
 	var items []Item
-	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+	if err := tx.Where("id in ?", itemIDs).Find(&items).Error; err != nil {
 		return err
 	}
 
@@ -232,14 +240,13 @@ func createMonstersForTag(tx *gorm.DB, dungeonID, tagID utils.UInt64) error {
 	return nil
 }
 
-func createMonstersByItemID(tx *gorm.DB, dungeonID utils.UInt64, itemIDs []utils.UInt64) error {
-	var items []Item
-	if err := tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+func createMonstersByItemID(ctx context.Context, tx *gorm.DB, dungeonID utils.UInt64, itemIDs []utils.UInt64) error {
+	items, err := FindItems(ctx, tx, itemIDs)
+	if err != nil {
 		return err
 	}
-
 	for _, item := range items {
-		if err := createDungeonMonster(tx, dungeonID, item, MonsterSourceItem, item.ID); err != nil {
+		if err = createDungeonMonster(tx, dungeonID, item, MonsterSourceItem, item.ID); err != nil {
 			return err
 		}
 	}
@@ -347,7 +354,7 @@ func (d *Dungeon) GetMonstersWithExpandedAssociations(ctx context.Context, tx *g
 	// 获取所有 item 的详细信息并排序分页，不在内存里先裁剪的原因是如果查不到的话会导致列表 < limit
 	// todo 当然还是有优化空间，比如空洞不多的情况下，先送内存裁剪的结果，有异常了再搜后续
 	var itemsList []*Item
-	if err = tx.Table("items").Where("id IN (?)", itemIDs).
+	if err = tx.Table("items").Where("id IN ?", itemIDs).
 		Offset(offset).Limit(limit).Find(&itemsList).Error; err != nil {
 		return nil, err
 	}

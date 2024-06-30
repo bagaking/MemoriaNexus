@@ -33,7 +33,7 @@ func (svr *Service) GetItemsOfBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	bookID := utils.GinMustGetID(c)
 	pager := utils.GinGetPagerFromQuery(c)
-	log := wlog.ByCtx(c, "GetItemsOfBook").WithField("user_id", userID).WithField("pager", pager)
+	log := wlog.ByCtx(c, "GetItemsOfBook").WithField("user_id", userID).WithField("book_id", bookID).WithField("pager", pager)
 
 	items, err := model.GetItemsOfBook(svr.db, bookID, pager.Offset, pager.Limit)
 	if err != nil {
@@ -41,7 +41,7 @@ func (svr *Service) GetItemsOfBook(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "error when fetching book items")
 	}
 
-	resp := new(dto.RespItemList).WithPager(pager)
+	resp := new(dto.RespItemList)
 	for _, item := range items {
 		resp.Append(new(dto.Item).FromModel(item))
 	}
@@ -53,7 +53,7 @@ func (svr *Service) GetItemsOfBook(c *gin.Context) {
 		}
 	}
 
-	resp.Response(c, "items of the book found")
+	resp.WithPager(pager).Response(c, "items of the book found")
 }
 
 // AddItemsToBook handles adding items to a book
@@ -71,7 +71,7 @@ func (svr *Service) GetItemsOfBook(c *gin.Context) {
 func (svr *Service) AddItemsToBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	bookID := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "AddItemsToBook").WithField("user_id", userID)
+	log := wlog.ByCtx(c, "AddItemsToBook").WithField("user_id", userID).WithField("book_id", bookID)
 
 	var req ReqAddItems
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -113,7 +113,7 @@ func (svr *Service) AddItemsToBook(c *gin.Context) {
 func (svr *Service) RemoveItemsFromBook(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	bookID := utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "RemoveItemsFromBook").WithField("user_id", userID)
+	log := wlog.ByCtx(c, "RemoveItemsFromBook").WithField("user_id", userID).WithField("book_id", bookID)
 
 	itemIDsStr := c.Query("item_ids")
 	if itemIDsStr == "" {
@@ -133,7 +133,7 @@ func (svr *Service) RemoveItemsFromBook(c *gin.Context) {
 		itemIDsUInt64 = append(itemIDsUInt64, id)
 	}
 
-	if err := svr.db.Where("book_id = ? AND item_id IN ( ? )", bookID, itemIDsUInt64).Delete(&model.BookItem{}).Error; err != nil {
+	if err := svr.db.Where("book_id = ? AND item_id IN ?", bookID, itemIDsUInt64).Delete(&model.BookItem{}).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "failed to remove book items")
 		return
 	}

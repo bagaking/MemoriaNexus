@@ -2306,8 +2306,11 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "difficulty": {
-                    "description": "Item 向 DungeonMonster 单项同步",
+                    "description": "Item -\u003e DungeonMonster 单向同步",
                     "allOf": [
                         {
                             "$ref": "#/definitions/def.DifficultyLevel"
@@ -2322,7 +2325,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "importance": {
-                    "description": "Item 向 DungeonMonster 单项同步",
+                    "description": "Item -\u003e DungeonMonster 单向同步",
                     "allOf": [
                         {
                             "$ref": "#/definitions/def.ImportanceLevel"
@@ -2331,6 +2334,9 @@ const docTemplate = `{
                 },
                 "item_id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "next_practice_at": {
                     "description": "下次复习时间",
@@ -2345,13 +2351,19 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "source_id": {
+                    "description": "记录插入时来源，方便原路径修改删除等",
                     "type": "integer"
                 },
                 "source_type": {
-                    "$ref": "#/definitions/model.MonsterSource"
+                    "description": "system",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.MonsterSource"
+                        }
+                    ]
                 },
                 "visibility": {
-                    "description": "Visibility 显影程度，根据复习次数变化",
+                    "description": "以下为游戏性相关内容，由 AI 生成",
                     "type": "integer"
                 }
             }

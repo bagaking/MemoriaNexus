@@ -178,14 +178,17 @@ func parseItemsFromTOML(ctx context.Context, content []byte) ([]*model.Item, map
 	}
 
 	itemTagRef := make(map[*model.Item][]string)
+
 	var items []*model.Item
+
+	tags := barn.Tags
 	for _, card := range barn.QnAs {
 		item := &model.Item{
 			Type:    model.TyItemFlashCard,
 			Content: "## " + card.Question + "\n\n" + card.Answer,
 		}
 		items = append(items, item)
-		itemTagRef[item] = card.Tags
+		itemTagRef[item] = append(tags, card.Tags...)
 	}
 
 	return items, itemTagRef, nil

@@ -78,7 +78,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 	}
 
 	// Add books to dungeon
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceBook, req.Books); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceBook, req.Books); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.GinHandleError(c, log, http.StatusNotFound, err, "Internal server error, books not found", utils.GinErrWithReqBody(req))
 		} else {
@@ -95,7 +95,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 		return
 	}
 
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceTag, tagIDs); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceTag, tagIDs); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.GinHandleError(c, log, http.StatusNotFound, err,
 				"Internal server error, tags not found", utils.GinErrWithReqBody(req))
@@ -107,7 +107,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 	}
 
 	// Add items to dungeon
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceItem, req.Items); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceItem, req.Items); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.GinHandleError(c, log, http.StatusNotFound, err,
 				"Internal server error, items not found", utils.GinErrWithReqBody(req))

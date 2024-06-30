@@ -91,10 +91,18 @@ func (i *Item) BeforeDelete(tx *gorm.DB) (err error) {
 	return nil
 }
 
+func FindItems(ctx context.Context, tx *gorm.DB, itemIDs []utils.UInt64) ([]Item, error) {
+	items := make([]Item, 0, len(itemIDs))
+	if err := tx.Where("id in ?", itemIDs).Find(items).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 // GetItemIDsOfBooks 获取 book 关联的 items
 func GetItemIDsOfBooks(tx *gorm.DB, bookIDs []utils.UInt64) (itemBookMap map[utils.UInt64]utils.UInt64, err error) {
 	var bookItems []BookItem
-	if err = tx.Where("book_id IN (?)", bookIDs).Find(&bookItems).Error; err != nil {
+	if err = tx.Where("book_id IN ?", bookIDs).Find(&bookItems).Error; err != nil {
 		return nil, err
 	}
 	itemBookMap = make(map[utils.UInt64]utils.UInt64)
@@ -126,7 +134,7 @@ func GetItemsOfBook(tx *gorm.DB, bookID utils.UInt64, offset, limit int) (items 
 }
 
 func GetItemsByID(tx *gorm.DB, itemIDs []utils.UInt64) (items []*Item, err error) {
-	if err = tx.Where("id in (?)", itemIDs).Find(&items).Error; err != nil {
+	if err = tx.Where("id in ?", itemIDs).Find(&items).Error; err != nil {
 		return nil, irr.Wrap(err, "get items from ids failed")
 	}
 	return items, nil
@@ -135,7 +143,7 @@ func GetItemsByID(tx *gorm.DB, itemIDs []utils.UInt64) (items []*Item, err error
 // GetItemIDsOfTags 获取 tag 关联的 items
 func GetItemIDsOfTags(tx *gorm.DB, tagIDs []utils.UInt64) (map[utils.UInt64]utils.UInt64, error) {
 	var tagItems []ItemTag
-	if err := tx.Where("tag_id IN (?)", tagIDs).Find(&tagItems).Error; err != nil {
+	if err := tx.Where("tag_id IN ?", tagIDs).Find(&tagItems).Error; err != nil {
 		return nil, err
 	}
 	itemTagMap := make(map[utils.UInt64]utils.UInt64)

@@ -73,7 +73,7 @@ func (ty TagRefType) CreateAssociate(entityID, tagID utils.UInt64) ITagAssociate
 // FindTagsByName fetches tag IDs associated with an entity.
 func FindTagsByName(ctx context.Context, tx *gorm.DB, names []string) ([]Tag, error) {
 	var tags []Tag
-	if err := tx.Where("name in (?)", names).Find(&tags).Error; err != nil {
+	if err := tx.Where("name in ?", names).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 	return tags, nil
@@ -101,7 +101,7 @@ func FindItemsOfTag(ctx context.Context, tx *gorm.DB, tagID utils.UInt64, pager 
 	}
 
 	var items []Item
-	if err := tx.Where("id IN (?)", itemIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
+	if err := tx.Where("id IN ?", itemIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
 		return nil, irr.Wrap(err, "failed to fetch items by id in %v", itemIDs)
 	}
 	return items, nil
@@ -120,7 +120,7 @@ func FindBooksOfTag(ctx context.Context, tx *gorm.DB, tagID utils.UInt64, pager 
 	}
 
 	var books []Book
-	if err := tx.Where("id IN (?)", bookIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&books).Error; err != nil {
+	if err := tx.Where("id IN ?", bookIDs).Offset(pager.Offset).Limit(pager.Limit).Find(&books).Error; err != nil {
 		return nil, irr.Wrap(err, "failed to fetch books by id in %v", bookIDs)
 	}
 	return books, nil
@@ -129,7 +129,7 @@ func FindBooksOfTag(ctx context.Context, tx *gorm.DB, tagID utils.UInt64, pager 
 // FindTagsIDByName fetches tag IDs associated with an entity.
 func FindTagsIDByName(tx *gorm.DB, names []string) ([]utils.UInt64, error) {
 	var tagIDs []utils.UInt64
-	if err := tx.Model(&Tag{}).Where("name in (?)", names).Pluck("id", &tagIDs).Error; err != nil {
+	if err := tx.Model(&Tag{}).Where("name in ?", names).Pluck("id", &tagIDs).Error; err != nil {
 		return nil, err
 	}
 	return tagIDs, nil
@@ -284,9 +284,9 @@ func removeObsoleteTags(ctx context.Context, tx *gorm.DB, entityType TagRefType,
 	var err error
 	switch entityType {
 	case BookTagRef:
-		err = tx.Where("book_id = ? AND tag_id IN (?)", entityID, tagsToDelete).Delete(&BookTag{}).Error
+		err = tx.Where("book_id = ? AND tag_id IN ?", entityID, tagsToDelete).Delete(&BookTag{}).Error
 	case ItemTagRef:
-		err = tx.Where("item_id = ? AND tag_id IN (?)", entityID, tagsToDelete).Delete(&ItemTag{}).Error
+		err = tx.Where("item_id = ? AND tag_id IN ?", entityID, tagsToDelete).Delete(&ItemTag{}).Error
 	}
 	if err != nil { // todo: irr wrap 考虑保护 err = nil 的情况?
 		return irr.Wrap(err, "failed to delete obsolete tags, entity_type= %v, tags_to_delete= %v", entityType, tagsToDelete)
@@ -332,7 +332,7 @@ func fetchTagsInBatchesParallel(ctx context.Context, tx *gorm.DB, tagIDs []utils
 	processor := func(ctx context.Context, start, end int) error {
 		var batch []Tag
 		// Fetch a batch of tags within the specified range from the database
-		if err := tx.Model(&Tag{}).Where("id IN (?)", tagIDs[start:end]).Find(&batch).Error; err != nil {
+		if err := tx.Model(&Tag{}).Where("id IN ?", tagIDs[start:end]).Find(&batch).Error; err != nil {
 			return err
 		}
 		// Lock the mutex before appending to the shared slice

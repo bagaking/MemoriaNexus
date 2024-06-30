@@ -69,7 +69,7 @@ func (svr *Service) AppendBooksToDungeon(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
 	}
 
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceBook, req.Books); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceBook, req.Books); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to add books to dungeon")
 		return
 	}
@@ -116,7 +116,7 @@ func (svr *Service) AppendItemsToDungeon(c *gin.Context) {
 		utils.GinHandleError(c, log, http.StatusForbidden, err, "got permission denied")
 	}
 
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceItem, req.Items); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceItem, req.Items); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to add items to dungeon")
 		return
 	}
@@ -169,7 +169,7 @@ func (svr *Service) AppendTagsToDungeon(c *gin.Context) {
 		return
 	}
 
-	if err = dungeon.AddMonster(svr.db, model.MonsterSourceTag, tagIDs); err != nil {
+	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceTag, tagIDs); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to add tags to dungeon")
 		return
 	}
