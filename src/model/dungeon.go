@@ -118,32 +118,20 @@ func (d *Dungeon) GetItemIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, 
 	return items, nil
 }
 
-func (d *Dungeon) GetTagIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, error) {
-	var tags []utils.UInt64
-
-	tx = tx.Model(&DungeonTag{}).Select("tag_id").Where("dungeon_id = ?", d.ID)
-	rows, err := tx.Rows()
+func (d *Dungeon) GetTags(ctx context.Context, tx *gorm.DB) ([]string, error) {
+	tags, err := GetTagsByEntity(ctx, tx, d.ID)
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch tag ids")
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id utils.UInt64
-		if err = rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		tags = append(tags, id)
 	}
 	return tags, nil
 }
 
 // GetAssociations Helper function to get associated books, items, and tags for a dungeon
-func (d *Dungeon) GetAssociations(ctx context.Context, tx *gorm.DB) (books, items, tags []utils.UInt64, err error) {
+func (d *Dungeon) GetAssociations(ctx context.Context, tx *gorm.DB) (books, items []utils.UInt64, tags []string, err error) {
 	if books, err = d.GetBookIDs(ctx, tx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-book associations")
 	}
-	if tags, err = d.GetTagIDs(ctx, tx); err != nil {
+	if tags, err = d.GetTags(ctx, tx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-tag associations")
 	}
 	if items, err = d.GetItemIDs(ctx, tx); err != nil { // todo: 先不分页

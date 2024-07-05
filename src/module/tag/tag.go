@@ -25,70 +25,19 @@ import (
 // @Router /tags [get]
 func (svr *Service) GetTags(c *gin.Context) {
 	pager := utils.GinGetPagerFromQuery(c)
-	log := wlog.ByCtx(c, "GetTags").WithField("pager", pager)
+	userID := utils.GinMustGetUserID(c)
+	log := wlog.ByCtx(c, "GetTags").WithField("pager", pager).WithField("user_id", userID)
 
-	var tags []model.Tag
-	if err := svr.db.Find(&tags).Offset(pager.Offset).Limit(pager.Limit).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch tags")
-		return
-	}
-
-	new(dto.RespTagList).WithPager(pager).Append(typer.SliceMap(tags, func(from model.Tag) *dto.Tag {
-		return new(dto.Tag).FromModel(&from)
-	})...).Response(c, "found tags")
-}
-
-// GetTagByName handles retrieving a tag by its name.
-// @Summary Get tag by name
-// @Description Retrieves a tag by its name.
-// @Tags tag
-// @Accept json
-// @Produce json
-// @Param name path string true "Tag Name"
-// @Success 200 {object} dto.Tag "Successfully retrieved tag"
-// @Router /tags/name/{name} [get]
-func (svr *Service) GetTagByName(c *gin.Context) {
-	tagName := c.Param("name")
-	pager := utils.GinGetPagerFromQuery(c)
-	log := wlog.ByCtx(c, "GetTagByName").WithField("pager", pager)
-
-	tag, err := model.FindTagByName(c, svr.db, tagName)
+	tags, err := model.GetTagsByUser(c, svr.db, userID)
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch tag")
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch tags")
 		return
 	}
 
-	new(dto.RespTagGet).With(new(dto.Tag).FromModel(tag)).Response(c, "found tag by name")
+	new(dto.RespTagList).WithPager(pager).Append(tags...).Response(c, "found tags")
 }
 
 // GetBooksByTag handles retrieving a list of books associated with a specific tag name.
-// @Summary Get books by tag
-// @Description Retrieves a list of books associated with a specific tag id.
-// @Tags tag
-// @Accept json
-// @Produce json
-// @Param id path string true "Tag ID"
-// @Param page query int false "Page number for pagination"
-// @Param limit query int false "Number of items per page"
-// @Success 200 {array} dto.RespBookList "Successfully retrieved books"
-// @Router /tags/{id}/books [get]
-func (svr *Service) GetBooksByTag(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetItemsByTag")
-	tagID := utils.GinMustGetID(c)
-	pager := utils.GinGetPagerFromQuery(c)
-
-	books, err := model.FindBooksOfTag(c, svr.db, tagID, pager)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch items by tag")
-		return
-	}
-
-	new(dto.RespBookList).WithPager(pager).Append(typer.SliceMap(books, func(from model.Book) *dto.Book {
-		return new(dto.Book).FromModel(&from)
-	})...).Response(c, "found books by tag name")
-}
-
-// GetBooksByTagName handles retrieving a list of books associated with a specific tag name.
 // @Summary Get books by tag name
 // @Description Retrieves a list of books associated with a specific tag name.
 // @Tags tag
@@ -98,19 +47,16 @@ func (svr *Service) GetBooksByTag(c *gin.Context) {
 // @Param page query int false "Page number for pagination"
 // @Param limit query int false "Number of items per page"
 // @Success 200 {array} dto.RespBookList "Successfully retrieved books"
-// @Router /tags/name/{name}/books [get]
-func (svr *Service) GetBooksByTagName(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetBooksByTagName")
-	tagName := c.Param("name")
+// @Router /tags/{tag}/books [get]
+func (svr *Service) GetBooksByTag(c *gin.Context) {
+	userID := utils.GinMustGetUserID(c)
+	tag := utils.GinMustGetTAG(c)
 	pager := utils.GinGetPagerFromQuery(c)
 
-	tag, err := model.FindTagByName(c, svr.db, tagName)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch tag")
-		return
-	}
+	log := wlog.ByCtx(c, "GetBooksByTag").
+		WithField("pager", pager).WithField("tag", tag).WithField("user_id", userID)
 
-	books, err := model.FindBooksOfTag(c, svr.db, tag.ID, pager)
+	books, err := model.FindBooksOfTag(c, svr.db, userID, tag, pager)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch items by tag")
 		return
@@ -133,11 +79,14 @@ func (svr *Service) GetBooksByTagName(c *gin.Context) {
 // @Success 200 {array} dto.RespItemList "Successfully retrieved items"
 // @Router /tags/{id}/items [get]
 func (svr *Service) GetItemsByTag(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetItemsByTag")
-	tagID := utils.GinMustGetID(c)
+	userID := utils.GinMustGetUserID(c)
+	tag := utils.GinMustGetTAG(c)
 	pager := utils.GinGetPagerFromQuery(c)
 
-	items, err := model.FindItemsOfTag(c, svr.db, tagID, pager)
+	log := wlog.ByCtx(c, "GetItemsByTag").
+		WithField("pager", pager).WithField("tag", tag).WithField("user_id", userID)
+
+	items, err := model.FindItemsOfTag(c, svr.db, userID, tag, pager)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch items by tag")
 		return
@@ -146,37 +95,4 @@ func (svr *Service) GetItemsByTag(c *gin.Context) {
 	new(dto.RespItemList).WithPager(pager).Append(typer.SliceMap(items, func(from model.Item) *dto.Item {
 		return new(dto.Item).FromModel(&from)
 	})...).Response(c, "found items by tag")
-}
-
-// GetItemsByTagName handles retrieving a list of items associated with a specific tag name.
-// @Summary Get items by tag name
-// @Description Retrieves a list of items associated with a specific tag name.
-// @Tags tag
-// @Accept json
-// @Produce json
-// @Param name path string true "Tag Name"
-// @Param page query int false "Page number for pagination"
-// @Param limit query int false "Number of items per page"
-// @Success 200 {array} dto.RespItemList "Successfully retrieved items"
-// @Router /tags/name/{name}/items [get]
-func (svr *Service) GetItemsByTagName(c *gin.Context) {
-	log := wlog.ByCtx(c, "GetItemsByTagName")
-	tagName := c.Param("name")
-	pager := utils.GinGetPagerFromQuery(c)
-
-	tag, err := model.FindTagByName(c, svr.db, tagName)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch tag")
-		return
-	}
-
-	items, err := model.FindItemsOfTag(c, svr.db, tag.ID, pager)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch items by tag")
-		return
-	}
-
-	new(dto.RespItemList).WithPager(pager).Append(typer.SliceMap(items, func(from model.Item) *dto.Item {
-		return new(dto.Item).FromModel(&from)
-	})...).Response(c, "found items by tag name")
 }

@@ -36,5 +36,5 @@ type (
 
 const (
 	MaxBooksOncePerItem = 10 // 设定每个 Item 可以关联的最大 Books 数量
-	MaxTagsOncePerItem  = 5  // 设定每个 Item 可以拥有的最大 TagNames 数量
+	MaxTagsOncePerItem  = 5  // 设定每个 Item 可以拥有的最大 Tags 数量
 )

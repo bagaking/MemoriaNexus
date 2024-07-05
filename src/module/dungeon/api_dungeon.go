@@ -78,7 +78,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 	}
 
 	// Add books to dungeon
-	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceBook, req.Books); err != nil {
+	if err = dungeon.AddMonsterFromBook(c, svr.db, req.Books); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.GinHandleError(c, log, http.StatusNotFound, err, "Internal server error, books not found", utils.GinErrWithReqBody(req))
 		} else {
@@ -87,33 +87,12 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 		return
 	}
 
-	// Add tags to dungeon
-	tagIDs, err := model.FindTagsIDByName(svr.db, req.TagNames) // todo: 未创建的 tag 会被忽略
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusNotFound, err,
-			"Internal server error, get tagID failed", utils.GinErrWithReqBody(req))
-		return
-	}
-
-	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceTag, tagIDs); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err,
-				"Internal server error, tags not found", utils.GinErrWithReqBody(req))
-		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err,
-				"Internal server error", utils.GinErrWithReqBody(req))
-		}
-		return
-	}
-
 	// Add items to dungeon
-	if err = dungeon.AddMonster(c, svr.db, model.MonsterSourceItem, req.Items); err != nil {
+	if err = dungeon.AddMonsters(c, svr.db, req.Items); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusNotFound, err,
-				"Internal server error, items not found", utils.GinErrWithReqBody(req))
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "Internal server error, items not found", utils.GinErrWithReqBody(req))
 		} else {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err,
-				"Internal server error", utils.GinErrWithReqBody(req))
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Internal server error", utils.GinErrWithReqBody(req))
 		}
 		return
 	}
@@ -121,8 +100,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 	resp := new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon))
 	resp.Data.Books = req.Books
 	resp.Data.Items = req.Items
-	resp.Data.TagNames = req.TagNames
-	resp.Data.TagIDs = tagIDs
+	resp.Data.Tags = req.Tags
 	resp.Response(c, "dungeon created")
 }
 
@@ -169,7 +147,7 @@ func (svr *Service) GetDungeons(c *gin.Context) {
 		d := new(dto.Dungeon).FromModel(&dungeon)
 		d.Books = books
 		d.Items = items
-		d.TagIDs = tags
+		d.Tags = tags
 		resp.Append(d)
 	}
 	resp.Response(c)
@@ -207,7 +185,7 @@ func (svr *Service) GetDungeon(c *gin.Context) {
 	resp := new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon))
 	resp.Data.Books = books
 	resp.Data.Items = items
-	resp.Data.TagIDs = tags
+	resp.Data.Tags = tags
 	resp.Response(c)
 }
 

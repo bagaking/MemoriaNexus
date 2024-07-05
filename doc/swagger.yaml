@@ -146,11 +146,7 @@ definitions:
         type: array
       rule:
         type: string
-      tag_ids:
-        items:
-          type: integer
-        type: array
-      tag_names:
+      tags:
         items:
           type: string
         type: array
@@ -424,7 +420,7 @@ definitions:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.Tag'
+          type: string
         type: array
       extra: {}
       limit:
@@ -453,13 +449,6 @@ definitions:
       message:
         type: string
     type: object
-  dto.Tag:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
   dungeon.ReqAddDungeonBooks:
     properties:
       books:
@@ -472,13 +461,6 @@ definitions:
       items:
         items:
           type: integer
-        type: array
-    type: object
-  dungeon.ReqAddDungeonTags:
-    properties:
-      tag_names:
-        items:
-          type: string
         type: array
     type: object
   dungeon.ReqCreateDungeon:
@@ -495,11 +477,7 @@ definitions:
         type: array
       rule:
         type: string
-      tag_ids:
-        items:
-          type: integer
-        type: array
-      tag_names:
+      tags:
         items:
           type: string
         type: array
@@ -598,12 +576,10 @@ definitions:
     enum:
     - 1
     - 2
-    - 3
     type: integer
     x-enum-varnames:
     - MonsterSourceItem
     - MonsterSourceBook
-    - MonsterSourceTag
   profile.ReqUpdateProfile:
     properties:
       avatar_url:
@@ -1312,7 +1288,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: 删除复习计划的 TagNames
+      description: 删除复习计划的 Tags
       parameters:
       - description: Dungeon ID
         in: path
@@ -1348,7 +1324,7 @@ paths:
       tags:
       - dungeon
     get:
-      description: 获取复习计划的 TagNames
+      description: 获取复习计划的 Tags
       parameters:
       - description: Dungeon ID
         in: path
@@ -1375,43 +1351,9 @@ paths:
       summary: Get the tags of a specific dungeon
       tags:
       - dungeon
-    post:
-      consumes:
-      - application/json
-      description: 向现有复习计划添加标签
-      parameters:
-      - description: Dungeon ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Tags to add
-        in: body
-        name: tags
-        required: true
-        schema:
-          $ref: '#/definitions/dungeon.ReqAddDungeonTags'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.RespDungeon'
-        "400":
-          description: Invalid request parameters
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/utils.ErrorResponse'
-      summary: Add tags to an existing dungeon
-      tags:
-      - dungeon
   /dungeon/endless/{id}/monsters:
     get:
-      description: 获取复习计划的所有Monsters及其关联的 Items, Books, TagNames
+      description: 获取复习计划的所有Monsters及其关联的 Items, Books, Tags
       parameters:
       - description: Dungeon ID
         in: path
@@ -1862,37 +1804,6 @@ paths:
       summary: Get all tags
       tags:
       - tag
-  /tags/{id}/books:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a list of books associated with a specific tag id.
-      parameters:
-      - description: Tag ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Page number for pagination
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved books
-          schema:
-            items:
-              $ref: '#/definitions/dto.RespBookList'
-            type: array
-      summary: Get books by tag
-      tags:
-      - tag
   /tags/{id}/items:
     get:
       consumes:
@@ -1924,28 +1835,7 @@ paths:
       summary: Get items by tag
       tags:
       - tag
-  /tags/name/{name}:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a tag by its name.
-      parameters:
-      - description: Tag Name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved tag
-          schema:
-            $ref: '#/definitions/dto.Tag'
-      summary: Get tag by name
-      tags:
-      - tag
-  /tags/name/{name}/books:
+  /tags/{tag}/books:
     get:
       consumes:
       - application/json
@@ -1974,37 +1864,6 @@ paths:
               $ref: '#/definitions/dto.RespBookList'
             type: array
       summary: Get books by tag name
-      tags:
-      - tag
-  /tags/name/{name}/items:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a list of items associated with a specific tag name.
-      parameters:
-      - description: Tag Name
-        in: path
-        name: name
-        required: true
-        type: string
-      - description: Page number for pagination
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved items
-          schema:
-            items:
-              $ref: '#/definitions/dto.RespItemList'
-            type: array
-      summary: Get items by tag name
       tags:
       - tag
 swagger: "2.0"

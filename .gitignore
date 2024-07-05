@@ -26,5 +26,7 @@ go.work
 # for dev_memorianexus
 dev*/logs
 dev*/*data
+deployment/docker-build-context
+
 bundle/*.txt
 *.bundle.txt

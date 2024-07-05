@@ -3,15 +3,13 @@ package item
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/utils"
-
-	"github.com/bagaking/memorianexus/src/module/dto"
-
 	"github.com/bagaking/goulp/wlog"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
 // GetItems handles retrieving a list of items with optional filters and pagination.
@@ -62,7 +60,7 @@ func (svr *Service) GetItems(c *gin.Context) {
 	resp := new(dto.RespItemList)
 	// 转换 Item 为 Item
 	for _, item := range items {
-		tags, err := model.GetItemTagNames(c, svr.db, item.ID)
+		tags, err := model.GetTagsByEntity(c, svr.db, item.ID)
 		if err != nil {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to get item tag names")
 			return

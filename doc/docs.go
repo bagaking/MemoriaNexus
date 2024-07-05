@@ -1014,7 +1014,7 @@ const docTemplate = `{
         },
         "/dungeon/dungeons/{id}/tags": {
             "get": {
-                "description": "获取复习计划的 TagNames",
+                "description": "获取复习计划的 Tags",
                 "produces": [
                     "application/json"
                 ],
@@ -1055,59 +1055,8 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "description": "向现有复习计划添加标签",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "dungeon"
-                ],
-                "summary": "Add tags to an existing dungeon",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dungeon ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Tags to add",
-                        "name": "tags",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dungeon.ReqAddDungeonTags"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.RespDungeon"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request parameters",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "delete": {
-                "description": "删除复习计划的 TagNames",
+                "description": "删除复习计划的 Tags",
                 "consumes": [
                     "application/json"
                 ],
@@ -1166,7 +1115,7 @@ const docTemplate = `{
         },
         "/dungeon/endless/{id}/monsters": {
             "get": {
-                "description": "获取复习计划的所有Monsters及其关联的 Items, Books, TagNames",
+                "description": "获取复习计划的所有Monsters及其关联的 Items, Books, Tags",
                 "produces": [
                     "application/json"
                 ],
@@ -1861,179 +1810,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/name/{name}": {
-            "get": {
-                "description": "Retrieves a tag by its name.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tag"
-                ],
-                "summary": "Get tag by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Tag Name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved tag",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Tag"
-                        }
-                    }
-                }
-            }
-        },
-        "/tags/name/{name}/books": {
-            "get": {
-                "description": "Retrieves a list of books associated with a specific tag name.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tag"
-                ],
-                "summary": "Get books by tag name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Tag Name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page number for pagination",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved books",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RespBookList"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/tags/name/{name}/items": {
-            "get": {
-                "description": "Retrieves a list of items associated with a specific tag name.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tag"
-                ],
-                "summary": "Get items by tag name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Tag Name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page number for pagination",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved items",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RespItemList"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/tags/{id}/books": {
-            "get": {
-                "description": "Retrieves a list of books associated with a specific tag id.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tag"
-                ],
-                "summary": "Get books by tag",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Tag ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page number for pagination",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved books",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RespBookList"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/tags/{id}/items": {
             "get": {
                 "description": "Retrieves a list of items associated with a specific tag.",
@@ -2075,6 +1851,53 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/dto.RespItemList"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tags/{tag}/books": {
+            "get": {
+                "description": "Retrieves a list of books associated with a specific tag name.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tag"
+                ],
+                "summary": "Get books by tag name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag Name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved books",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.RespBookList"
                             }
                         }
                     }
@@ -2273,13 +2096,7 @@ const docTemplate = `{
                 "rule": {
                     "type": "string"
                 },
-                "tag_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "tag_names": {
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2701,7 +2518,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.Tag"
+                        "type": "string"
                     }
                 },
                 "extra": {},
@@ -2745,17 +2562,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Tag": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
         "dungeon.ReqAddDungeonBooks": {
             "type": "object",
             "properties": {
@@ -2774,17 +2580,6 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "integer"
-                    }
-                }
-            }
-        },
-        "dungeon.ReqAddDungeonTags": {
-            "type": "object",
-            "properties": {
-                "tag_names": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
                     }
                 }
             }
@@ -2810,13 +2605,7 @@ const docTemplate = `{
                 "rule": {
                     "type": "string"
                 },
-                "tag_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "tag_names": {
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2975,13 +2764,11 @@ const docTemplate = `{
             "type": "integer",
             "enum": [
                 1,
-                2,
-                3
+                2
             ],
             "x-enum-varnames": [
                 "MonsterSourceItem",
-                "MonsterSourceBook",
-                "MonsterSourceTag"
+                "MonsterSourceBook"
             ]
         },
         "profile.ReqUpdateProfile": {

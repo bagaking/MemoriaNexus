@@ -3,11 +3,10 @@ package profile
 import (
 	"net/http"
 
-	"github.com/bagaking/memorianexus/internal/utils"
-
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 
+	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/model"
 	"github.com/bagaking/memorianexus/src/module/dto"
 )

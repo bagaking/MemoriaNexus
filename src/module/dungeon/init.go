@@ -40,7 +40,6 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 
 			dungeonsDetailGroup.POST("/books", svr.AppendBooksToDungeon)
 			dungeonsDetailGroup.POST("/items", svr.AppendItemsToDungeon)
-			dungeonsDetailGroup.POST("/tags", svr.AppendTagsToDungeon)
 
 			dungeonsDetailGroup.GET("/books", svr.GetDungeonBooksDetail)
 			dungeonsDetailGroup.GET("/items", svr.GetDungeonItemsDetail)

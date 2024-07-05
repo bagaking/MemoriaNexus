@@ -3,6 +3,7 @@
 package gw
 
 import (
+	"github.com/bagaking/memorianexus/src/module/tag"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -40,6 +41,10 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 	// 册子管理路由组
 	svrBooks, _ := book.Init(db)
 	svrBooks.ApplyMux(router.Group("/books"))
+
+	// 标签管理路由组
+	svrTags, _ := tag.Init(db)
+	svrTags.ApplyMux(router.Group("/tags"))
 
 	// 系统操作路由组
 	svrSystem, _ := system.Init(db)

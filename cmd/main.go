@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bagaking/memorianexus/internal/utils/cache"
 	"io"
 	"net/http"
 	"os"
@@ -69,6 +70,9 @@ func main() {
 
 	// 初始化数据库连接
 	db := mustInitDB()
+
+	// 初始化缓存
+	cache.InitCache()
 
 	// 初始化HTTP路由
 	router := gin.Default()

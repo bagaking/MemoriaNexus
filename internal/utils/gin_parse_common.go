@@ -26,9 +26,22 @@ func GinMWParseID() gin.HandlerFunc {
 	}
 }
 
+func GinMWParseTAG() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("tag")
+		c.Set("__parsed_tag", idStr)
+		c.Next()
+	}
+}
+
 // GinMustGetID should be used with GinMWParseID
 func GinMustGetID(c *gin.Context) (id UInt64) {
 	return c.MustGet("__parsed_id").(UInt64)
+}
+
+// GinMustGetTAG should be used with GinMWParseID
+func GinMustGetTAG(c *gin.Context) (tag string) {
+	return c.MustGet("__parsed_tag").(string)
 }
 
 func GinMustGetUserID(c *gin.Context) (id UInt64) {

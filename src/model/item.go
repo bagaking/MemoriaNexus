@@ -54,36 +54,12 @@ func (i *Item) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-type ItemTag struct {
-	ItemID utils.UInt64 `gorm:"primaryKey"`
-	TagID  utils.UInt64 `gorm:"primaryKey"`
-}
-
-func (ItemTag) Associate(itemID, tagID utils.UInt64) ITagAssociate {
-	return ItemTag{ItemID: itemID, TagID: tagID}
-}
-
-func (ItemTag) Type() TagRefType {
-	return ItemTagRef
-}
-
-var _ ITagAssociate = &ItemTag{}
-
-func (b ItemTag) TableName() string {
-	return "item_tags"
-}
-
 // BeforeDelete is a GORM hook that is called before deleting an item.
 func (i *Item) BeforeDelete(tx *gorm.DB) (err error) {
 	log := wlog.Common("BeforeDeleteItem")
 	log.Infof("Deleting associations for item ID %d", i.ID)
 
 	// todo: refine this
-
-	if err = tx.Where("item_id = ?", i.ID).Delete(&ItemTag{}).Error; err != nil {
-		return irr.Wrap(err, "failed to delete item tags")
-	}
-
 	if err = tx.Where("item_id = ?", i.ID).Delete(&BookItem{}).Error; err != nil {
 		return irr.Wrap(err, "failed to delete item books")
 	}
@@ -93,7 +69,7 @@ func (i *Item) BeforeDelete(tx *gorm.DB) (err error) {
 
 func FindItems(ctx context.Context, tx *gorm.DB, itemIDs []utils.UInt64) ([]Item, error) {
 	items := make([]Item, 0, len(itemIDs))
-	if err := tx.Where("id in ?", itemIDs).Find(items).Error; err != nil {
+	if err := tx.Where("id in ?", itemIDs).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
@@ -141,19 +117,21 @@ func GetItemsByID(tx *gorm.DB, itemIDs []utils.UInt64) (items []*Item, err error
 }
 
 // GetItemIDsOfTags 获取 tag 关联的 items
-func GetItemIDsOfTags(tx *gorm.DB, tagIDs []utils.UInt64) (map[utils.UInt64]utils.UInt64, error) {
-	var tagItems []ItemTag
-	if err := tx.Where("tag_id IN ?", tagIDs).Find(&tagItems).Error; err != nil {
-		return nil, err
-	}
-	itemTagMap := make(map[utils.UInt64]utils.UInt64)
-	for _, tagItem := range tagItems {
-		itemTagMap[tagItem.ItemID] = tagItem.TagID
+func GetItemIDsOfTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, tags []string) (map[utils.UInt64]string, error) {
+	itemTagMap := make(map[utils.UInt64]string)
+	for _, tag := range tags {
+		itemsIDs, err := GetEntitiesOfType(ctx, tx, userID, tag, EntityTypeItem)
+		if err != nil {
+			return nil, err
+		}
+		for _, itemID := range itemsIDs {
+			itemTagMap[itemID] = tag
+		}
 	}
 	return itemTagMap, nil
 }
 
-func CreateItems(ctx context.Context, tx *gorm.DB, items []*Item, itemTagRef map[*Item][]string) error {
+func CreateItems(ctx context.Context, tx *gorm.DB, userID utils.UInt64, items []*Item, itemTagRef map[*Item][]string) error {
 	log := wlog.ByCtx(ctx, "model.save_items")
 
 	for _, item := range items {
@@ -167,7 +145,8 @@ func CreateItems(ctx context.Context, tx *gorm.DB, items []*Item, itemTagRef map
 			tags = typer.SliceFilter(tags, func(s string) bool {
 				return strings.TrimSpace(s) != ""
 			})
-			if err := UpdateItemTagsRef(ctx, tx, item.ID, tags); err != nil {
+
+			if err := AddEntityTags(ctx, tx, userID, EntityTypeItem, item.ID, tags...); err != nil {
 				return irr.Wrap(err, "update item tags failed")
 			}
 		}

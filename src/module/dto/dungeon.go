@@ -12,10 +12,9 @@ import (
 type (
 	DungeonFullData struct {
 		DungeonData
-		Books    []utils.UInt64 `json:"books,omitempty"`
-		Items    []utils.UInt64 `json:"items,omitempty"`
-		TagNames []string       `json:"tag_names,omitempty"`
-		TagIDs   []utils.UInt64 `json:"tag_ids,omitempty"`
+		Books []utils.UInt64 `json:"books,omitempty"`
+		Items []utils.UInt64 `json:"items,omitempty"`
+		Tags  []string       `json:"tags,omitempty"`
 	}
 
 	DungeonData struct {

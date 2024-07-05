@@ -72,6 +72,7 @@ compose-reset:
 
 # Build the docker image for our go application
 build-app: bundle
+	chmod +x ./script/copy_local_modules.sh && sh ./script/copy_local_modules.sh
 	$(DC) build app
 
 dev:

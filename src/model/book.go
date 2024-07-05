@@ -39,25 +39,6 @@ func (b *Book) TableName() string {
 	return "books"
 }
 
-type BookTag struct {
-	BookID utils.UInt64 `gorm:"primaryKey"`
-	TagID  utils.UInt64 `gorm:"primaryKey"`
-}
-
-func (BookTag) Associate(bookID, tagID utils.UInt64) ITagAssociate {
-	return BookTag{BookID: bookID, TagID: tagID}
-}
-
-func (BookTag) Type() TagRefType {
-	return BookTagRef
-}
-
-var _ ITagAssociate = &BookTag{}
-
-func (b BookTag) TableName() string {
-	return "book_tags"
-}
-
 type BookItem struct {
 	BookID utils.UInt64 `gorm:"primaryKey"`
 	ItemID utils.UInt64 `gorm:"primaryKey"`
@@ -71,12 +52,6 @@ func (b *BookItem) TableName() string {
 func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
 	log := wlog.Common("BeforeDeleteBook")
 	log.Infof("Deleting associations for book ID %d", b.ID)
-
-	// todo: refine this
-
-	if err = tx.Where("book_id = ?", b.ID).Delete(&BookTag{}).Error; err != nil {
-		return irr.Wrap(err, "failed to delete book tags")
-	}
 
 	if err = tx.Where("book_id = ?", b.ID).Delete(&BookItem{}).Error; err != nil {
 		return irr.Wrap(err, "failed to delete book items")
@@ -95,7 +70,7 @@ func FindBook(ctx context.Context, tx *gorm.DB, id utils.UInt64) (*Book, error) 
 }
 
 func (b *Book) GetTagsName(ctx context.Context, tx *gorm.DB) ([]string, error) {
-	return GetBookTagNames(ctx, tx, b.ID)
+	return GetTagsByEntity(ctx, tx, b.ID)
 }
 
 func (b *Book) MPutItems(ctx context.Context, tx *gorm.DB, itemIDs []utils.UInt64) (successItemIDs []utils.UInt64, err error) {

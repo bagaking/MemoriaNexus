@@ -21,13 +21,9 @@ func Init(db *gorm.DB) (*Service, error) {
 
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	group.GET("", svr.GetTags)
-	idGroup := group.Group("/:id").Use(utils.GinMWParseID())
+	tagGroup := group.Group("/:tag").Use(utils.GinMWParseTAG())
 	{
-		idGroup.GET("/items", svr.GetItemsByTag)
-		idGroup.POST("/books", svr.GetBooksByTag)
+		tagGroup.GET("/books", svr.GetBooksByTag)
+		tagGroup.GET("/items", svr.GetItemsByTag)
 	}
-
-	group.GET("/name/:name", svr.GetTagByName)
-	group.GET("/name/:name/books", svr.GetBooksByTagName)
-	group.GET("/name/:name/items", svr.GetItemsByTagName)
 }

@@ -1,8 +1,8 @@
 entry = [
     "doc/API_SPEC.md",
     "doc/Design.md",
+    "src/model/**/*.go",
     "src/module/**/*.go",
-    "src/module/dto/**/*.go",
 ]
 
 exclude = [

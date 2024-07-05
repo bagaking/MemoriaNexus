@@ -81,7 +81,7 @@ func (svr *Service) SubtractDungeonBooks(c *gin.Context) {
 
 // SubtractDungeonTags handles removing tags from a specific dungeon
 // @Summary Remove tags from a specific dungeon
-// @Description 删除复习计划的 TagNames
+// @Description 删除复习计划的 Tags
 // @Tags dungeon
 // @Accept json
 // @Produce json

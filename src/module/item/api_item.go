@@ -34,7 +34,7 @@ func (svr *Service) CreateItem(c *gin.Context) {
 		return
 	}
 
-	// 检查 BookIDs 和 TagNames 数量是否超出限制
+	// 检查 BookIDs 和 Tags 数量是否超出限制
 	if len(req.BookIDs) > MaxBooksOncePerItem {
 		utils.GinHandleError(c, log, http.StatusBadRequest, errors.New("too many books"), "Too many books")
 		return

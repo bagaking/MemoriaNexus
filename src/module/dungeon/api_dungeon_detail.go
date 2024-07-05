@@ -54,7 +54,7 @@ func (svr *Service) GetDungeonBooksDetail(c *gin.Context) {
 
 // GetDungeonTagsDetail handles fetching the tags of a specific dungeon
 // @Summary Get the tags of a specific dungeon
-// @Description 获取复习计划的 TagNames
+// @Description 获取复习计划的 Tags
 // @Tags dungeon
 // @Produce json
 // @Param id path uint64 true "Dungeon ID"
@@ -80,7 +80,7 @@ func (svr *Service) GetDungeonTagsDetail(c *gin.Context) {
 		return
 	}
 
-	tags, err := dungeon.GetTagIDs(c, svr.db)
+	tags, err := dungeon.GetTags(c, svr.db)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon tags")
 		return

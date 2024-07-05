@@ -5,6 +5,18 @@ CREATE TABLE `tags` (
     UNIQUE KEY `unique_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE user_tags (
+    `user_id` BIGINT NOT NULL,
+    `tag` VARCHAR(2048) NOT NULL,  -- 注意如果加密的话要支持前缀可索引
+    `entity_type` TINYINT UNSIGNED COMMENT "entity type, item=1, book=2, dungeon=3",
+    `entity_id` BIGINT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (user_id, tag(32), entity_id),
+    INDEX `idx_entity_tag_type` (entity_id, tag(32), entity_type)
+);
+
 CREATE TABLE `books` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
