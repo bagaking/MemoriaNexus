@@ -6,8 +6,8 @@ import (
 
 var cli *cache.Cache
 
-func Init() {
-	cache.Init("localhost:6379")
+func Init(host string) {
+	cache.Init(host)
 	cli = cache.NewPrefixedCli("mem_nexus:")
 }
 

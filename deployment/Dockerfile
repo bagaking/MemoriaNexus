@@ -16,9 +16,6 @@ RUN echo "Contents of /app after copy:" && ls -la
 # If go.mod exists, print its contents
 RUN if [ -f go.mod ]; then cat go.mod; else echo "go.mod not found"; fi
 
-# Check if memstore directory exists and list its contents
-RUN if [ -d memstore ]; then echo "memstore directory contents:" && ls -la memstore; else echo "memstore directory not found"; fi
-
 # Print current module path
 RUN go list -m
 

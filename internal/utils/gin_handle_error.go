@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -96,28 +97,28 @@ func GinHandleError(c *gin.Context, log logrus.FieldLogger, status int, err erro
 
 	// Add the error, message, and stack trace to the log fields
 	fields := logrus.Fields{
-		"error":    err,
-		"message":  msg,
-		"queries":  queries,
-		"params":   params,
-		"contents": opts.requestContents,
-		"extra":    opts.extra,
-
-		"stacktrace": getGinSimplifiedStackTrace(), // Add stack trace
+		"error":      err,
+		"message":    msg,
+		"queries":    queries,
+		"params":     params,
+		"contents":   opts.requestContents,
+		"extra":      opts.extra,
+		"stacktrace": getGinSimplifiedStackTrace(),
 	}
 
-	if ir, ok := err.(irr.IRR); ok {
+	var ir irr.IRR
+	if errors.As(err, &ir) {
 		fields["irr.track"] = ir.ToString(true, " ++ ")
 	}
 
 	// Log the error with different levels based on the status code
 	switch {
 	case status >= http.StatusInternalServerError:
-		log.WithFields(fields).Error("Internal server error") // Internal server errors are logged as errors
+		log.WithFields(fields).Errorf("internal server error") // Internal server errors are logged as errors
 	case status >= http.StatusBadRequest:
-		log.WithFields(fields).Warn("Client error") // Client errors are logged as warnings
+		log.WithFields(fields).Warnf("Client error; stacktrace") // Client errors are logged as warnings
 	default:
-		log.WithFields(fields).Info("Other case") // Other cases (e.g., redirects) are logged as info
+		log.WithFields(fields).Infof("Other case; stacktrace") // Other cases (e.g., redirects) are logged as info
 	}
 
 	c.JSON(status, resp)
@@ -149,8 +150,10 @@ func getGinSimplifiedStackTrace() string {
 			stackTrace = append(stackTrace, fmt.Sprintf(" -NEXT- %s", funcName))
 		case strings.Contains(funcName, "utils.GinHandleError"):
 			stackTrace = append(stackTrace, " -CALL HandleError-")
+		case strings.Contains(funcName, "runtime."):
+			stackTrace = append(stackTrace, funcName)
 		default:
-			stackTrace = append(stackTrace, fmt.Sprintf(" -NNNN- %s (%s)", funcName, fileLine))
+			stackTrace = append(stackTrace, fmt.Sprintf(" -FUNC- ┃%s┃ (%s)", funcName, fileLine))
 		}
 
 		if !more {
