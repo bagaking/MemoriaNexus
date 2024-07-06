@@ -247,7 +247,7 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strat
 		// 经典策略：下次复习时间早于当前时间，熟练度最低，重要程度最高，难度最低
 		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
 			Order("familiarity ASC, importance DESC, difficulty ASC").
-			Limit(count).Find(&dungeonMonsters)
+			Limit(count).Find(&dungeonMonsters) // todo: familiarity 从小到大排列的话，导致只学新的
 	default:
 		// 默认策略：下次复习时间早于当前时间，按熟练度排序
 		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).

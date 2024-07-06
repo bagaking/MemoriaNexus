@@ -2,6 +2,7 @@ package item
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/bagaking/goulp/wlog"
 
@@ -44,18 +45,27 @@ func (svr *Service) GetItems(c *gin.Context) {
 		Type:      req.Type,
 	}
 	var items []model.Item
-	if err := svr.db.Model(query).Where(query).Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
+	tx := svr.db.Model(query).Where(query)
+	search := strings.TrimSpace(req.Search)
+	if search != "" {
+		log = log.WithField("search", search)
+		// todo: 非常临时的 demo, 应该过搜索系统得到 ID 再回 DB 走 pager 的逻辑
+		tx.Where("content LIKE ?", "%"+search+"%")
+	}
+	if err := tx.Offset(pager.Offset).Limit(pager.Limit).Find(&items).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to retrieve items")
 		return
 	}
 
 	// todo: cache this
-	var total int64
-	if err := svr.db.Model(query).Where(query).Count(&total).Error; err != nil {
-		log.WithError(err).Warnf("Failed to count items")
-		return
+	if search == "" { // todo: search 的搜索不准, 且搜索导致全表扫描, 临时这么用着, 搜索时屏蔽 total
+		var total int64
+		if err := svr.db.Model(query).Where(query).Count(&total).Error; err != nil {
+			log.WithError(err).Warnf("Failed to count items")
+			return
+		}
+		pager = pager.SetTotal(total)
 	}
-	pager = pager.SetTotal(total)
 
 	resp := new(dto.RespItemList)
 	// 转换 Item 为 Item

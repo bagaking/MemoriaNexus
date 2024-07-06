@@ -24,9 +24,10 @@ type (
 	}
 
 	ReqGetItems struct {
-		UserID utils.UInt64 `form:"user_id"`
-		BookID utils.UInt64 `form:"book_id"`
-		Type   string       `form:"type"`
+		UserID utils.UInt64 `form:"user_id" json:"user_id,omitempty"`
+		BookID utils.UInt64 `form:"book_id" json:"book_id,omitempty"`
+		Type   string       `form:"type" json:"type,omitempty"`
+		Search string       `form:"search" json:"search,omitempty"`
 	}
 
 	ReqUploadItems struct {
