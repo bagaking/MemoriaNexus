@@ -64,7 +64,7 @@ func (svr *Service) UploadItems(c *gin.Context) {
 	// 打开上传的文件
 	f, err := file.Open()
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to open file")
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to open file")
 		return
 	}
 	defer f.Close()
@@ -72,12 +72,12 @@ func (svr *Service) UploadItems(c *gin.Context) {
 	// 解析文件内容
 	items, itemTagRef, err := parseItemsFromFile(c, f, file.Filename)
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, err, "Failed to parse file")
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "failed to parse file")
 		return
 	}
 	ids, err := utils.MGenIDU64(c, len(items))
 	if err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to generate item id")
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to generate item id")
 		return
 	}
 	for i := range items {
@@ -88,8 +88,8 @@ func (svr *Service) UploadItems(c *gin.Context) {
 	}
 
 	// 保存解析后的学习材料
-	if err = model.CreateItems(c, svr.db, items, itemTagRef); err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to save items")
+	if err = model.CreateItems(c, svr.db, userID, items, itemTagRef); err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to save items")
 		return
 	}
 
@@ -99,7 +99,7 @@ func (svr *Service) UploadItems(c *gin.Context) {
 		}))
 		if err != nil {
 			log.WithError(err).Errorf("mput items failed, success= %v", successItemIDs)
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to save items")
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to save items")
 			return
 		}
 		log.Infof("mput items successfully, success= %v", successItemIDs)

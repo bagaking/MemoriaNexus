@@ -10,7 +10,7 @@ require (
 	github.com/bytedance/sonic v1.11.6
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
-	github.com/khgame/memstore v0.0.0-20230415062303-8e0263be2b1d
+	github.com/khgame/memstore v0.0.0-20240706053229-34ff6ebeec61
 	github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a
 	github.com/khicago/got v0.0.0-20240520140129-635733602f45
 	github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6

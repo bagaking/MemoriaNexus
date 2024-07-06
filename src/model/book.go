@@ -22,8 +22,6 @@ type Book struct {
 	UpdatedAt   time.Time
 
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-
-	Items []*Item `gorm:"many2many:BookItem;"`
 }
 
 // BeforeCreate 钩子
@@ -69,7 +67,7 @@ func FindBook(ctx context.Context, tx *gorm.DB, id utils.UInt64) (*Book, error) 
 	return book, nil
 }
 
-func (b *Book) GetTagsName(ctx context.Context, tx *gorm.DB) ([]string, error) {
+func (b *Book) GetTags(ctx context.Context, tx *gorm.DB) ([]string, error) {
 	return GetTagsByEntity(ctx, tx, b.ID)
 }
 

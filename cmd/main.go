@@ -5,21 +5,22 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/bagaking/memorianexus/internal/utils/cache"
 	"io"
 	"net/http"
 	"os"
+
+	"gopkg.in/natefinch/lumberjack.v2"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/gin-gonic/gin"
 	"github.com/khicago/irr"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 
 	"github.com/bagaking/memorianexus/doc"
 	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/memorianexus/internal/utils/cache"
 	"github.com/bagaking/memorianexus/src/gw"
 )
 
@@ -51,6 +52,23 @@ func dsn() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=%s", username, password, host, port, dbname, charset, loc)
 }
 
+func redisHost() string {
+	host := "localhost"
+	switch utils.Env() {
+	case utils.RuntimeENVDev:
+		host = "redis"
+	case utils.RuntimeENVProd:
+		host = "redis"
+	case utils.RuntimeENVLocal:
+		fallthrough
+	default:
+	}
+
+	port := "6379"
+
+	return host + ":" + port
+}
+
 func main() {
 	// 配置一个lumberjack.Logger
 	logRoller := &lumberjack.Logger{
@@ -72,7 +90,7 @@ func main() {
 	db := mustInitDB()
 
 	// 初始化缓存
-	cache.InitCache()
+	cache.Init(redisHost())
 
 	// 初始化HTTP路由
 	router := gin.Default()
@@ -105,11 +123,18 @@ func mustInitLogger(fileLogger io.Writer) {
 	multiLogger := io.MultiWriter(os.Stdout, fileLogger)
 	logrus.SetOutput(multiLogger)
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetLevel(logrus.InfoLevel) // 设置日志记录级别
+	if utils.Env() == utils.RuntimeENVProd {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+		logrus.SetLevel(logrus.InfoLevel) // 设置日志记录级别
+	} else {
+		logrus.SetFormatter(&logrus.JSONFormatter{
+			PrettyPrint: true, // 这会让 JSON 输出更易读
+		})
+		logrus.SetLevel(logrus.DebugLevel) // 设置日志记录级别
+	}
 
 	// Gin 设置
-	gin.DisableConsoleColor()
+	// gin.DisableConsoleColor()
 	gin.DefaultWriter = logrus.StandardLogger().Out
 
 	wlog.SetEntryGetter(func(ctx context.Context) *logrus.Entry {

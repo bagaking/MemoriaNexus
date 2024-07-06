@@ -75,11 +75,12 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	}
 
 	// Update tags associated with the book
-	// todo: should not using one tx
-	if err = model.UpdateBookTagsRef(c, tx, book.ID, req.Tags); err != nil {
-		tx.Rollback()
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update book tags")
-		return
+	if req.Tags != nil && len(req.Tags) > 0 {
+		if err = model.AddEntityTags(c, tx, book.UserID, model.EntityTypeBook, book.ID, req.Tags...); err != nil {
+			tx.Rollback()
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update book tags")
+			return
+		}
 	}
 
 	// Commit the transaction
@@ -92,7 +93,7 @@ func (svr *Service) CreateBook(c *gin.Context) {
 	// Construct the response
 	resp := dto.RespBookCreate{
 		Message: "book created",
-		Data:    new(dto.Book).FromModel(book),
+		Data:    new(dto.Book).FromModel(book).SetTags(req.Tags),
 	}
 
 	// Send the response
@@ -129,14 +130,12 @@ func (svr *Service) GetBook(c *gin.Context) {
 		return
 	}
 
-	tags, err := book.GetTagsName(c, svr.db)
+	tags, err := book.GetTags(c, svr.db)
 	if err != nil {
 		log.WithError(err).Warnf("Failed to fetch book tags")
 	}
 
-	new(dto.RespBookGet).With(
-		new(dto.Book).FromModel(book).SetTags(tags),
-	).Response(c, "book found")
+	new(dto.RespBookGet).With(new(dto.Book).FromModel(book, tags...)).Response(c, "book found")
 }
 
 // UpdateBook handles updating a book's information.
@@ -182,7 +181,7 @@ func (svr *Service) UpdateBook(c *gin.Context) {
 	}
 
 	// todo: 这里要考虑下直接在 update 里更新是不是安全
-	if err := model.UpdateBookTagsRef(c, svr.db, bookID, req.Tags); err != nil {
+	if err := model.UpdateEntityTagsDiff(c, svr.db, userID, bookID, req.Tags); err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, irr.Wrap(err, "update tags failed"), "tags are unchanged")
 		return
 	}
@@ -215,13 +214,7 @@ func (svr *Service) DeleteBook(c *gin.Context) {
 	// 开始事务
 	tx := svr.db.Begin()
 
-	// 删除书册与标签、项的关系
-	if err := tx.Where("book_id = ?", id).Delete(&model.BookTag{}).Error; err != nil {
-		tx.Rollback()
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to delete book-tags")
-		return
-	}
-
+	// 删除 Book 与 Item 的关系
 	if err := tx.Where("book_id = ?", id).Delete(&model.BookItem{}).Error; err != nil {
 		tx.Rollback()
 		utils.GinHandleError(c, log, http.StatusInternalServerError,

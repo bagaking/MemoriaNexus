@@ -82,11 +82,13 @@ func (svr *Service) CreateItem(c *gin.Context) {
 		}
 	}
 
-	// 更新 Item 的 tags
-	if err = model.UpdateItemTagsRef(c, tx, id, req.Tags); err != nil {
-		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update item tags")
-		tx.Rollback()
-		return
+	// 新增 Item 的 tags
+	if req.Tags != nil && len(req.Tags) > 0 {
+		if err = model.AddEntityTags(c, tx, userID, model.EntityTypeItem, id, req.Tags...); err != nil {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update item tags")
+			tx.Rollback()
+			return
+		}
 	}
 
 	if err = tx.Commit().Error; err != nil {
@@ -120,7 +122,7 @@ func (svr *Service) ReadItem(c *gin.Context) {
 	}
 
 	// 获取 item 相关的 tags
-	tags, err := model.GetItemTagNames(c, svr.db, item.ID)
+	tags, err := model.GetTagsByEntity(c, svr.db, item.ID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Get item tag names failed")
 		return
@@ -170,7 +172,7 @@ func (svr *Service) UpdateItem(c *gin.Context) {
 	}
 
 	// 更新 Item 的 tags
-	if err := model.UpdateItemTagsRef(c, tx, id, req.Tags); err != nil {
+	if err := model.UpdateEntityTagsDiff(c, tx, userID, id, req.Tags); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update item tags")
 		tx.Rollback()
 		return

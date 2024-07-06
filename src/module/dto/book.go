@@ -25,13 +25,16 @@ type (
 	RespBookList = RespSuccessPage[*Book]
 )
 
-func (b *Book) FromModel(m *model.Book) *Book {
+func (b *Book) FromModel(m *model.Book, tags ...string) *Book {
 	b.ID = m.ID
 	b.UserID = m.UserID
 	b.Title = m.Title
 	b.Description = m.Description
 	b.CreatedAt = m.CreatedAt
 	b.UpdatedAt = m.UpdatedAt
+	if tags != nil && len(tags) > 0 {
+		b.SetTags(tags)
+	}
 	return b
 }
 
