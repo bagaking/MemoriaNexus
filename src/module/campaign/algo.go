@@ -1,4 +1,4 @@
-package dungeon
+package campaign
 
 import (
 	"context"

@@ -17,6 +17,15 @@ definitions:
       title:
         type: string
     type: object
+  campaign.ReqReportMonsterResult:
+    properties:
+      monster_id:
+        type: integer
+      result:
+        allOf:
+        - $ref: '#/definitions/def.AttackResult'
+        description: '"defeat", "miss", "hit", "kill", "complete"'
+    type: object
   def.AttackResult:
     enum:
     - defeat
@@ -507,15 +516,6 @@ definitions:
           type: integer
         type: array
     type: object
-  dungeon.ReqReportMonsterResult:
-    properties:
-      monster_id:
-        type: integer
-      result:
-        allOf:
-        - $ref: '#/definitions/def.AttackResult'
-        description: '"defeat", "miss", "hit", "kill", "complete"'
-    type: object
   dungeon.ReqUpdateDungeon:
     properties:
       description:
@@ -922,7 +922,7 @@ paths:
         name: result
         required: true
         schema:
-          $ref: '#/definitions/dungeon.ReqReportMonsterResult'
+          $ref: '#/definitions/campaign.ReqReportMonsterResult'
       produces:
       - application/json
       responses:

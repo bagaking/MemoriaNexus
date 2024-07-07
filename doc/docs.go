@@ -469,7 +469,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dungeon.ReqReportMonsterResult"
+                            "$ref": "#/definitions/campaign.ReqReportMonsterResult"
                         }
                     }
                 ],
@@ -1934,6 +1934,22 @@ const docTemplate = `{
                 }
             }
         },
+        "campaign.ReqReportMonsterResult": {
+            "type": "object",
+            "properties": {
+                "monster_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "description": "\"defeat\", \"miss\", \"hit\", \"kill\", \"complete\"",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/def.AttackResult"
+                        }
+                    ]
+                }
+            }
+        },
         "def.AttackResult": {
             "type": "string",
             "enum": [
@@ -2649,22 +2665,6 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
-                }
-            }
-        },
-        "dungeon.ReqReportMonsterResult": {
-            "type": "object",
-            "properties": {
-                "monster_id": {
-                    "type": "integer"
-                },
-                "result": {
-                    "description": "\"defeat\", \"miss\", \"hit\", \"kill\", \"complete\"",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/def.AttackResult"
-                        }
-                    ]
                 }
             }
         },

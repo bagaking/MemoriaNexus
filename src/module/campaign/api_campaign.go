@@ -1,25 +1,22 @@
-package dungeon
+package campaign
 
 import (
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
-
-	"github.com/bagaking/memorianexus/src/def"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/goulp/wlog"
+	"github.com/gin-gonic/gin"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
 
-	"github.com/bagaking/memorianexus/src/module/dto"
-
-	"github.com/bagaking/goulp/wlog"
+	"github.com/bagaking/memorianexus/internal/utils"
+	"github.com/bagaking/memorianexus/src/def"
 	"github.com/bagaking/memorianexus/src/model"
-	"github.com/gin-gonic/gin"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
 type ReqReportMonsterResult struct {
@@ -27,7 +24,12 @@ type ReqReportMonsterResult struct {
 	Result    def.AttackResult `json:"result"` // "defeat", "miss", "hit", "kill", "complete"
 }
 
-// GetMonstersOfCampaignDungeon handles fetching all the monsters of a specific campaign dungeon
+type ReqGetForPractice struct {
+	Count    int    `json:"count"`
+	Strategy string `json:"strategy"` // "classic"
+}
+
+// GetMonstersOfCampaign handles fetching all the monsters of a specific campaign dungeon
 // @Summary Get all the monsters of a specific campaign dungeon
 // @Description 获取复习计划的所有Monsters
 // @Tags dungeon
@@ -40,29 +42,18 @@ type ReqReportMonsterResult struct {
 // @Failure 404 {object} utils.ErrorResponse "Dungeon not found"
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/campaigns/{id}/monsters [get]
-func (svr *Service) GetMonstersOfCampaignDungeon(c *gin.Context) {
-	userID, campaignID := utils.GinMustGetUserID(c), utils.GinMustGetID(c)
-	log := wlog.ByCtx(c, "GetMonstersOfCampaignDungeon").WithField("user_id", userID).WithField("campaign_id", campaignID)
+func (svr *Service) GetMonstersOfCampaign(c *gin.Context) {
+	userID, campaignID, pager := utils.GinMustGetUserID(c), utils.GinMustGetID(c), utils.GinGetPagerFromQuery(c)
 
-	offsetStr := c.DefaultQuery("page", "1")
-	limitStr := c.DefaultQuery("limit", "10")
-
-	page, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		page = 0
-	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		limit = 10
-	}
+	log := wlog.ByCtx(c, "GetMonstersOfCampaign").
+		WithField("user_id", userID).WithField("campaign_id", campaignID).WithField("pager", pager)
 
 	var dungeon model.Dungeon
-	if err = svr.db.Where("id = ?", campaignID).First(&dungeon).Error; err != nil {
+	if err := svr.db.Where("id = ?", campaignID).First(&dungeon).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Dungeon not found")
 		return
 	}
 
-	pager := new(utils.Pager).SetPageAndLimit(page, limit)
 	monsters, err := dungeon.GetMonsters(svr.db, pager.Offset, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon monsters")
@@ -92,35 +83,32 @@ func (svr *Service) GetMonstersForCampaignPractice(c *gin.Context) {
 	l, ctx := wlog.ByCtxAndCache(c, "GetMonstersForCampaignPractice")
 	log := l.WithField("user_id", userID).WithField("campaign_id", campaignID)
 
-	countStr := c.DefaultQuery("count", "20")
-	strategy := c.DefaultQuery("strategy", "classic")
-
-	count, err := strconv.Atoi(countStr)
-	if err != nil {
-		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "count= %v", countStr), "invalid argument")
+	req := ReqGetForPractice{
+		Count:    20,
+		Strategy: "classic",
 	}
-	log = log.WithField("count", count)
-	pager := new(utils.Pager).SetFirstCount(count)
+	if err := c.BindQuery(&req); err != nil {
+		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid request query")
+		return
+	}
+	log = log.WithField("count", req.Count)
+	pager := new(utils.Pager).SetFirstCount(req.Count)
 
-	var dungeon model.Dungeon
-	if err = svr.db.Where("id = ?", campaignID).First(&dungeon).Error; err != nil {
+	dungeon, err := model.FindDungeon(c, svr.db, campaignID)
+	if err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
 		return
 	}
 
-	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, strategy, pager.Limit)
+	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, req.Strategy, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch dungeon monsters")
 		return
 	}
 
-	resp := new(dto.RespMonsterList).WithPager(pager)
-	dtoMonsters := typer.SliceMap(monsters,
-		func(from model.DungeonMonster) *dto.DungeonMonster {
-			return new(dto.DungeonMonster).FromModel(from)
-		})
+	dtoMonsters := typer.SliceMap(monsters, new(dto.DungeonMonster).FromModel)
 	log.Infof("got monsters= %v", dtoMonsters)
-	resp.Append(dtoMonsters...).Response(c)
+	new(dto.RespMonsterList).WithPager(pager).Append(dtoMonsters...).Response(c)
 }
 
 // SubmitCampaignResult handles reporting the result of a specific monster recall

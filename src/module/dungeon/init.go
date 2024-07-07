@@ -51,15 +51,6 @@ func (svr *Service) ApplyMux(group gin.IRouter) {
 		}
 	}
 
-	campaignsDetailGroup := group.Group("/campaigns/:id").Use(utils.GinMWParseID())
-	{
-		campaignsDetailGroup.GET("/monsters", svr.GetMonstersOfCampaignDungeon)
-		campaignsDetailGroup.GET("/practice", svr.GetMonstersForCampaignPractice)
-		campaignsDetailGroup.POST("/submit", svr.SubmitCampaignResult)
-
-		campaignsDetailGroup.GET("/conclusion/today", svr.GetCampaignDungeonConclusionOfToday)
-	}
-
 	endlessDetailGroup := group.Group("/endless/:id").Use(utils.GinMWParseID())
 	{
 		endlessDetailGroup.GET("/monsters", svr.GetMonstersOfEndlessDungeon)

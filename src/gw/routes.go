@@ -3,7 +3,7 @@
 package gw
 
 import (
-	"github.com/bagaking/memorianexus/src/module/tag"
+	"github.com/bagaking/memorianexus/src/module/campaign"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -20,6 +20,7 @@ import (
 	"github.com/bagaking/memorianexus/src/module/operation"
 	"github.com/bagaking/memorianexus/src/module/profile"
 	"github.com/bagaking/memorianexus/src/module/system"
+	"github.com/bagaking/memorianexus/src/module/tag"
 )
 
 // RegisterRoutes - routers all in one
@@ -53,6 +54,9 @@ func RegisterRoutes(router gin.IRouter, db *gorm.DB) {
 	// 复习计划管理路由组
 	svrDungeon, _ := dungeon.Init(db)
 	svrDungeon.ApplyMux(router.Group("/dungeon"))
+
+	svrCampaignDungeon, _ := campaign.Init(db)
+	svrCampaignDungeon.ApplyMux(router.Group("/dungeon"))
 
 	// 数据分析路由组
 	svrAnalytics, _ := analytic.Init(db)
