@@ -6,6 +6,9 @@ import (
 	"sort"
 	"time"
 
+	"github.com/bagaking/memorianexus/internal/utils/cache"
+	"github.com/khgame/memstore/cachekey"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/src/def"
@@ -61,6 +64,9 @@ const (
 	MonsterSourceItem MonsterSource = 1
 	MonsterSourceBook MonsterSource = 2
 )
+
+var CKDungeonMonsterCounts = cachekey.MustNewSchema[utils.UInt64](
+	"dungeon:{dungeon_id}:monsters:count", time.Second*20) // 不主动淘汰，20s 左右更新
 
 func (ms MonsterSource) String() string {
 	switch ms {
@@ -171,8 +177,8 @@ func createDungeonMonster(tx *gorm.DB, dungeonID utils.UInt64, item Item, source
 
 		// Gaming
 		Visibility:  0,
-		Name:        "", // todo: created by id
-		Description: "", // todo: created by id
+		Name:        "",           // todo: created by AI
+		Description: item.Content, // todo: created by AI
 	}
 	if err := tx.Where("dungeon_id = ? AND item_id = ?", dungeonID, item.ID).FirstOrCreate(&dungeonMonster).Error; err != nil {
 		return err
@@ -217,7 +223,7 @@ func createMonstersByItemID(ctx context.Context, tx *gorm.DB, dungeonID utils.UI
 }
 
 // GetMonsters retrieves the monsters for the dungeon with sorting and pagination
-func (d *Dungeon) GetMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
+func (d *Dungeon) GetMonsters(ctx context.Context, tx *gorm.DB, offset, limit int) ([]DungeonMonster, error) {
 	var dungeonMonsters []DungeonMonster
 
 	if err := tx.Where("dungeon_id = ?", d.ID).
@@ -229,37 +235,32 @@ func (d *Dungeon) GetMonsters(tx *gorm.DB, offset, limit int) ([]DungeonMonster,
 	return dungeonMonsters, nil
 }
 
-// GetMonstersForPractice retrieves the monsters for practice based on the memorization strategy
-func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, strategy string, count int) ([]DungeonMonster, error) {
-	now := time.Now()
-	log := wlog.ByCtx(ctx, "GetMonstersForPractice").
-		WithField("time", now).
-		WithField("strategy", strategy).
-		WithField("dungeon_id", d.ID).
-		WithField("count", count)
-
-	log.Infof("start get monsters")
-	var query *gorm.DB
-	var dungeonMonsters []DungeonMonster
-	// 根据复习策略进行查询
-	switch strategy {
-	case "classic":
-		// 经典策略：下次复习时间早于当前时间，熟练度最低，重要程度最高，难度最低
-		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
-			Order("familiarity ASC, importance DESC, difficulty ASC").
-			Limit(count).Find(&dungeonMonsters) // todo: familiarity 从小到大排列的话，导致只学新的
-	default:
-		// 默认策略：下次复习时间早于当前时间，按熟练度排序
-		query = tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
-			Order("familiarity ASC").
-			Limit(count).Find(&dungeonMonsters)
+// GetMonster retrieves monster in the dungeon by given itemID
+func (d *Dungeon) GetMonster(ctx context.Context, tx *gorm.DB, itemID utils.UInt64) (*DungeonMonster, error) {
+	var dm DungeonMonster
+	if err := tx.Where("dungeon_id = ?", d.ID).Where("item_id = ?", itemID).First(&dm).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to find monster in dungeon %d", d.ID)
 	}
-	if err := query.Error; err != nil {
-		return nil, err
+	return &dm, nil
+}
+
+func (d *Dungeon) CountMonsters(ctx context.Context, tx *gorm.DB) (int64, error) {
+	cacheKey := CKDungeonMonsterCounts.MustBuild(d.ID)
+	if t, err := cache.Client().Get(ctx, cacheKey).Int64(); err == nil {
+		return t, nil
+	} else {
+		wlog.ByCtx(ctx, "CountMonsters").WithField("dungeon_id", d.ID).WithError(err).Warnf("read cache for monster count failed")
 	}
 
-	log.Infof("got dungeon monsters %v", dungeonMonsters)
-	return dungeonMonsters, nil
+	query := &DungeonMonster{DungeonID: d.ID}
+	var total int64
+	if err := tx.Model(query).Where(query).Count(&total).Error; err != nil {
+		return -1, irr.Wrap(err, "failed to count items for dungeon %d", d.ID)
+	}
+	if _, err := cache.Client().Set(ctx, cacheKey, total, CKDungeonMonsterCounts.GetExp()).Result(); err != nil {
+		wlog.ByCtx(ctx, "CountMonsters").WithField("dungeon_id", d.ID).WithError(err).Warnf("set cache for monster count failed")
+	}
+	return total, nil
 }
 
 // GetDirectMonsters - 获取当前 Dungeon 的 DungeonMonster，不会尝试解析 books 和 tags 的关联

@@ -18,7 +18,7 @@ import (
 
 const (
 	MaxRetryAttempts      = 3
-	CacheExpiration       = 24 * time.Hour
+	TagCacheExpiration    = 24 * time.Hour
 	CacheInvalidationFlag = "invalid"
 )
 
@@ -48,11 +48,11 @@ type (
 )
 
 var (
-	CKEntity2Tags          = cachekey.MustNewSchema[utils.UInt64]("entity:{entity_id}:tags", CacheExpiration)
-	CKUser2Tags            = cachekey.MustNewSchema[utils.UInt64]("entity:{user_id}:tags", CacheExpiration)
-	CKUserTag2Entities     = cachekey.MustNewSchema[ParamUserTag]("user:{user_id}:tag:{tag}:entities", CacheExpiration)
-	CKUserTagType2Entities = cachekey.MustNewSchema[ParamUserTagType]("user:{user_id}:tag:{tag}:type:{entity_type}:entities", CacheExpiration)
-	CKTag2Users            = cachekey.MustNewSchema[string]("tag:{tag}:users", CacheExpiration)
+	CKEntity2Tags          = cachekey.MustNewSchema[utils.UInt64]("entity:{entity_id}:tags", TagCacheExpiration)
+	CKUser2Tags            = cachekey.MustNewSchema[utils.UInt64]("entity:{user_id}:tags", TagCacheExpiration)
+	CKUserTag2Entities     = cachekey.MustNewSchema[ParamUserTag]("user:{user_id}:tag:{tag}:entities", TagCacheExpiration)
+	CKUserTagType2Entities = cachekey.MustNewSchema[ParamUserTagType]("user:{user_id}:tag:{tag}:type:{entity_type}:entities", TagCacheExpiration)
+	CKTag2Users            = cachekey.MustNewSchema[string]("tag:{tag}:users", TagCacheExpiration)
 )
 
 const (
@@ -82,7 +82,7 @@ func GetTagsByEntity(ctx context.Context, tx *gorm.DB, entityID utils.UInt64) ([
 	log.Debugf("got tags from db: %v", tags)
 
 	if len(tags) > 0 {
-		if err = cache.SET().Insert(ctx, cacheKey, CacheExpiration, tags...); err != nil {
+		if err = cache.SET().Insert(ctx, cacheKey, TagCacheExpiration, tags...); err != nil {
 			log.Warnf("failed to insert tags into cache, key= %v, tags= %v", cacheKey, tags)
 		}
 	}
@@ -170,7 +170,7 @@ func GetEntities(ctx context.Context, tx *gorm.DB, userID utils.UInt64, tag stri
 		return nil, irr.Wrap(err, "failed to get entities by user and tag")
 	}
 
-	if err = cache.SET().InsertUInt64s(ctx, cacheKey, CacheExpiration, entityIDs...); err != nil {
+	if err = cache.SET().InsertUInt64s(ctx, cacheKey, TagCacheExpiration, entityIDs...); err != nil {
 		return nil, err
 	}
 
@@ -190,7 +190,7 @@ func GetEntitiesOfType(ctx context.Context, tx *gorm.DB, userID utils.UInt64, ta
 		return nil, irr.Wrap(err, "failed to get entities by user, tag, and entity type")
 	}
 
-	if err = cache.SET().InsertUInt64s(ctx, cacheKey, CacheExpiration, entityIDs...); err != nil {
+	if err = cache.SET().InsertUInt64s(ctx, cacheKey, TagCacheExpiration, entityIDs...); err != nil {
 		return nil, err
 	}
 
@@ -210,7 +210,7 @@ func GetTagsByUser(ctx context.Context, tx *gorm.DB, userID utils.UInt64) ([]str
 		return nil, irr.Wrap(err, "failed to get tags by user")
 	}
 
-	if err := cache.SET().Insert(ctx, cacheKey, CacheExpiration, tags...); err != nil {
+	if err := cache.SET().Insert(ctx, cacheKey, TagCacheExpiration, tags...); err != nil {
 		return nil, err
 	}
 
@@ -238,7 +238,7 @@ func GetUsersByTag(ctx context.Context, tx *gorm.DB, tag string) ([]utils.UInt64
 	}
 	log.Debugf("got users from db: %v", userIDs)
 
-	if err = cache.SET().InsertUInt64s(ctx, cacheKey, CacheExpiration, userIDs...); err != nil {
+	if err = cache.SET().InsertUInt64s(ctx, cacheKey, TagCacheExpiration, userIDs...); err != nil {
 		return nil, err
 	}
 	log.Debugf("inserted users into cache success, key= %v, users= %v", cacheKey, userIDs)

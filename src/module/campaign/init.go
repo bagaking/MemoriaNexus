@@ -23,7 +23,7 @@ func Init(db *gorm.DB) (*Service, error) {
 func (svr *Service) ApplyMux(group gin.IRouter) {
 	campaignsDetailGroup := group.Group("/campaigns/:id").Use(utils.GinMWParseID())
 	{
-		campaignsDetailGroup.GET("/monsters", svr.GetMonstersOfCampaign)
+		campaignsDetailGroup.GET("/monsters", svr.GetCampaignMonsters)
 		campaignsDetailGroup.GET("/practice", svr.GetMonstersForCampaignPractice)
 		campaignsDetailGroup.POST("/submit", svr.SubmitCampaignResult)
 

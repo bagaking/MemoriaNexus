@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -35,24 +36,45 @@ type Profile struct {
 }
 
 // ProfileMemorizationSetting 定义了用户记忆设置的模型
-type ProfileMemorizationSetting struct {
-	ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+type (
 
-	// 复习时间的配置，是一组时间，作为根据复习结算时的熟练度来选择下次复习时间的依据
-	ReviewIntervalSetting def.RecallIntervalLevel `gorm:"type:string"`
+	// ProfileMemorizationSetting
+	//
+	// 在 User 的 ProfileMemorizationSetting 中，可以设置默认的 QuizMode 和 Priority
+	// Dungeon 创建时，会从 User 的 ProfileMemorizationSetting 中获取默认的 QuizMode 和 Priority
+	// 并独立于 User 的设置进行修改，后续 User 的设置不会覆盖 Dungeon 的设置
+	// 可以在 Dungeon 的 MemorizationSetting 中主动选择从 User 的 ProfileMemorizationSetting 中同步
+	ProfileMemorizationSetting struct {
+		ID utils.UInt64 `gorm:"primaryKey;autoIncrement:false"`
+		MemorizationSetting
+	}
 
-	// 用户挑战偏好
-	DifficultyPreference utils.Percentage `gorm:"type:tinyint unsigned"`
+	MemorizationSetting struct {
+		// 复习时间的配置，是一组时间，作为根据复习结算时的熟练度来选择下次复习时间的依据
+		ReviewInterval def.RecallIntervalLevel `gorm:"type:string"`
 
-	// 倾向的战斗模式，决定了 monster 的出场顺序
-	QuizMode string `gorm:"size:255"`
-}
+		// 用户挑战偏好
+		DifficultyPreference utils.Percentage `gorm:"type:tinyint unsigned"`
 
-var DefaultMemorizationSetting = ProfileMemorizationSetting{
+		// 倾向的战斗模式，决定了已经在时间内 monster 出场时，新增和复习的出现策略
+		QuizMode def.QuizMode `gorm:"size:255"`
+
+		// 倾向的战斗模式，决定了已经在时间内 monster 出场时，进行选择的优先级顺序
+		PriorityMode def.PriorityMode `gorm:"size:255"`
+	}
+)
+
+var DefaultMemorizationSetting = MemorizationSetting{
 	// 用户的设置值
-	ReviewIntervalSetting: def.DefaultRecallIntervals, // 先用 day
-	DifficultyPreference:  1,
-	QuizMode:              "classic",
+	ReviewInterval:       def.DefaultRecallIntervals, // 先用 day
+	DifficultyPreference: 1,
+	QuizMode:             def.QuizModeBalance,
+	PriorityMode: def.PriorityMode{
+		def.PriorityModeFamiliarityDESC,
+		def.PriorityModeTimePassASC,
+		def.PriorityModeDifficultyASC,
+		def.PriorityModeImportanceASC,
+	},
 }
 
 // ProfileAdvanceSetting 定义了用户高级设置的模型
@@ -108,27 +130,54 @@ func (p *Profile) UpdateProfile(db *gorm.DB) error {
 	}).Create(p).Error
 }
 
-// EnsureLoadProfile 从数据库中加载用户个人信息
-func EnsureLoadProfile(db *gorm.DB, uid utils.UInt64) (*Profile, error) {
-	cond := &Profile{
-		ID: uid,
-	}
-	result := db.Where("id = ?", uid).FirstOrCreate(cond)
+// FindProfile 读取个人信息
+func FindProfile(ctx context.Context, db *gorm.DB, uid utils.UInt64) (*Profile, error) {
+	cond := &Profile{ID: uid}
+	result := db.Where(cond).First(cond)
 	if result.Error != nil {
-		return nil, irr.Wrap(result.Error, "search for profile failed")
+		return nil, result.Error
 	}
-
 	return cond, nil
 }
 
-// EnsureLoadProfileSettingsMemorization 从数据库中"懒加载"用户记忆设置
-// EnsureLoadProfileSettingsMemorization 从数据库中"懒加载"用户记忆设置
-func (p *Profile) EnsureLoadProfileSettingsMemorization(db *gorm.DB) (*ProfileMemorizationSetting, error) {
+// EnsureProfile 从数据库中加载用户个人信息
+func EnsureProfile(ctx context.Context, db *gorm.DB, uid utils.UInt64) (*Profile, error) {
+	cond := &Profile{
+		ID:        uid,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	result := db.Where("id = ?", cond.ID).FirstOrCreate(cond)
+	if result.Error != nil {
+		return nil, irr.Wrap(result.Error, "search for profile failed")
+	}
+	return cond, nil
+}
+
+func (p *Profile) GetSettingsMemorizationOrDefault(ctx context.Context, tx *gorm.DB) (*ProfileMemorizationSetting, error) {
+	var userSettings ProfileMemorizationSetting
+	if err := tx.Where("id = ?", p.ID).First(&userSettings).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, irr.Wrap(err, "failed to fetch user settings, user_id=%v", p.ID)
+		}
+		userSettings.MemorizationSetting = DefaultMemorizationSetting
+		userSettings.ID = p.ID
+	} else {
+		p.settingsMemorization = &userSettings
+	}
+	return &userSettings, nil
+}
+
+// EnsureSettingsMemorization 从数据库中"懒加载"用户记忆设置
+func (p *Profile) EnsureSettingsMemorization(db *gorm.DB) (*ProfileMemorizationSetting, error) {
 	if p.settingsMemorization != nil {
 		return p.settingsMemorization, nil
 	}
 
-	cond := &ProfileMemorizationSetting{ID: p.ID}
+	cond := &ProfileMemorizationSetting{
+		ID:                  p.ID,
+		MemorizationSetting: DefaultMemorizationSetting,
+	}
 	result := db.Where("id = ?", p.ID).FirstOrCreate(cond)
 	if result.Error != nil {
 		return nil, result.Error

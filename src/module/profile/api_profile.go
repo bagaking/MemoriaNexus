@@ -29,7 +29,7 @@ func (svr *Service) GetUserProfile(c *gin.Context) {
 	log := wlog.ByCtx(c, "GetUserProfile").WithField("user_id", userID)
 
 	// Use the ID to load the profile from the database.
-	profile, err := model.EnsureLoadProfile(svr.db, userID)
+	profile, err := model.EnsureProfile(c, svr.db, userID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Error retrieving profile")
 		return

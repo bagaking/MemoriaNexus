@@ -110,7 +110,9 @@ Campaign 的复习过程应该是在 Campaign Dungeon 中提取一些要复习 m
 - 共复习了多少张卡片（怪物数量）
 - 今天挑战的综合难度（怪物状态）等
 
-### 复习流程逻辑
+## 复习流程
+
+### 复习相关的因子
 
 和复习有关的参数, 包含
 - Item 固有的: 难度和重要程度
@@ -118,13 +120,14 @@ Campaign 的复习过程应该是在 Campaign Dungeon 中提取一些要复习 m
   - 重要程度 Importance：看这个知识的影响范围，和在对应范围内的核心程度
 - UserMonster 内的：item 对于这个用户的熟悉程度
 - DungeonMonster 内的：item 对于这个地牢的显影程度，复习次数等
+- 还有一些动态参数，比如上次复习时间，一定时间内的出场次数等
 
 GetMonstersForPractice 时，为了在搜索时就用上条件（支持分页），DungeonMonster 设计为了一张宽表，冗余一份 item 和 userMonster 中各种和计算复习顺序有关的参数。
 为了命中索引以加速搜索，不提供任意 sortby，而是提供复习策略。
 比如经典的策略为，计算一个 dungeon 下，下次复习时间已经早于当前时间，其中熟练度最低，重要程度最高，难度最低的项。 
 策略可以在 MemorizationSetting 中配置。
 
-## practice 策略
+### Practice 状态计算 
 
 策略计算主要在一次复习后，计算用户的熟练度，同时计算下次复习的时间。
 由于下次复习时间的计算主要由熟练度（familiarity）决定，在用户进行上报后，会依次经过 “计算和修正熟练度” 两步
@@ -169,4 +172,30 @@ Item 的重要性，和其他外因（用户偏好，关卡设置等），用于
 > 这些参数都可能引入回归分析以进行优化，但目前不做这部分的过度设计。
 > 毕竟比起动态调参，直接处理统计数据或是用 AI 模型调优效率都更高，很长一段时间内最多需要保留变更日志。
 
-另外，显影程度和记忆无关，主要是用于提升游戏性
+另外，显影程度等和记忆无关，主要是用于提升游戏性
+
+### QuizMode / Priority 选入逻辑
+
+决定了在到达复习时间的所有项中，如何选出接下来马上要复习、学习的项
+
+1. QuizMode -  如何处理 familiarity 为 0 的项
+    - always_new: 优先学新 (总是先选 familiarity 为 0 的)
+    - always_old: 优先复习 (总是先选 familiarity 不为 0 的)
+    - balance: 平衡随机 (先选 familiarity 不为 0 的，但一定概率会选中 familiarity 为 0 的)
+    - threshold: 阀门 (根据 familiarity 不为 0 的数量决定，familiarity 不为 0 的项超过一定数量时，优先复习 familiarity 为 0 的项)
+    - dynamic: 动态调权 (根据当天加入 familiarity 为 0 的数量决定，保证至少学习一定数量的新项)
+
+2. Priority - 复习时的出场顺序
+    - 兜底选项 (最终兜底，先按照重要优先, 如果重要程度就走到以下兜底逻辑之一)
+      - 无要求 (复习顺序按 ID 顺序，随机但不会 shuffle, 一段时间后可以预测下一项)
+      - 完全随机 (一旦选入会进行 shuffle)
+    - 优先级 (需要配置维度的优先顺序和排序方向), 包括以下维度
+      - 熟练度: 熟悉优先, 生疏优先
+      - 近远期: 近期优先, 远期优先
+      - 难度: 简单优先, 困难优先
+      - 关联度: 关联度高的优先, 关联度低的优先
+
+在 User 的 ProfileMemorizationSetting 中，可以设置默认的 QuizMode 和 Priority
+Dungeon 创建时，会从 User 的 ProfileMemorizationSetting 中获取默认的 QuizMode 和 Priority
+并独立于 User 的设置进行修改，后续 User 的设置不会覆盖 Dungeon 的设置
+可以在 Dungeon 的 MemorizationSetting 中主动选择从 User 的 ProfileMemorizationSetting 中同步

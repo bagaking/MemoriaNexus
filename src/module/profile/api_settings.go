@@ -28,19 +28,19 @@ func (svr *Service) GetUserSettingsMemorization(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "GetUserSettingsMemorization").WithField("user_id", userID)
 
-	profile, err := model.EnsureLoadProfile(svr.db, userID)
+	profile, err := model.EnsureProfile(c, svr.db, userID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
 		return
 	}
 
-	settings, err := profile.EnsureLoadProfileSettingsMemorization(svr.db)
+	settings, err := profile.EnsureSettingsMemorization(svr.db)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to retrieve profile settings")
 		return
 	}
 
-	new(dto.RespSettingsMemorization).With(new(dto.SettingsMemorization).FromModel(settings)).Response(c)
+	new(dto.RespSettingsMemorization).With(new(dto.SettingsMemorization).FromModel(&settings.MemorizationSetting)).Response(c)
 }
 
 // GetUserSettingsAdvance retrieves advanced settings for the authenticated user.
@@ -58,7 +58,7 @@ func (svr *Service) GetUserSettingsAdvance(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "GetUserSettingsAdvance").WithField("user_id", userID)
 
-	profile, err := model.EnsureLoadProfile(svr.db, userID)
+	profile, err := model.EnsureProfile(c, svr.db, userID)
 	if err != nil || profile == nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
 		return
@@ -97,7 +97,7 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 		return
 	}
 
-	profile, err := model.EnsureLoadProfile(svr.db, userID)
+	profile, err := model.EnsureProfile(c, svr.db, userID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
 		return
@@ -106,24 +106,14 @@ func (svr *Service) UpdateUserSettingsMemorization(c *gin.Context) {
 	settingsToUpdate := &model.ProfileMemorizationSetting{
 		ID: userID,
 	}
-
-	// Update the fields that were provided in the request.
-	if updateReq.ReviewIntervalSetting != nil {
-		settingsToUpdate.ReviewIntervalSetting = *updateReq.ReviewIntervalSetting
-	}
-	if updateReq.DifficultyPreference != nil {
-		settingsToUpdate.DifficultyPreference = *updateReq.DifficultyPreference
-	}
-	if updateReq.QuizMode != nil {
-		settingsToUpdate.QuizMode = *updateReq.QuizMode
-	}
+	updateReq.SettingsMemorization.ToModel(&settingsToUpdate.MemorizationSetting)
 
 	if err = profile.UpdateSettingsMemorization(svr.db, settingsToUpdate); err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to update settings")
 		return
 	}
 
-	new(dto.RespSettingsMemorization).With(new(dto.SettingsMemorization).FromModel(settingsToUpdate)).
+	new(dto.RespSettingsMemorization).With(new(dto.SettingsMemorization).FromModel(&settingsToUpdate.MemorizationSetting)).
 		Response(c, "memorization settings updated")
 }
 
@@ -150,7 +140,7 @@ func (svr *Service) UpdateUserSettingsAdvance(c *gin.Context) {
 		return
 	}
 
-	profile, err := model.EnsureLoadProfile(svr.db, userID)
+	profile, err := model.EnsureProfile(c, svr.db, userID)
 	if err != nil || profile == nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Profile not found")
 		return

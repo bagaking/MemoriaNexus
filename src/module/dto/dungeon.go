@@ -10,25 +10,23 @@ import (
 )
 
 type (
-	DungeonFullData struct {
-		DungeonData
-		Books []utils.UInt64 `json:"books,omitempty"`
-		Items []utils.UInt64 `json:"items,omitempty"`
-		Tags  []string       `json:"tags,omitempty"`
-	}
-
 	DungeonData struct {
 		Type        def.DungeonType `json:"type"`
 		Title       string          `json:"title"`
 		Description string          `json:"description"`
-		Rule        string          `json:"rule"`
+
+		*SettingsMemorization
 	}
 
 	Dungeon struct {
 		ID utils.UInt64 `json:"id"`
-		DungeonFullData
+		DungeonData
 		CreatedAt time.Time `json:"created_at"`
 		UpdatedAt time.Time `json:"updated_at"`
+
+		Books []utils.UInt64 `json:"books,omitempty"`
+		Items []utils.UInt64 `json:"items,omitempty"`
+		Tags  []string       `json:"tags,omitempty"`
 	}
 
 	DungeonMonster struct {
@@ -101,7 +99,13 @@ func (d *Dungeon) FromModel(model *model.Dungeon) *Dungeon {
 	d.Type = model.Type
 	d.Title = model.Title
 	d.Description = model.Description
-	d.Rule = model.Rule
+	memSetting := model.MemorizationSetting
+	d.SettingsMemorization = &SettingsMemorization{
+		ReviewInterval:       &memSetting.ReviewInterval,
+		DifficultyPreference: &memSetting.DifficultyPreference,
+		QuizMode:             &memSetting.QuizMode,
+		PriorityMode:         &memSetting.PriorityMode,
+	}
 	d.CreatedAt = model.CreatedAt
 	d.UpdatedAt = model.UpdatedAt
 	return d

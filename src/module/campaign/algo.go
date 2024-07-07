@@ -80,15 +80,15 @@ func CalculateNewFamiliarity(currentFamiliarity, damageRate utils.Percentage, la
 func CalculateNextPracticeAt(ctx context.Context,
 	familiarity utils.Percentage,
 	importance def.ImportanceLevel,
-	userSettings *model.ProfileMemorizationSetting,
+	memSetting *model.MemorizationSetting,
 ) time.Time {
 	setting := model.DefaultMemorizationSetting
-	if userSettings != nil {
-		setting = *userSettings
+	if memSetting != nil {
+		setting = *memSetting
 	}
 
 	// 获取下次复习的时间间隔
-	nextInterval := setting.ReviewIntervalSetting.GetInterval(familiarity)
+	nextInterval := setting.ReviewInterval.GetInterval(familiarity)
 
 	// 根据重要性调整间隔时间，重要性越高，间隔时间越短
 	importanceFactor := 1 / (1 + importance.Normalize())

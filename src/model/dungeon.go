@@ -23,11 +23,12 @@ type (
 		Type        def.DungeonType `gorm:"not null" json:"type"`
 		Title       string          `gorm:"not null" json:"title"`
 		Description string          `json:"description"`
-		Rule        string          `json:"rule"` // JSON format for detailed rule configuration
 
+		MemorizationSetting
+
+		// system
 		CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 		UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
-
 		DeletedAt gorm.DeletedAt
 	}
 )
@@ -69,6 +70,15 @@ func (d *Dungeon) BeforeDelete(tx *gorm.DB) (err error) {
 	}
 
 	return nil
+}
+
+func CreateDungeon(ctx context.Context, tx *gorm.DB, d *Dungeon) (*Dungeon, error) {
+	d.CreatedAt = time.Now()
+	d.UpdatedAt = time.Now()
+	if err := tx.Create(d).Error; err != nil {
+		return nil, irr.Wrap(err, "failed to create dungeon")
+	}
+	return d, nil
 }
 
 func FindDungeon(ctx context.Context, tx *gorm.DB, dungeonID utils.UInt64) (*Dungeon, error) {

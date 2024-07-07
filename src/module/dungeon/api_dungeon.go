@@ -20,7 +20,11 @@ import (
 )
 
 type ReqCreateDungeon struct {
-	dto.DungeonFullData
+	dto.DungeonData
+
+	Books []utils.UInt64 `json:"books,omitempty"`
+	Items []utils.UInt64 `json:"items,omitempty"`
+	Tags  []string       `json:"tags,omitempty"`
 }
 
 type ReqUpdateDungeon struct {
@@ -42,8 +46,18 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "CreateDungeon").WithField("user_id", userID)
 
+	profile, err := model.FindProfile(c, svr.db, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.GinHandleError(c, log, http.StatusNotFound, err, "profile not found")
+			return
+		}
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Internal server error, find profile failed")
+		return
+	}
+
 	var req ReqCreateDungeon
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Wrap(err, "parse request body failed"), "Invalid request body")
 		return
 	}
@@ -60,19 +74,28 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 		return
 	}
 
-	dungeon := model.Dungeon{
-		ID:          dungeonID,
-		UserID:      userID,
-		Type:        req.Type,
-		Title:       req.Title,
-		Description: req.Description,
-		Rule:        req.Rule,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	memorizationSetting := model.DefaultMemorizationSetting // copy
+	if req.SettingsMemorization != nil {
+		req.SettingsMemorization.ToModel(&memorizationSetting)
+	} else {
+		s, err := profile.GetSettingsMemorizationOrDefault(c, svr.db)
+		if err != nil {
+			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Internal server error, get user settings failed")
+			return
+		}
+		memorizationSetting = s.MemorizationSetting
 	}
 
+	dungeon, err := model.CreateDungeon(c, svr.db, &model.Dungeon{
+		ID:                  dungeonID,
+		UserID:              userID,
+		Type:                req.Type,
+		Title:               req.Title,
+		Description:         req.Description,
+		MemorizationSetting: memorizationSetting, // fork setting form profile
+	})
 	// Create dungeon entry in the database
-	if err = svr.db.Create(&dungeon).Error; err != nil {
+	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Internal server error, create dungeon failed", utils.GinErrWithReqBody(req))
 		return
 	}
@@ -97,7 +120,7 @@ func (svr *Service) CreateDungeon(c *gin.Context) {
 		return
 	}
 
-	resp := new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(&dungeon))
+	resp := new(dto.RespDungeon).With(new(dto.Dungeon).FromModel(dungeon))
 	resp.Data.Books = req.Books
 	resp.Data.Items = req.Items
 	resp.Data.Tags = req.Tags
@@ -127,6 +150,7 @@ func (svr *Service) GetDungeons(c *gin.Context) {
 	pager := utils.GinGetPagerFromQuery(c)
 
 	var dungeons []model.Dungeon
+
 	tx := svr.db.Where("user_id = ?", userID).Offset(pager.Offset).Limit(pager.Limit).Find(&dungeons)
 	if req.Type.Valid() {
 		tx.Where("type = ?", req.Type)
@@ -218,9 +242,13 @@ func (svr *Service) UpdateDungeon(c *gin.Context) {
 		Type:        req.Type,
 		Title:       req.Title,
 		Description: req.Description,
-		Rule:        req.Rule,
 		UpdatedAt:   time.Now(),
 	}
+
+	if req.SettingsMemorization != nil {
+		req.SettingsMemorization.ToModel(&updater.MemorizationSetting)
+	}
+
 	if err := svr.db.Where("user_id = ? AND id = ?", userID, id).Updates(updater).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusNotFound, err, "Failed to update dungeon")
 		return

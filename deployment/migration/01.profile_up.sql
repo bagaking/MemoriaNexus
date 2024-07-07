@@ -24,10 +24,9 @@ CREATE TABLE profile_memorization_settings (
     id BIGINT UNSIGNED PRIMARY KEY COMMENT "rofile unique identifier, equal to id from iam service",
 
     review_interval_setting VARCHAR(255) COMMENT "Interval for review in days",
-
     difficulty_preference TINYINT UNSIGNED COMMENT "User's preference for difficulty",
-
-    quiz_mode VARCHAR(255) COMMENT "Preferred quiz mode"
+    quiz_mode VARCHAR(32) COMMENT "Preferred quiz mode",
+    priority_mode VARCHAR(255) COMMENT "Preferred priority mode"
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

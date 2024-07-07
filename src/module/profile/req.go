@@ -1,15 +1,12 @@
 package profile
 
 import (
-	"github.com/bagaking/memorianexus/internal/utils"
-	"github.com/bagaking/memorianexus/src/def"
+	"github.com/bagaking/memorianexus/src/module/dto"
 )
 
 // ReqUpdateUserSettingsMemorization defines the request format for updating user settings.
 type ReqUpdateUserSettingsMemorization struct {
-	ReviewIntervalSetting *def.RecallIntervalLevel `json:"review_interval"`
-	DifficultyPreference  *utils.Percentage        `json:"difficulty_preference"`
-	QuizMode              *string                  `json:"quiz_mode"`
+	dto.SettingsMemorization
 }
 
 // ReqUpdateUserSettingsAdvance defines the request to update advanced settings.

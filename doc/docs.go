@@ -2053,9 +2053,6 @@ const docTemplate = `{
                 "GlobalMasterPiece"
             ]
         },
-        "def.RecallIntervalLevel": {
-            "type": "object"
-        },
         "dto.Book": {
             "type": "object",
             "properties": {
@@ -2086,48 +2083,7 @@ const docTemplate = `{
             }
         },
         "dto.Dungeon": {
-            "type": "object",
-            "properties": {
-                "books": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "rule": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/def.DungeonType"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "dto.DungeonMonster": {
             "type": "object",
@@ -2366,15 +2322,7 @@ const docTemplate = `{
             }
         },
         "dto.RespDungeon": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/dto.Dungeon"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "dto.RespDungeonList": {
             "type": "object",
@@ -2526,7 +2474,15 @@ const docTemplate = `{
             }
         },
         "dto.RespSettingsMemorization": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.SettingsMemorization"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         },
         "dto.RespTagList": {
             "type": "object",
@@ -2569,6 +2525,9 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.SettingsMemorization": {
+            "type": "object"
+        },
         "dto.SuccessResponse": {
             "type": "object",
             "properties": {
@@ -2601,39 +2560,7 @@ const docTemplate = `{
             }
         },
         "dungeon.ReqCreateDungeon": {
-            "type": "object",
-            "properties": {
-                "books": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "rule": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/def.DungeonType"
-                }
-            }
+            "type": "object"
         },
         "dungeon.ReqRemoveDungeonBooks": {
             "type": "object",
@@ -2669,21 +2596,7 @@ const docTemplate = `{
             }
         },
         "dungeon.ReqUpdateDungeon": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "rule": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/def.DungeonType"
-                }
-            }
+            "type": "object"
         },
         "item.ReqCreateItem": {
             "type": "object",
@@ -2806,18 +2719,7 @@ const docTemplate = `{
             }
         },
         "profile.ReqUpdateUserSettingsMemorization": {
-            "type": "object",
-            "properties": {
-                "difficulty_preference": {
-                    "type": "integer"
-                },
-                "quiz_mode": {
-                    "type": "string"
-                },
-                "review_interval": {
-                    "$ref": "#/definitions/def.RecallIntervalLevel"
-                }
-            }
+            "type": "object"
         },
         "utils.ErrorResponse": {
             "type": "object",

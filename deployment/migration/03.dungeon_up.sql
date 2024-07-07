@@ -6,11 +6,19 @@ CREATE TABLE `dungeons` (
 
     `title` VARCHAR(255) NOT NULL,
     `description` TEXT,
-    `rule` TEXT COMMENT '复习规则的详细配置, JSON格式',
+#     `rule` TEXT COMMENT '复习规则的详细配置, JSON格式',
+
+    -- practice preference (set when create, fork default values from user's setting)
+    `review_interval_setting` VARCHAR(255) COMMENT "Interval for review in days",
+    `difficulty_preference` TINYINT UNSIGNED COMMENT "User's preference for difficulty",
+    `quiz_mode` VARCHAR(32) COMMENT "Preferred quiz mode",
+    `priority_mode` VARCHAR(255) COMMENT "Preferred priority mode",
+
+    -- system
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
     `deleted_at` DATETIME DEFAULT NULL COMMENT "Record delete time in UTC",
+
     PRIMARY KEY (`id`),
     INDEX `idx_user_dungeon` (`user_id`, `id`),
     INDEX `idx_type_user` (`type`, `user_id`)
@@ -67,7 +75,7 @@ CREATE TABLE `dungeon_monsters` (
 
 
     PRIMARY KEY (`dungeon_id`, `item_id`),
-    INDEX idx_practice_order (`dungeon_id`, `familiarity`, `importance`, `difficulty`)
+    INDEX idx_practice_order (`dungeon_id`, `next_practice_at`, `familiarity`, `importance`, `difficulty`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `user_monsters` (

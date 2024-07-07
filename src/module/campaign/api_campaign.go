@@ -1,7 +1,6 @@
 package campaign
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -25,11 +24,11 @@ type ReqReportMonsterResult struct {
 }
 
 type ReqGetForPractice struct {
-	Count    int    `json:"count"`
-	Strategy string `json:"strategy"` // "classic"
+	Count int `json:"count"`
+	// QuizMode def.QuizMode `json:"quiz_mode"` // @see def.QuizMode, using dungeon setting
 }
 
-// GetMonstersOfCampaign handles fetching all the monsters of a specific campaign dungeon
+// GetCampaignMonsters handles fetching all the monsters of a specific campaign dungeon
 // @Summary Get all the monsters of a specific campaign dungeon
 // @Description 获取复习计划的所有Monsters
 // @Tags dungeon
@@ -42,10 +41,10 @@ type ReqGetForPractice struct {
 // @Failure 404 {object} utils.ErrorResponse "Dungeon not found"
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /dungeon/campaigns/{id}/monsters [get]
-func (svr *Service) GetMonstersOfCampaign(c *gin.Context) {
+func (svr *Service) GetCampaignMonsters(c *gin.Context) {
 	userID, campaignID, pager := utils.GinMustGetUserID(c), utils.GinMustGetID(c), utils.GinGetPagerFromQuery(c)
 
-	log := wlog.ByCtx(c, "GetMonstersOfCampaign").
+	log := wlog.ByCtx(c, "GetCampaignMonsters").
 		WithField("user_id", userID).WithField("campaign_id", campaignID).WithField("pager", pager)
 
 	var dungeon model.Dungeon
@@ -54,10 +53,16 @@ func (svr *Service) GetMonstersOfCampaign(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetMonsters(svr.db, pager.Offset, pager.Limit)
+	monsters, err := dungeon.GetMonsters(c, svr.db, pager.Offset, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon monsters")
 		return
+	}
+
+	if total, err := dungeon.CountMonsters(c, svr.db); err != nil {
+		log.WithError(err).Warnf("count monster failed")
+	} else {
+		pager.SetTotal(total)
 	}
 
 	resp := new(dto.RespMonsterList).WithPager(pager)
@@ -84,8 +89,7 @@ func (svr *Service) GetMonstersForCampaignPractice(c *gin.Context) {
 	log := l.WithField("user_id", userID).WithField("campaign_id", campaignID)
 
 	req := ReqGetForPractice{
-		Count:    20,
-		Strategy: "classic",
+		Count: 10,
 	}
 	if err := c.BindQuery(&req); err != nil {
 		utils.GinHandleError(c, log, http.StatusBadRequest, err, "invalid request query")
@@ -100,13 +104,15 @@ func (svr *Service) GetMonstersForCampaignPractice(c *gin.Context) {
 		return
 	}
 
-	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, req.Strategy, pager.Limit)
+	monsters, err := dungeon.GetMonstersForPractice(ctx, svr.db, pager.Limit)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch dungeon monsters")
 		return
 	}
 
-	dtoMonsters := typer.SliceMap(monsters, new(dto.DungeonMonster).FromModel)
+	dtoMonsters := typer.SliceMap(monsters, func(from model.DungeonMonster) *dto.DungeonMonster {
+		return new(dto.DungeonMonster).FromModel(from)
+	})
 	log.Infof("got monsters= %v", dtoMonsters)
 	new(dto.RespMonsterList).WithPager(pager).Append(dtoMonsters...).Response(c)
 }
@@ -134,10 +140,15 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 		return
 	}
 
-	// 更新DungeonMonster的显影程度和下次复习时间
-	var dm model.DungeonMonster
-	if err := svr.db.Where("dungeon_id = ? AND item_id = ?", campaignID, req.MonsterID).First(&dm).Error; err != nil {
-		utils.GinHandleError(c, log, http.StatusNotFound, err, "DungeonMonster not found")
+	dungeon, err := model.FindDungeon(c, svr.db, campaignID)
+	if err != nil {
+		utils.GinHandleError(c, log, http.StatusNotFound, err, "dungeon not found")
+		return
+	}
+
+	dm, err := dungeon.GetMonster(c, svr.db, req.MonsterID)
+	if err != nil {
+		utils.GinHandleError(c, log, http.StatusNotFound, err, "monster are not found in dungeon")
 		return
 	}
 	log = log.WithField("item_id", dm.ItemID)
@@ -165,18 +176,7 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 	}
 	log.Infof("damage calculate, last_practice_at %v, damage_rate= %v, difficulty= %v, current= %v, new= %v", dm.PracticeAt, damageRate, dm.Difficulty, dm.Familiarity, newFamiliarity)
 
-	// 计算下次复习时间
-	var userSettings model.ProfileMemorizationSetting
-	if err := svr.db.Where("id = ?", userID).First(&userSettings).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch user settings")
-			return
-		}
-		userSettings = model.DefaultMemorizationSetting
-		userSettings.ID = userID
-	}
-
-	nextRecallTime := CalculateNextPracticeAt(c, newFamiliarity, dm.Importance, &userSettings)
+	nextRecallTime := CalculateNextPracticeAt(c, newFamiliarity, dm.Importance, &dungeon.MemorizationSetting)
 	updater := map[string]any{
 		"visibility":       utils.Percentage(newFamiliarity.Times(dm.Visibility.NormalizedFloat())),
 		"familiarity":      newFamiliarity,
@@ -185,7 +185,7 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 		"practice_count":   gorm.Expr("practice_count + ?", 1),
 	}
 
-	if err := svr.db.Model(&dm).
+	if err = svr.db.Model(dm).
 		Where("dungeon_id = ? AND item_id = ?", campaignID, req.MonsterID).
 		Updates(updater).Error; err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update DungeonMonster visibility and next recall time")
@@ -195,7 +195,7 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 
 	new(dto.RespMonsterUpdate).With(
 		dto.Updater[*dto.DungeonMonster]{
-			From:    new(dto.DungeonMonster).FromModel(dm),
+			From:    new(dto.DungeonMonster).FromModel(*dm),
 			Updates: updater,
 		}).Response(c, "user-monster practice result updated")
 }

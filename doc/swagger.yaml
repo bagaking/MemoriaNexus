@@ -116,8 +116,6 @@ definitions:
     - GlobalKey
     - GlobalEssential
     - GlobalMasterPiece
-  def.RecallIntervalLevel:
-    type: object
   dto.Book:
     properties:
       created_at:
@@ -138,33 +136,6 @@ definitions:
         type: integer
     type: object
   dto.Dungeon:
-    properties:
-      books:
-        items:
-          type: integer
-        type: array
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      items:
-        items:
-          type: integer
-        type: array
-      rule:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-      type:
-        $ref: '#/definitions/def.DungeonType'
-      updated_at:
-        type: string
     type: object
   dto.DungeonMonster:
     properties:
@@ -320,11 +291,6 @@ definitions:
         type: integer
     type: object
   dto.RespDungeon:
-    properties:
-      data:
-        $ref: '#/definitions/dto.Dungeon'
-      message:
-        type: string
     type: object
   dto.RespDungeonList:
     properties:
@@ -424,6 +390,11 @@ definitions:
         type: string
     type: object
   dto.RespSettingsMemorization:
+    properties:
+      data:
+        $ref: '#/definitions/dto.SettingsMemorization'
+      message:
+        type: string
     type: object
   dto.RespTagList:
     properties:
@@ -452,6 +423,8 @@ definitions:
       theme:
         type: string
     type: object
+  dto.SettingsMemorization:
+    type: object
   dto.SuccessResponse:
     properties:
       data: {}
@@ -473,27 +446,6 @@ definitions:
         type: array
     type: object
   dungeon.ReqCreateDungeon:
-    properties:
-      books:
-        items:
-          type: integer
-        type: array
-      description:
-        type: string
-      items:
-        items:
-          type: integer
-        type: array
-      rule:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-      type:
-        $ref: '#/definitions/def.DungeonType'
     type: object
   dungeon.ReqRemoveDungeonBooks:
     properties:
@@ -517,15 +469,6 @@ definitions:
         type: array
     type: object
   dungeon.ReqUpdateDungeon:
-    properties:
-      description:
-        type: string
-      rule:
-        type: string
-      title:
-        type: string
-      type:
-        $ref: '#/definitions/def.DungeonType'
     type: object
   item.ReqCreateItem:
     properties:
@@ -603,13 +546,6 @@ definitions:
         type: string
     type: object
   profile.ReqUpdateUserSettingsMemorization:
-    properties:
-      difficulty_preference:
-        type: integer
-      quiz_mode:
-        type: string
-      review_interval:
-        $ref: '#/definitions/def.RecallIntervalLevel'
     type: object
   utils.ErrorResponse:
     properties:

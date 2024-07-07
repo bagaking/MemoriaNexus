@@ -24,9 +24,13 @@ type (
 
 	SettingsMemorization struct {
 		// Definitions should match with ProfileMemorizationSetting
-		ReviewIntervalSetting def.RecallIntervalLevel `json:"review_interval_setting"`
-		DifficultyPreference  utils.Percentage        `json:"difficulty_preference"`
-		QuizMode              string                  `json:"quiz_mode"`
+		ReviewInterval *def.RecallIntervalLevel `json:"review_interval,omitempty"`
+		// 用户挑战偏好
+		DifficultyPreference *utils.Percentage `json:"difficulty_preference,omitempty"`
+		// 倾向的战斗模式，决定了已经在时间内 monster 出场时，新增和复习的出现策略
+		QuizMode *def.QuizMode `json:"quiz_mode,omitempty"`
+		// 倾向的战斗模式，决定了已经在时间内 monster 出场时，进行选择的优先级顺序
+		PriorityMode *def.PriorityMode `json:"priority_mode,omitempty"`
 	}
 
 	SettingsAdvance struct {
@@ -58,11 +62,31 @@ func (p *Profile) FromModel(model *model.Profile) *Profile {
 	return p
 }
 
-func (s *SettingsMemorization) FromModel(model *model.ProfileMemorizationSetting) *SettingsMemorization {
-	s.ReviewIntervalSetting = model.ReviewIntervalSetting
-	s.DifficultyPreference = model.DifficultyPreference
-	s.QuizMode = model.QuizMode
+func (s *SettingsMemorization) FromModel(model *model.MemorizationSetting) *SettingsMemorization {
+	s.ReviewInterval = &model.ReviewInterval
+	s.DifficultyPreference = &model.DifficultyPreference
+	s.QuizMode = &model.QuizMode
+	s.PriorityMode = &model.PriorityMode
 	return s
+}
+
+func (s *SettingsMemorization) ToModel(model *model.MemorizationSetting) *model.MemorizationSetting {
+	if s == nil {
+		return model
+	}
+	if s.ReviewInterval != nil {
+		model.ReviewInterval = *s.ReviewInterval
+	}
+	if s.DifficultyPreference != nil {
+		model.DifficultyPreference = *s.DifficultyPreference
+	}
+	if s.QuizMode != nil {
+		model.QuizMode = *s.QuizMode
+	}
+	if s.PriorityMode != nil {
+		model.PriorityMode = *s.PriorityMode
+	}
+	return model
 }
 
 func (s *SettingsAdvance) FromModel(model *model.ProfileAdvanceSetting) *SettingsAdvance {
