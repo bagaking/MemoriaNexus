@@ -111,7 +111,14 @@ func getMonstersBalance(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.D
 			return nil, err
 		}
 	}
-	return append(m1, m2...), nil
+	m2 = append(m2, m1...)
+	if len(m2) < count { // 可能是没有走 threshold 的逻辑, 所以这里再查一次
+		if err := makeQuery(tx, count-len(m2)).Where("familiarity = 0").Find(&m1).Error; err != nil {
+			return nil, err
+		}
+		m2 = append(m2, m1...)
+	}
+	return m2, nil
 }
 
 func getMonstersThreshold(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, dungeonID utils.UInt64, count int) ([]DungeonMonster, error) {
@@ -120,6 +127,7 @@ func getMonstersThreshold(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm
 	if err := makeQuery(tx, minOne).Where("familiarity = 0").Find(&m1).Error; err != nil {
 		return nil, err
 	}
+
 	if len(m1) < count {
 		if err := makeQuery(tx, count-len(m1)).Where("familiarity > 0").Find(&m2).Error; err != nil {
 			return nil, err

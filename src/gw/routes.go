@@ -3,7 +3,6 @@
 package gw
 
 import (
-	"github.com/bagaking/memorianexus/src/module/campaign"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -14,6 +13,7 @@ import (
 	"github.com/bagaking/memorianexus/src/module/achievement"
 	"github.com/bagaking/memorianexus/src/module/analytic"
 	"github.com/bagaking/memorianexus/src/module/book"
+	"github.com/bagaking/memorianexus/src/module/campaign"
 	"github.com/bagaking/memorianexus/src/module/dungeon"
 	"github.com/bagaking/memorianexus/src/module/item"
 	"github.com/bagaking/memorianexus/src/module/nft"

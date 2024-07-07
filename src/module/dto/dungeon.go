@@ -61,10 +61,15 @@ type (
 		TodayDifficulty int `json:"today_difficulty"`
 	}
 
+	SubmitResults struct {
+		Updater[*DungeonMonster]
+		PointsUpdate Points `json:"points_update"`
+	}
+
 	RespDungeon     = RespSuccess[*Dungeon]
 	RespDungeonList = RespSuccessPage[*Dungeon]
 
-	RespMonsterUpdate = RespSuccess[Updater[*DungeonMonster]]
+	RespMonsterUpdate = RespSuccess[*SubmitResults]
 	RespMonsterGet    = RespSuccess[*DungeonMonster]
 	RespMonsterList   = RespSuccessPage[*DungeonMonster]
 )

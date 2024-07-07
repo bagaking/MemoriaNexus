@@ -8,7 +8,6 @@ import (
 
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khgame/memstore/cachekey"
-	"github.com/khicago/got/util/delegate"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
 
@@ -93,6 +92,11 @@ func GetTagsByEntity(ctx context.Context, tx *gorm.DB, entityID utils.UInt64) ([
 
 // AddEntityTags adds tags to an entity for a user.
 func AddEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entityType EntityType, entityID utils.UInt64, tags ...string) error {
+	if len(tags) == 0 {
+		wlog.ByCtx(ctx, "AddEntityTags").WithField("user_id", userID).WithField("entity_id", entityID).
+			Warnf("cannot add tags with empty list")
+		return nil
+	}
 	uts := make([]Tag, 0, len(tags))
 	for _, tag := range tags {
 		userTag := Tag{
@@ -125,6 +129,12 @@ func AddEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entity
 
 // RemoveEntityTags removes tags from an entity for a user.
 func RemoveEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entityID utils.UInt64, tagsToRemove ...string) error {
+	if len(tagsToRemove) == 0 {
+		wlog.ByCtx(ctx, "RemoveEntityTags").WithField("user_id", userID).WithField("entity_id", entityID).
+			Warnf("cannot remove tags with empty list")
+		return nil
+	}
+
 	if err := tx.Model(&Tag{}).Where("user_id = ? AND tag IN ? AND entity_id = ?", userID, tagsToRemove, entityID).Update("deleted_at", time.Now()).Error; err != nil {
 		return irr.Wrap(err, "failed to remove entity tag")
 	}
@@ -142,17 +152,31 @@ func RemoveEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, ent
 
 // UpdateEntityTagsDiff handles the difference between the tags of an entity and the new tags.
 func UpdateEntityTagsDiff(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entityID utils.UInt64, tags []string) error {
+	log := wlog.ByCtx(ctx, "UpdateEntityTagsDiff")
 	tagsExist, err := GetTagsByEntity(ctx, tx, entityID)
 	if err != nil {
 		return irr.Wrap(err, "failed to get exist tags")
 	}
-
-	toAdd, toRemove := diffLists(tagsExist, tags)
-	if err = AddEntityTags(ctx, tx, userID, EntityTypeItem, entityID, toAdd...); err != nil {
-		return irr.Wrap(err, "failed to add tags")
+	if tagsExist == nil || len(tagsExist) == 0 {
+		if len(tags) > 0 {
+			if err = AddEntityTags(ctx, tx, userID, EntityTypeItem, entityID, tags...); err != nil {
+				return irr.Wrap(err, "failed to add tags")
+			}
+		}
+		return nil
 	}
-	if err = RemoveEntityTags(ctx, tx, userID, entityID, toRemove...); err != nil {
-		return irr.Wrap(err, "failed to remove tags")
+
+	toAdd, toRemove := typer.SliceDiff(tagsExist, tags)
+	log.Debugf("diffLists, add= %v, rem= %v, from= %v, to= %v", toAdd, toRemove, tagsExist, tags)
+	if len(toAdd) > 0 {
+		if err = AddEntityTags(ctx, tx, userID, EntityTypeItem, entityID, toAdd...); err != nil {
+			return irr.Wrap(err, "failed to add tags")
+		}
+	}
+	if len(toRemove) > 0 {
+		if err = RemoveEntityTags(ctx, tx, userID, entityID, toRemove...); err != nil {
+			return irr.Wrap(err, "failed to remove tags")
+		}
 	}
 	return nil
 }
@@ -327,7 +351,7 @@ func deleteOldTagData(ctx context.Context, tx *gorm.DB, oldTag string) error {
 		return irr.Wrap(err, "failed to get entities by old tag")
 	}
 	for _, entityID := range entityIDs {
-		if err := invalidateCacheForEntity(ctx, entityID); err != nil {
+		if err = invalidateCacheForEntity(ctx, entityID); err != nil {
 			return irr.Wrap(err, "failed to invalidate cache for entity")
 		}
 	}
@@ -382,52 +406,6 @@ func invalidateCacheForTag(ctx context.Context, tx *gorm.DB, tags ...string) err
 func invalidateCacheForEntity(ctx context.Context, entityID utils.UInt64) error {
 	// there are only entity tags cache to clear
 	return cache.SET().Clear(ctx, CKEntity2Tags.MustBuild(entityID), MaxRetryAttempts)
-}
-
-// diffLists takes two slices of strings and returns two slices:
-// one with elements to add (present in newList but not in oldList)
-// and one with elements to remove (present in oldList but not in newList).
-func diffLists(oldList, newList []string) (toAdd, toRemove []string) {
-	// Threshold to decide between loop and map approach
-	threshold := 10
-	var nExistInOld delegate.Predicate[string]
-	var nExistInNew delegate.Predicate[string]
-
-	type TrueTable = map[string]struct{}
-	// Use map-based approach for larger lists for better performance
-	if len(oldList) > threshold {
-		trueTable := typer.SliceReduce(oldList, func(v string, target TrueTable) TrueTable {
-			target[v] = struct{}{}
-			return target
-		}, make(TrueTable))
-		nExistInOld = func(v string) bool {
-			_, ok := trueTable[v]
-			return !ok
-		}
-	} else {
-		nExistInOld = func(v string) bool {
-			return typer.SliceContains(oldList, v)
-		}
-	}
-
-	if len(newList) > threshold {
-		trueTable := typer.SliceReduce(newList, func(v string, target TrueTable) TrueTable {
-			target[v] = struct{}{}
-			return target
-		}, make(TrueTable))
-		nExistInNew = func(v string) bool {
-			_, ok := trueTable[v]
-			return !ok
-		}
-	} else {
-		nExistInOld = func(v string) bool {
-			return typer.SliceContains(newList, v)
-		}
-	}
-
-	toAdd = typer.SliceFilter(newList, nExistInOld)
-	toRemove = typer.SliceFilter(oldList, nExistInNew)
-	return toAdd, toRemove
 }
 
 // FindItemsOfTag returns the items

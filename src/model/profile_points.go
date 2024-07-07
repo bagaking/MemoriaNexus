@@ -33,14 +33,21 @@ func (p *Profile) EnsureLoadProfilePoints(db *gorm.DB) (*ProfilePoints, error) {
 }
 
 // EnsureLoadProfilePoints 从数据库中加载用户积分信息
-func EnsureLoadProfilePoints(db *gorm.DB, uid utils.UInt64) (*ProfilePoints, error) {
-	points := &ProfilePoints{ID: uid}
+func EnsureLoadProfilePoints(db *gorm.DB, userID utils.UInt64) (*ProfilePoints, error) {
+	points := &ProfilePoints{ID: userID}
 	result := db.FirstOrCreate(points, points)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	return points, nil
+}
+
+// AddUserCash 更新用户积分
+func AddUserCash(db *gorm.DB, userID utils.UInt64, points int) error {
+	return db.Model(&ProfilePoints{}).Where("id = ?", userID).
+		Update("cash", gorm.Expr("cash + ?", points)).
+		Error
 }
 
 // todo: update

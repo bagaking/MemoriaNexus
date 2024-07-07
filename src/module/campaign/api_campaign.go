@@ -153,7 +153,7 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 	}
 	log = log.WithField("item_id", dm.ItemID)
 
-	// 处理Monster结果 - 根据需求调整处理逻辑，例如更新Monster的熟练度或状态等
+	// 处理 Monster结果 - 根据需求调整处理逻辑，例如更新Monster的熟练度或状态等
 	damageRate := req.Result.DamageRate()
 	if damageRate <= 0 {
 		utils.GinHandleError(c, log, http.StatusBadRequest, irr.Error("invalid attack result %s", req.Result), "Invalid result")
@@ -193,11 +193,32 @@ func (svr *Service) SubmitCampaignResult(c *gin.Context) {
 	}
 	log.Infof("next_practice_at updated, last_practice_at= %v, new_familiarity= %v, importance= %v, next_recall_at= %v", dm.PracticeAt, newFamiliarity, dm.Importance, nextRecallTime)
 
+	// 计算积分变化
+	cashEarned := calculatePoints(damageRate, newFamiliarity-dm.Familiarity, dm.Difficulty)
+	if err = model.AddUserCash(svr.db, userID, cashEarned); err != nil {
+		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to update user points")
+		return
+	}
+	log.Infof("points earned: %v", cashEarned)
+
 	new(dto.RespMonsterUpdate).With(
-		dto.Updater[*dto.DungeonMonster]{
-			From:    new(dto.DungeonMonster).FromModel(*dm),
-			Updates: updater,
+		&dto.SubmitResults{
+			Updater: dto.Updater[*dto.DungeonMonster]{
+				From:    new(dto.DungeonMonster).FromModel(*dm),
+				Updates: updater,
+			},
+			PointsUpdate: dto.Points{
+				Cash: utils.UInt64(cashEarned),
+			},
 		}).Response(c, "user-monster practice result updated")
+}
+
+// calculatePoints 根据熟练度变化和难度计算积分
+func calculatePoints(damageRate utils.Percentage, familiarityAdd utils.Percentage, difficulty def.DifficultyLevel) int {
+	basePoints := 100
+	difficultyFactor := difficulty.Factor()
+	// todo: 考虑 familiarityAdd 和 damageRate 加不同的 point
+	return int(float64(basePoints) * damageRate.NormalizedFloat() * (1 + familiarityAdd.NormalizedFloat()) * difficultyFactor)
 }
 
 func (svr *Service) GetCampaignDungeonConclusionOfToday(c *gin.Context) {

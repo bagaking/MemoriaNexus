@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/khgame/memstore v0.0.0-20240706053229-34ff6ebeec61
 	github.com/khgame/ranger_iam v0.0.0-20240518112521-100a86184a7a
-	github.com/khicago/got v0.0.0-20240520140129-635733602f45
+	github.com/khicago/got v0.0.0-20240707162414-6d59752d650e
 	github.com/khicago/irr v0.0.0-20240309052027-df085c2216f6
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0

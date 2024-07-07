@@ -9,7 +9,7 @@ CREATE TABLE `dungeons` (
 #     `rule` TEXT COMMENT '复习规则的详细配置, JSON格式',
 
     -- practice preference (set when create, fork default values from user's setting)
-    `review_interval_setting` VARCHAR(255) COMMENT "Interval for review in days",
+    `review_interval` VARCHAR(255) COMMENT "Interval for review in days",
     `difficulty_preference` TINYINT UNSIGNED COMMENT "User's preference for difficulty",
     `quiz_mode` VARCHAR(32) COMMENT "Preferred quiz mode",
     `priority_mode` VARCHAR(255) COMMENT "Preferred priority mode",
