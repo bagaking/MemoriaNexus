@@ -20,10 +20,14 @@ const (
 	defaultThreshold                         = 3
 )
 
-type CParamNewStuffCountDaily struct {
-	ID   utils.UInt64 `cachekey:"dungeon_id"`
-	Date string       `cachekey:"date"`
-}
+type (
+	CParamNewStuffCountDaily struct {
+		ID   utils.UInt64 `cachekey:"dungeon_id"`
+		Date string       `cachekey:"date"`
+	}
+
+	GormScope = func(*gorm.DB) *gorm.DB
+)
 
 var CKDungeonNewStuffCountDaily = cachekey.MustNewSchema[CParamNewStuffCountDaily](
 	"dungeon:{dungeon_id}:new_stuff_count_daily:{date}", time.Hour*24) // 按天淘汰
@@ -39,10 +43,12 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, count
 	now := time.Now()
 
 	// Helper function to create the base query
-	makeQuery := func(tx *gorm.DB, limit int) *gorm.DB {
-		return tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
-			Order("importance DESC, difficulty ASC").
-			Limit(limit)
+	makeQuery := func(limit int) GormScope {
+		return func(tx *gorm.DB) *gorm.DB {
+			return tx.Where("dungeon_id = ? AND next_practice_at < ?", d.ID, now).
+				Order("importance DESC, difficulty ASC").
+				Limit(limit)
+		}
 	}
 
 	var dungeonMonsters []DungeonMonster
@@ -73,47 +79,47 @@ func (d *Dungeon) GetMonstersForPractice(ctx context.Context, tx *gorm.DB, count
 
 // Helper functions for different QuizModes
 
-func getMonstersAlwaysNew(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, count int) ([]DungeonMonster, error) {
+func getMonstersAlwaysNew(ctx context.Context, tx *gorm.DB, makeQuery func(int) GormScope, count int) ([]DungeonMonster, error) {
 	var m1, m2 []DungeonMonster
-	if err := makeQuery(tx, count).Where("familiarity = 0").Find(&m1).Error; err != nil {
+	if err := tx.Scopes(makeQuery(count)).Where("familiarity = 0").Find(&m1).Error; err != nil {
 		return nil, err
 	}
 	if len(m1) < count {
-		if err := makeQuery(tx, count-len(m1)).Where("familiarity > 0").Find(&m2).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count - len(m1))).Where("familiarity > 0").Find(&m2).Error; err != nil {
 			return nil, err
 		}
 	}
 	return append(m1, m2...), nil
 }
 
-func getMonstersAlwaysOld(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, count int) ([]DungeonMonster, error) {
+func getMonstersAlwaysOld(ctx context.Context, tx *gorm.DB, makeQuery func(int) GormScope, count int) ([]DungeonMonster, error) {
 	var m1, m2 []DungeonMonster
-	if err := makeQuery(tx, count).Where("familiarity > 0").Find(&m1).Error; err != nil {
+	if err := tx.Scopes(makeQuery(count)).Where("familiarity > 0").Find(&m1).Error; err != nil {
 		return nil, err
 	}
 	if len(m1) < count {
-		if err := makeQuery(tx, count-len(m1)).Where("familiarity = 0").Find(&m2).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count - len(m1))).Where("familiarity = 0").Find(&m2).Error; err != nil {
 			return nil, err
 		}
 	}
 	return append(m1, m2...), nil
 }
 
-func getMonstersBalance(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, count int) ([]DungeonMonster, error) {
+func getMonstersBalance(ctx context.Context, tx *gorm.DB, makeQuery func(int) GormScope, count int) ([]DungeonMonster, error) {
 	var m1, m2 []DungeonMonster
 	if rand.Intn(100) < int(balanceModeNewStuffRate.Clamp0100()) {
-		if err := makeQuery(tx, count).Where("familiarity = 0").Find(&m1).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count)).Where("familiarity = 0").Find(&m1).Error; err != nil {
 			return nil, err
 		}
 	}
 	if len(m1) < count {
-		if err := makeQuery(tx, count-len(m1)).Where("familiarity > 0").Find(&m2).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count - len(m1))).Where("familiarity > 0").Find(&m2).Error; err != nil {
 			return nil, err
 		}
 	}
 	m2 = append(m2, m1...)
 	if len(m2) < count { // 可能是没有走 threshold 的逻辑, 所以这里再查一次
-		if err := makeQuery(tx, count-len(m2)).Where("familiarity = 0").Find(&m1).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count - len(m2))).Where("familiarity = 0").Find(&m1).Error; err != nil {
 			return nil, err
 		}
 		m2 = append(m2, m1...)
@@ -121,22 +127,22 @@ func getMonstersBalance(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.D
 	return m2, nil
 }
 
-func getMonstersThreshold(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, dungeonID utils.UInt64, count int) ([]DungeonMonster, error) {
+func getMonstersThreshold(ctx context.Context, tx *gorm.DB, makeQuery func(int) GormScope, dungeonID utils.UInt64, count int) ([]DungeonMonster, error) {
 	var m1, m2 []DungeonMonster
 	minOne := min(defaultThreshold, count)
-	if err := makeQuery(tx, minOne).Where("familiarity = 0").Find(&m1).Error; err != nil {
+	if err := tx.Scopes(makeQuery(minOne)).Where("familiarity = 0").Find(&m1).Error; err != nil {
 		return nil, err
 	}
 
 	if len(m1) < count {
-		if err := makeQuery(tx, count-len(m1)).Where("familiarity > 0").Find(&m2).Error; err != nil {
+		if err := tx.Scopes(makeQuery(count - len(m1))).Where("familiarity > 0").Find(&m2).Error; err != nil {
 			return nil, err
 		}
 	}
 	return append(m1, m2...), nil
 }
 
-func getMonstersDynamic(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.DB, int) *gorm.DB, dungeonID utils.UInt64, count int) ([]DungeonMonster, error) {
+func getMonstersDynamic(ctx context.Context, tx *gorm.DB, makeQuery func(int) GormScope, dungeonID utils.UInt64, count int) ([]DungeonMonster, error) {
 	var m1, m2 []DungeonMonster
 
 	key := CKDungeonNewStuffCountDaily.MustBuild(CParamNewStuffCountDaily{ID: dungeonID, Date: time.Now().Format("2006-01-02")})
@@ -148,20 +154,20 @@ func getMonstersDynamic(ctx context.Context, tx *gorm.DB, makeQuery func(*gorm.D
 	}
 
 	if cNewStuff < defaultDalyNewCount {
-		if err = makeQuery(tx, count).Where("familiarity = 0").Find(&m1).Error; err != nil {
+		if err = tx.Scopes(makeQuery(count)).Where("familiarity = 0").Find(&m1).Error; err != nil {
 			return nil, err
 		}
 		cache.Client().Set(ctx, key, cNewStuff+1, time.Hour*24) // todo: 先按次数 set cache 实现了, 预期是应该在 submit 的时候再 incr cache
 	}
 
 	if len(m1) < count {
-		if err = makeQuery(tx, count-len(m1)).Where("familiarity > 0").Find(&m2).Error; err != nil {
+		if err = tx.Scopes(makeQuery(count - len(m1))).Where("familiarity > 0").Find(&m2).Error; err != nil {
 			return nil, err
 		}
 	}
 	m2 = append(m2, m1...)
 	if len(m2) < count { // 可能是没有走 threshold 的逻辑, 所以这里再查一次
-		if err = makeQuery(tx, count-len(m2)).Where("familiarity = 0").Find(&m1).Error; err != nil {
+		if err = tx.Scopes(makeQuery(count - len(m2))).Where("familiarity = 0").Find(&m1).Error; err != nil {
 			return nil, err
 		}
 		m2 = append(m2, m1...)

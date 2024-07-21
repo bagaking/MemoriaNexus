@@ -10,9 +10,10 @@ import "os"
 const ENVKey = "MEMORIA_NEXUS_ENV"
 
 const (
-	RuntimeENVDev   = "dev"
-	RuntimeENVLocal = "local"
-	RuntimeENVProd  = "prod"
+	RuntimeENVDev     = "dev"
+	RuntimeENVLocal   = "local"
+	RuntimeENVStaging = "staging"
+	RuntimeENVProd    = "prod"
 )
 
 func Env() string {

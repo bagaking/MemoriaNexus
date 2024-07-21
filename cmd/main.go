@@ -37,9 +37,11 @@ func dsn() string {
 	host := "localhost"
 	switch utils.Env() {
 	case utils.RuntimeENVDev:
-		host = "mysql"
+		host = "mysql" // run in docker compose
+	case utils.RuntimeENVStaging:
+		host = "0.0.0.0" // run at remote service (staging cluster)
 	case utils.RuntimeENVProd:
-		host = "mysql"
+		host = "0.0.0.0" // run at remote service (product cluster)
 	case utils.RuntimeENVLocal:
 		fallthrough
 	default:
@@ -57,8 +59,10 @@ func redisHost() string {
 	switch utils.Env() {
 	case utils.RuntimeENVDev:
 		host = "redis"
+	case utils.RuntimeENVStaging:
+		host = "0.0.0.0"
 	case utils.RuntimeENVProd:
-		host = "redis"
+		host = "0.0.0.0"
 	case utils.RuntimeENVLocal:
 		fallthrough
 	default:

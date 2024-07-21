@@ -5,13 +5,19 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bagaking/goulp/jsonex"
+	"github.com/bagaking/goulp/wlog"
+	"github.com/bagaking/memorianexus/internal/utils/cache"
+	"github.com/khgame/memstore/cachekey"
+
 	"github.com/bagaking/memorianexus/internal/utils"
 
-	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/irr"
 
 	"gorm.io/gorm"
 )
+
+var CKBook = cachekey.MustNewSchema[utils.UInt64]("book:{book_id}", 10*time.Minute)
 
 type Book struct {
 	ID          utils.UInt64 `gorm:"primaryKey;autoIncrement:false" json:"id"`
@@ -33,6 +39,51 @@ func (b *Book) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
+// BeforeDelete is a GORM hook that is called before deleting a book.
+func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
+	log := wlog.Common("BeforeDeleteBook")
+	log.Infof("Deleting associations for book ID %d", b.ID)
+
+	if err = tx.Where("book_id = ?", b.ID).Delete(&BookItem{}).Error; err != nil {
+		return irr.Wrap(err, "failed to delete book items")
+	}
+
+	return nil
+}
+
+func (b *Book) AfterCreate(tx *gorm.DB) (err error) {
+	key, err := CKBook.Build(b.ID)
+	if err != nil {
+		return irr.Wrap(err, "build cacheKey failed")
+	}
+
+	data, err := jsonex.Marshal(b)
+	if err != nil {
+		return err
+	}
+	return cache.Client().Set(tx.Statement.Context, key, string(data), CKBook.GetExp()).Err()
+}
+
+func (b *Book) AfterUpdate(tx *gorm.DB) (err error) {
+	key, err := CKBook.Build(b.ID)
+	if err != nil {
+		return irr.Wrap(err, "build cacheKey failed")
+	}
+	data, err := jsonex.Marshal(b)
+	if err != nil {
+		return err
+	}
+	return cache.Client().Set(tx.Statement.Context, key, string(data), CKBook.GetExp()).Err()
+}
+
+func (b *Book) AfterDelete(tx *gorm.DB) (err error) {
+	key, err := CKBook.Build(b.ID)
+	if err != nil {
+		return irr.Wrap(err, "build cacheKey failed")
+	}
+	return cache.Client().Del(tx.Statement.Context, key).Err()
+}
+
 func (b *Book) TableName() string {
 	return "books"
 }
@@ -44,18 +95,6 @@ type BookItem struct {
 
 func (b *BookItem) TableName() string {
 	return "book_items"
-}
-
-// BeforeDelete is a GORM hook that is called before deleting a book.
-func (b *Book) BeforeDelete(tx *gorm.DB) (err error) {
-	log := wlog.Common("BeforeDeleteBook")
-	log.Infof("Deleting associations for book ID %d", b.ID)
-
-	if err = tx.Where("book_id = ?", b.ID).Delete(&BookItem{}).Error; err != nil {
-		return irr.Wrap(err, "failed to delete book items")
-	}
-
-	return nil
 }
 
 func FindBook(ctx context.Context, tx *gorm.DB, id utils.UInt64) (*Book, error) {
