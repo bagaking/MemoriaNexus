@@ -1,0 +1,10 @@
+entry = [
+    "./pkg/tags/*.go",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script",
+    "./pkg/tags/mock/*.go",
+    "./pkg/tags/*_test.go",
+]

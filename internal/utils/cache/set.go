@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"github.com/khgame/memstore/prefix"
 	"strconv"
 	"time"
 
@@ -17,11 +18,17 @@ import (
 const (
 	// DefaultLockExpiration = 5 * time.Second // for prod
 	DefaultLockExpiration = 300 * time.Second // for dev
+
+	prefixSet prefix.Prefix = "set:"
 )
 
-type SetOps struct {
-	*cache.Cache
-}
+type (
+	SetOps struct {
+		*cache.Cache
+	}
+
+	SupportedLstCacheType interface{ string | utils.UInt64 }
+)
 
 func SET() *SetOps {
 	return &SetOps{Cache: Client()}
@@ -43,6 +50,19 @@ func (s *SetOps) Clear(ctx context.Context, key string, MaxRetryAttempts int) er
 	return nil
 }
 
+func (s *SetOps) lock(ctx context.Context, key string) (func(), error) {
+	lockKey := prefixSet.MakeKey(key)
+	lockValue, err := Locker(ctx).Acquire(ctx, lockKey, DefaultLockExpiration)
+	if err != nil {
+		return nil, err
+	}
+	return func() {
+		if e := Locker(ctx).Release(ctx, lockKey, lockValue); e != nil {
+			wlog.ByCtx(ctx, "cache.set.lock").WithError(e).Errorf("failed to release lock, key= %v", lockKey)
+		}
+	}, nil
+}
+
 // GetAll 从 SET 缓存中获取数据
 func (s *SetOps) GetAll(ctx context.Context, key string) ([]string, error) {
 	cachedValues, err := s.SMembers(ctx, key).Result() // 缓存优先，先尝试从缓存中获取数据
@@ -50,15 +70,11 @@ func (s *SetOps) GetAll(ctx context.Context, key string) ([]string, error) {
 		return cachedValues, nil
 	}
 
-	lockValue, err := Locker(ctx).Acquire(ctx, key, DefaultLockExpiration) // 如果缓存未命中，获取分布式锁，等锁过程中或许已经有写入
+	unlock, err := s.lock(ctx, key) // 如果缓存未命中，获取分布式锁，等锁过程中或许已经有写入
 	if err != nil {
 		return nil, irr.Wrap(err, "get all by key %s, failed", key)
 	}
-	defer func() {
-		if e := Locker(ctx).Release(ctx, key, lockValue); e != nil {
-			wlog.ByCtx(ctx, "cache.set.GetAll").WithError(e).Errorf("failed to release lock, key= %v", key)
-		}
-	}()
+	defer unlock()
 
 	// 再次尝试从缓存中获取数据
 	return s.SMembers(ctx, key).Result()
@@ -66,15 +82,11 @@ func (s *SetOps) GetAll(ctx context.Context, key string) ([]string, error) {
 
 // Insert 将数据写入 SET 缓存
 func (s *SetOps) Insert(ctx context.Context, key string, Expire time.Duration, values ...string) error {
-	lockValue, err := Locker(ctx).Acquire(ctx, key, DefaultLockExpiration)
+	unlock, err := s.lock(ctx, key)
 	if err != nil {
 		return irr.Wrap(err, "insert %s failed", key)
 	}
-	defer func() {
-		if e := Locker(ctx).Release(ctx, key, lockValue); e != nil {
-			wlog.ByCtx(ctx, "cache.set.Insert").WithError(e).Errorf("failed to release lock, key= %v", key)
-		}
-	}()
+	defer unlock()
 
 	if err = s.SAdd(ctx, key, typer.SliceMap(values, typer.Any[string])...).Err(); err != nil {
 		return irr.Wrap(err, "insert into key %s failed, values= %v", key, values)

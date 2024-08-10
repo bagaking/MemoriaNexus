@@ -12,6 +12,8 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - ./mysql-data:/var/lib/mysql
+      - ./migration:/migration
+      - ./migration/migrate.sh:/migrate.sh
     networks:
       - memorianexus-net
     healthcheck:

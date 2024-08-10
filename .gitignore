@@ -22,6 +22,7 @@
 go.work
 
 .idea
+.DS_Store
 
 # for dev_memorianexus
 dev*/logs
@@ -30,3 +31,6 @@ deployment/docker-build-context
 
 bundle/*.txt
 *.bundle.txt
+
+set_env.sh
+memorialnexus

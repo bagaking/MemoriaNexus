@@ -10,7 +10,11 @@ MIGRATION_SERVICE := migration
 MIGRATE_UP_PATH := migration/migrate_up.sql
 MIGRATE_DOWN_PATH := migration/migrate_down.sql
 
-.PHONY: default help gen-docs bundle compose-up compose-down compose-re compose-logs db-migrate-up db-migrate-down db-migrate-re dev build-dev build-app
+.PHONY: default help gen-docs bundle\
+ 		compose-up compose-down compose-re compose-logs\
+ 		db-migrate-up db-migrate-down db-migrate-re\
+ 		dev dev-logs dev-shell\
+ 		build-dev build-app build-staging
 
 # Default to help
 default: help
@@ -94,3 +98,6 @@ dev-logs:
 
 dev-shell:
 	$(DC) exec app /bin/sh
+
+build-staging:
+	source ./set_env.sh && ./script/build_staging.sh

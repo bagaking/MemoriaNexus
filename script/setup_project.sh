@@ -48,7 +48,7 @@ EOF
 
 # Go文件列表
 declare -A go_files=(
-    [cmd/main.go]="main:The application entrypoint"
+    [cmd/memorial_nexus.go]="main:The application entrypoint"
     [pkg/memcurve/calculator.go]="memcurve:Ebbinghaus forgetting curve calculations"
     [pkg/memcurve/curvemodel.go]="memcurve:Data models of the memory curve"
     [pkg/auth/jwt.go]="auth:JWT-based authentication logic"
