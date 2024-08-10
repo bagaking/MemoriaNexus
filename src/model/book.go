@@ -106,8 +106,8 @@ func FindBook(ctx context.Context, tx *gorm.DB, id utils.UInt64) (*Book, error) 
 	return book, nil
 }
 
-func (b *Book) GetTags(ctx context.Context, tx *gorm.DB) ([]string, error) {
-	return GetTagsByEntity(ctx, tx, b.ID)
+func (b *Book) GetTags(ctx context.Context) ([]string, error) {
+	return TagModel().GetTagsOfEntity(ctx, b.ID)
 }
 
 func (b *Book) MPutItems(ctx context.Context, tx *gorm.DB, itemIDs []utils.UInt64) (successItemIDs []utils.UInt64, err error) {

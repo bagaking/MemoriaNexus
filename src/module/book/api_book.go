@@ -130,7 +130,7 @@ func (svr *Service) GetBook(c *gin.Context) {
 		return
 	}
 
-	tags, err := book.GetTags(c, svr.db)
+	tags, err := book.GetTags(c)
 	if err != nil {
 		log.WithError(err).Warnf("Failed to fetch book tags")
 	}

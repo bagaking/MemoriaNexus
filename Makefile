@@ -14,7 +14,8 @@ MIGRATE_DOWN_PATH := migration/migrate_down.sql
  		compose-up compose-down compose-re compose-logs\
  		db-migrate-up db-migrate-down db-migrate-re\
  		dev dev-logs dev-shell\
- 		build-dev build-app build-staging
+ 		build-dev build-app build-staging\
+ 		cz
 
 # Default to help
 default: help
@@ -101,3 +102,6 @@ dev-shell:
 
 build-staging:
 	source ./set_env.sh && ./script/build_staging.sh
+
+cz:
+	source ./set_env.sh && git cz

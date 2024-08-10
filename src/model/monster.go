@@ -299,7 +299,7 @@ func (d *Dungeon) GetMonstersWithExpandedAssociations(ctx context.Context, tx *g
 	}
 
 	// 获取 tag 关联的 items
-	tagItemMap, err := GetItemIDsOfTags(ctx, tx, d.UserID, tags)
+	tagItemMap, err := GetItemIDsOfTags(ctx, d.UserID, tags)
 	if err != nil {
 		return nil, err
 	}

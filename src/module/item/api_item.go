@@ -122,7 +122,7 @@ func (svr *Service) ReadItem(c *gin.Context) {
 	}
 
 	// 获取 item 相关的 tags
-	tags, err := model.GetTagsByEntity(c, svr.db, item.ID)
+	tags, err := model.TagModel().GetTagsOfEntity(c, item.ID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Get item tag names failed")
 		return

@@ -2,9 +2,10 @@ package cache
 
 import (
 	"context"
-	"github.com/khgame/memstore/prefix"
 	"strconv"
 	"time"
+
+	"github.com/khgame/memstore/prefix"
 
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"

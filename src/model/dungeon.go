@@ -128,8 +128,8 @@ func (d *Dungeon) GetItemIDs(ctx context.Context, tx *gorm.DB) ([]utils.UInt64, 
 	return items, nil
 }
 
-func (d *Dungeon) GetTags(ctx context.Context, tx *gorm.DB) ([]string, error) {
-	tags, err := GetTagsByEntity(ctx, tx, d.ID)
+func (d *Dungeon) GetTags(ctx context.Context) ([]string, error) {
+	tags, err := TagModel().GetTagsOfEntity(ctx, d.ID)
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to fetch tag ids")
 	}
@@ -141,7 +141,7 @@ func (d *Dungeon) GetAssociations(ctx context.Context, tx *gorm.DB) (books, item
 	if books, err = d.GetBookIDs(ctx, tx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-book associations")
 	}
-	if tags, err = d.GetTags(ctx, tx); err != nil {
+	if tags, err = d.GetTags(ctx); err != nil {
 		return nil, nil, nil, irr.Wrap(err, "failed to fetch dungeon-tag associations")
 	}
 	if items, err = d.GetItemIDs(ctx, tx); err != nil { // todo: 先不分页

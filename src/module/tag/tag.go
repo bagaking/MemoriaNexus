@@ -28,7 +28,7 @@ func (svr *Service) GetTags(c *gin.Context) {
 	userID := utils.GinMustGetUserID(c)
 	log := wlog.ByCtx(c, "GetTags").WithField("pager", pager).WithField("user_id", userID)
 
-	tags, err := model.GetTagsByUser(c, svr.db, userID)
+	tags, err := model.TagModel().GetTagsByUser(c, userID)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "failed to fetch tags")
 		return

@@ -80,7 +80,7 @@ func (svr *Service) GetDungeonTagsDetail(c *gin.Context) {
 		return
 	}
 
-	tags, err := dungeon.GetTags(c, svr.db)
+	tags, err := dungeon.GetTags(c)
 	if err != nil {
 		utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to fetch dungeon tags")
 		return

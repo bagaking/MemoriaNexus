@@ -117,10 +117,11 @@ func GetItemsByID(tx *gorm.DB, itemIDs []utils.UInt64) (items []*Item, err error
 }
 
 // GetItemIDsOfTags 获取 tag 关联的 items
-func GetItemIDsOfTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, tags []string) (map[utils.UInt64]string, error) {
+func GetItemIDsOfTags(ctx context.Context, userID utils.UInt64, tags []string) (map[utils.UInt64]string, error) {
 	itemTagMap := make(map[utils.UInt64]string)
 	for _, tag := range tags {
-		itemsIDs, err := GetEntitiesOfType(ctx, tx, userID, tag, EntityTypeItem)
+
+		itemsIDs, err := TagModel().GetEntities(ctx, userID, tag, typer.Ptr(EntityTypeItem))
 		if err != nil {
 			return nil, err
 		}

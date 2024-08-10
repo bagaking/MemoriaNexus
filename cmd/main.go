@@ -1,4 +1,4 @@
-// File: cmd/main.go
+// File: cmd/memorial_nexus.go
 
 package main
 
@@ -8,6 +8,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/adjust/redismq"
+	"github.com/bagaking/memorianexus/src/model"
+	"github.com/khgame/ranger_iam/pkg/authcli"
 
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/driver/mysql"
@@ -67,20 +71,31 @@ func redisHost() string {
 		fallthrough
 	default:
 	}
+	return host
+}
 
+func redisDSN() string {
 	port := "6379"
+	return redisHost() + ":" + port
+}
 
-	return host + ":" + port
+// 初始化 RedisMQ
+func mustInitRedisMQ(redisAddr string) *redismq.Queue {
+	queue := redismq.CreateQueue(redisAddr, "6379", "", 0, "memnexus")
+	if queue == nil {
+		wlog.Common("memorial_nexus", "mustInitRedisMQ").Fatal("failed to create RedisMQ queue")
+	}
+	return queue
 }
 
 func main() {
 	// 配置一个lumberjack.Logger
 	logRoller := &lumberjack.Logger{
-		Filename:   "./logs/memorianexus.log", // 日志文件的位置
-		MaxSize:    10,                        // 日志文件的最大大小（MB）
-		MaxBackups: 31,                        // 保存的旧日志文件最大个数
-		MaxAge:     31,                        // 保存的旧日志文件的最大天数
-		Compress:   true,                      // 是否压缩归档的日志文件
+		Filename:   "./logs/memnexus.log", // 日志文件的位置
+		MaxSize:    10,                    // 日志文件的最大大小（MB）
+		MaxBackups: 31,                    // 保存的旧日志文件最大个数
+		MaxAge:     31,                    // 保存的旧日志文件的最大天数
+		Compress:   true,                  // 是否压缩归档的日志文件
 	}
 	defer func() {
 		if err := logRoller.Close(); err != nil {
@@ -89,12 +104,14 @@ func main() {
 	}()
 
 	mustInitLogger(logRoller)
+	startLogger := wlog.Common("memnexus")
 
 	// 初始化数据库连接
 	db := mustInitDB()
 
 	// 初始化缓存
-	cache.Init(redisHost())
+	cache.Init(redisDSN())
+	redisMQInst := mustInitRedisMQ(redisHost())
 
 	// 初始化HTTP路由
 	router := gin.Default()
@@ -107,26 +124,32 @@ func main() {
 	doc.SwaggerInfo.BasePath = APIGroup
 	group := router.Group(APIGroup)
 
-	gw.RegisterRoutes(group, db) // 注意: RegisterRoutes 函数签名需要接受 *gorm.DB 参数
+	// todo: 这些值应该从配置中安全获取，现在 MVP 一下
+	iamCli := authcli.New("my_secret_key", "http://0.0.0.0:8090/")
+
+	model.MustInit(context.TODO(), db, redisMQInst)
+	gw.RegisterRoutes(group, db, iamCli) // 注意: RegisterRoutes 函数签名需要接受 *gorm.DB 参数
+
+	startLogger.Trace("memnexus initialed")
+	startLogger.Debug("memnexus initialed")
+	startLogger.Info("memnexus initialed")
+	// startLogger.Error("memnexus initialed")
 
 	// 开启HTTP服务
 	if err := router.Run(":8080"); err != nil {
-		wlog.Common("main").WithError(err).Infof("gin exit")
+		startLogger.WithError(err).Infof("gin exit")
 	}
 }
 
 func mustInitDB() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(dsn()), &gorm.Config{})
 	if err != nil {
-		wlog.Common("main", "mustInitDB").Fatal("failed to connect database:", err)
+		wlog.Common("memorial_nexus", "mustInitDB").Fatal("failed to connect database:", err)
 	}
 	return db
 }
 
 func mustInitLogger(fileLogger io.Writer) {
-	multiLogger := io.MultiWriter(os.Stdout, fileLogger)
-	logrus.SetOutput(multiLogger)
-
 	if utils.Env() == utils.RuntimeENVProd {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 		logrus.SetLevel(logrus.InfoLevel) // 设置日志记录级别
@@ -134,8 +157,10 @@ func mustInitLogger(fileLogger io.Writer) {
 		logrus.SetFormatter(&logrus.JSONFormatter{
 			PrettyPrint: true, // 这会让 JSON 输出更易读
 		})
-		logrus.SetLevel(logrus.DebugLevel) // 设置日志记录级别
+		logrus.SetLevel(logrus.TraceLevel) // 设置日志记录级别
 	}
+	multiLogger := io.MultiWriter(os.Stdout, fileLogger)
+	logrus.SetOutput(multiLogger)
 
 	// Gin 设置
 	// gin.DisableConsoleColor()

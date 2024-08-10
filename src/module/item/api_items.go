@@ -70,7 +70,7 @@ func (svr *Service) GetItems(c *gin.Context) {
 	resp := new(dto.RespItemList)
 	// 转换 Item 为 Item
 	for _, item := range items {
-		tags, err := model.GetTagsByEntity(c, svr.db, item.ID)
+		tags, err := model.TagModel().GetTagsOfEntity(c, item.ID)
 		if err != nil {
 			utils.GinHandleError(c, log, http.StatusInternalServerError, err, "Failed to get item tag names")
 			return
