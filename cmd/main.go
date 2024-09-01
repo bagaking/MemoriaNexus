@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bagaking/memorianexus/src/gw"
 	"io"
 	"net/http"
 	"os"
@@ -22,10 +23,8 @@ import (
 	"github.com/khicago/irr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/bagaking/memorianexus/doc"
 	"github.com/bagaking/memorianexus/internal/utils"
 	"github.com/bagaking/memorianexus/internal/utils/cache"
-	"github.com/bagaking/memorianexus/src/gw"
 )
 
 const APIGroup = "/api/v1"
@@ -120,15 +119,12 @@ func main() {
 		corsMiddleware(),
 	)
 
-	// 注入db实例到注册处理函数中
-	doc.SwaggerInfo.BasePath = APIGroup
-	group := router.Group(APIGroup)
-
 	// todo: 这些值应该从配置中安全获取，现在 MVP 一下
 	iamCli := authcli.New("my_secret_key", "http://0.0.0.0:8090/")
 
 	model.MustInit(context.TODO(), db, redisMQInst)
-	gw.RegisterRoutes(group, db, iamCli) // 注意: RegisterRoutes 函数签名需要接受 *gorm.DB 参数
+
+	gw.RegRouter(router, db, iamCli, APIGroup, "/var/site/memnexus")
 
 	startLogger.Trace("memnexus initialed")
 	startLogger.Debug("memnexus initialed")

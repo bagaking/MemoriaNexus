@@ -55,7 +55,7 @@ func (t TagRepo) GetTag(ctx context.Context, tag string) (*tags.Tag[EntityType],
 func (t TagRepo) GetTagsByUser(ctx context.Context, userID utils.UInt64) ([]string, error) {
 	var tags []string
 	if err := t.db.WithContext(ctx).Model(&Tag{}).Where("user_id = ?", userID).Pluck("tag", &tags).Error; err != nil {
-		return nil, irr.Wrap(err, "failed to get tags by entity")
+		return nil, irr.Wrap(err, "failed to get tags by user")
 	}
 
 	return tags, nil
@@ -71,16 +71,16 @@ func (t TagRepo) GetEntitiesByTag(ctx context.Context, userID utils.UInt64, tag 
 }
 
 func (t TagRepo) AddTags(ctx context.Context, userID utils.UInt64, entityID utils.UInt64, entityType EntityType, tags ...string) error {
-	var tagModels []Tag
-	for _, tag := range tags {
-		tagModels = append(tagModels, Tag{
+	tagModels := make([]Tag, len(tags))
+	for i, tag := range tags {
+		tagModels[i] = Tag{
 			UserID:     userID,
 			Tag:        tag,
 			EntityID:   entityID,
 			EntityType: entityType,
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
-		})
+		}
 	}
 
 	if err := t.db.WithContext(ctx).Create(&tagModels).Error; err != nil {
@@ -172,9 +172,9 @@ func AddEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entity
 			Warnf("cannot add tags with empty list")
 		return nil
 	}
-	uts := make([]Tag, 0, len(tags))
-	for _, tag := range tags {
-		userTag := Tag{
+	tagModels := make([]Tag, len(tags))
+	for i, tag := range tags {
+		tagModels[i] = Tag{
 			UserID:     userID,
 			Tag:        tag,
 			EntityID:   entityID,
@@ -182,10 +182,9 @@ func AddEntityTags(ctx context.Context, tx *gorm.DB, userID utils.UInt64, entity
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
 		}
-		uts = append(uts, userTag)
 	}
 
-	if err := tx.Create(&uts).Error; err != nil {
+	if err := tx.Create(&tagModels).Error; err != nil {
 		return irr.Wrap(err, "failed to add entity tag")
 	}
 
@@ -260,7 +259,7 @@ func UpdateEntityTagsDiff(ctx context.Context, tx *gorm.DB, userID utils.UInt64,
 	if err != nil {
 		return irr.Wrap(err, "failed to get exist tags")
 	}
-	if tagsExist == nil || len(tagsExist) == 0 {
+	if len(tagsExist) == 0 {
 		if len(tags) > 0 {
 			if err = AddEntityTags(ctx, tx, userID, EntityTypeItem, entityID, tags...); err != nil {
 				return irr.Wrap(err, "failed to add tags")
@@ -285,8 +284,6 @@ func UpdateEntityTagsDiff(ctx context.Context, tx *gorm.DB, userID utils.UInt64,
 }
 
 // invalidateTagsCache invalidates caches related to a given tag.
-// if the tx is nil, it will only use cache.
-// but for clear all user's cache, its better to use tx not nil, to make sure the cache is cleared.
 func invalidateTagsCache(ctx context.Context, tags ...string) error {
 	for _, tag := range tags {
 		if err := TagModel().InvalidateTagCache(ctx, tag, true); err != nil {

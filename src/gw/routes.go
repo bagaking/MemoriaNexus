@@ -78,53 +78,79 @@ import (
 //	}
 //}
 
+func RegisterCallbacks(router gin.IRouter) {
+	group := router.Group("/lark_openapi")
+	group.GET("/event", LarkEventHandler)
+}
+
 // RegisterRoutes - routers all in one
 // todo: using rpc
 func RegisterRoutes(router gin.IRouter, db *gorm.DB, iamCli *authcli.Cli) {
-	router.Use(iamCli.GinMW())
 
 	// 用户账户服务路由组
 	svrProfile := profile.NewService(db)
-	svrProfile.ApplyMux(router.Group("/profile"))
+	g := router.Group("/profile")
+	g.Use(iamCli.GinMW())
+	svrProfile.ApplyMux(g)
 
 	// 学习材料管理路由组
 	svrItems := item.NewService(db)
-	svrItems.ApplyMux(router.Group("/items"))
+	g = router.Group("/items")
+	g.Use(iamCli.GinMW())
+	svrItems.ApplyMux(g)
 
 	// 册子管理路由组
 	svrBooks, _ := book.Init(db)
-	svrBooks.ApplyMux(router.Group("/books"))
+	g = router.Group("/books")
+	g.Use(iamCli.GinMW())
+	svrBooks.ApplyMux(g)
 
 	// 标签管理路由组
 	svrTags, _ := tag.Init(db)
-	svrTags.ApplyMux(router.Group("/tags"))
+	g = router.Group("/tags")
+	g.Use(iamCli.GinMW())
+	svrTags.ApplyMux(g)
 
 	// 系统操作路由组
 	svrSystem, _ := system.Init(db)
-	svrSystem.ApplyMux(router.Group("/system"))
+	g = router.Group("/system")
+	g.Use(iamCli.GinMW())
+	svrSystem.ApplyMux(g)
 
 	// 复习计划管理路由组
 	svrDungeon, _ := dungeon.Init(db)
-	svrDungeon.ApplyMux(router.Group("/dungeon"))
+	g = router.Group("/dungeon")
+	g.Use(iamCli.GinMW())
+	svrDungeon.ApplyMux(g)
 
 	svrCampaignDungeon, _ := campaign.Init(db)
-	svrCampaignDungeon.ApplyMux(router.Group("/dungeon"))
+	g = router.Group("/dungeon")
+	g.Use(iamCli.GinMW())
+	svrCampaignDungeon.ApplyMux(g)
 
 	// 数据分析路由组
 	svrAnalytics, _ := analytic.Init(db)
-	svrAnalytics.ApplyMux(router.Group("/analytic"))
+	g = router.Group("/analytic")
+	g.Use(iamCli.GinMW())
+	svrAnalytics.ApplyMux(g)
 
 	// NFT管理路由组
 	svrNfts, _ := nft.Init(db)
-	svrNfts.ApplyMux(router.Group("/nft"))
+	g = router.Group("/nft")
+	g.Use(iamCli.GinMW())
+	svrNfts.ApplyMux(g)
 
 	// 成就系统路由组
 	svrAchievements, _ := achievement.Init(db)
-	svrAchievements.ApplyMux(router.Group("/achievements"))
+	g = router.Group("/achievements")
+	g.Use(iamCli.GinMW())
+	svrAchievements.ApplyMux(g)
 
 	// 运营管理路由组
 	svrOperation, _ := operation.Init(db)
-	svrOperation.ApplyMux(router.Group("/operation"))
+	g = router.Group("/operation")
+	g.Use(iamCli.GinMW())
+	svrOperation.ApplyMux(g)
 
 	// 社区互动路由组
 	//svrCommunity, _ := community.Init(db)

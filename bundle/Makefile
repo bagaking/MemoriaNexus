@@ -1,4 +1,6 @@
 # Makefile.bundle
+.phony: all clean bundle
+
 # 获取当前目录下所有 file_bundle_rc 文件列表
 FILE_BUNDLE_RCS := $(shell find . -name '*.file_bundle_rc')
 
@@ -6,11 +8,14 @@ FILE_BUNDLE_RCS := $(shell find . -name '*.file_bundle_rc')
 BUNDLES := $(FILE_BUNDLE_RCS:.file_bundle_rc=.bundle.txt)
 
 # 默认目标
-all: $(BUNDLES)
+all: clean bundle
+
+# Bundle
+bundle: $(BUNDLES)
 
 # 规则来生成 bundle 文件
 %.bundle.txt: %.file_bundle_rc
-	file_bundle -v -i $< -o $@
+	file_bundle -v -s -i $< -o $@
 
 # 清理
 clean:

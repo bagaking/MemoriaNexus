@@ -38,7 +38,6 @@ gen-docs:
 
 # bundle, @see github.com/bagaking/file_bundle
 bundle: gen-docs
-	$(MAKE) -C bundle -f Makefile clean
 	$(MAKE) -f bundle/Makefile
 	#file_bundle -v -i ./bundle/_.file_bundle_rc -o ./bundle/_.bundle.txt
 
@@ -101,6 +100,7 @@ dev-shell:
 	$(DC) exec app /bin/sh
 
 build-staging:
+	# 编译并上传
 	source ./set_env.sh && ./script/build_staging.sh
 
 cz:
