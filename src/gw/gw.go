@@ -33,6 +33,9 @@ func RegRouter(router *gin.Engine, db *gorm.DB, iamCli *authcli.Cli, APIGroup st
 	group := router.Group(APIGroup)
 	RegisterCallbacks(group)
 	RegisterRoutes(group, db, iamCli)
+
+	// 设置短网址路由
+	SetupShortURLRoutes(router)
 }
 
 // SetupStaticFileServer 配置静态文件服务和前端路由处理
@@ -42,8 +45,8 @@ func SetupStaticFileServer(router gin.IRouter, staticDir string, apiGroup string
 	router.Use(func(c *gin.Context) {
 		path := c.Request.URL.Path
 
-		// 如果是 API 路由，跳过静态文件处理
-		if strings.HasPrefix(path, apiGroup) {
+		// 如果是 API 路由或短网址路由，跳过静态文件处理
+		if strings.HasPrefix(path, apiGroup) || strings.HasPrefix(path, ShortURLRoute) {
 			c.Next()
 			return
 		}

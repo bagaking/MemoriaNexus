@@ -2096,6 +2096,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "description": "对应 Item 的 content",
                     "type": "string"
                 },
                 "difficulty": {
@@ -2122,6 +2123,7 @@ const docTemplate = `{
                     ]
                 },
                 "item_id": {
+                    "description": "对应 Item 的 id",
                     "type": "integer"
                 },
                 "name": {

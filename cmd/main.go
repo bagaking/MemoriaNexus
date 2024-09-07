@@ -124,7 +124,8 @@ func main() {
 
 	model.MustInit(context.TODO(), db, redisMQInst)
 
-	gw.RegRouter(router, db, iamCli, APIGroup, "/var/site/memnexus")
+	// todo: 挪到单独的服务里 ?
+	gw.RegRouter(router, db, iamCli, APIGroup, "/var/static/memnexus")
 
 	startLogger.Trace("memnexus initialed")
 	startLogger.Debug("memnexus initialed")

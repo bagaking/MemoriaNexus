@@ -22,7 +22,14 @@ type (
 		Tags []string `json:"tags,omitempty"`
 	}
 
-	RespBookList = RespSuccessPage[*Book]
+	BookItem struct {
+		BookID utils.UInt64 `json:"book_id"`
+		ItemID utils.UInt64 `json:"item_id"`
+	}
+
+	RespBookList     = RespSuccessPage[*Book]
+	RespBookAddItems = RespSuccess[[]*BookItem]
+	RespBookRemItems = RespSuccess[[]*BookItem]
 )
 
 func (b *Book) FromModel(m *model.Book, tags ...string) *Book {
@@ -52,3 +59,9 @@ type (
 	RespBookDelete = RespSuccess[utils.UInt64]
 	RespBooks      = RespSuccessPage[Book]
 )
+
+func (bi *BookItem) FromModel(m *model.BookItem) *BookItem {
+	bi.BookID = m.BookID
+	bi.ItemID = m.ItemID
+	return bi
+}

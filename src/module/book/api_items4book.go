@@ -95,7 +95,9 @@ func (svr *Service) AddItemsToBook(c *gin.Context) {
 		return
 	}
 
-	new(dto.SuccessResponse).With(bookItems).Response(c, "items added to book successfully")
+	new(dto.RespBookAddItems).With(typer.SliceMap(bookItems, func(from model.BookItem) *dto.BookItem {
+		return new(dto.BookItem).FromModel(&from)
+	})).Response(c, "items added to book successfully")
 }
 
 // RemoveItemsFromBook handles removing items from a book
@@ -138,5 +140,10 @@ func (svr *Service) RemoveItemsFromBook(c *gin.Context) {
 		return
 	}
 
-	new(dto.SuccessResponse).With(itemIDsUInt64).Response(c, "items removed from book successfully")
+	new(dto.RespBookAddItems).With(typer.SliceMap(itemIDsUInt64, func(itemID utils.UInt64) *dto.BookItem {
+		return &dto.BookItem{
+			BookID: bookID,
+			ItemID: itemID,
+		}
+	})).Response(c, "items added to book successfully")
 }

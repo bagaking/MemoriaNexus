@@ -31,7 +31,7 @@ type (
 
 	DungeonMonster struct {
 		DungeonID utils.UInt64 `json:"dungeon_id,omitempty"`
-		ItemID    utils.UInt64 `json:"item_id,omitempty"`
+		ItemID    utils.UInt64 `json:"item_id,omitempty"` // 对应 Item 的 id
 
 		// 用于 runtime
 		PracticeAt     time.Time `json:"practice_at,omitempty"`      // 上次复习时间的记录
@@ -48,7 +48,7 @@ type (
 		Visibility  utils.Percentage `json:"visibility,omitempty"` // Visibility 显影程度，根据复习次数变化
 		Avatar      string           `json:"avatar,omitempty"`     // 怪物头像
 		Name        string           `json:"name,omitempty"`
-		Description string           `json:"description,omitempty"`
+		Description string           `json:"description,omitempty"` // 对应 Item 的 content
 
 		// system
 		SourceType model.MonsterSource `json:"source_type,omitempty"` // 记录插入时来源，方便原路径修改删除等

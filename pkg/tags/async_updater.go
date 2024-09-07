@@ -6,6 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/khicago/got/util/procast"
+
 	"github.com/adjust/redismq"
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/irr"
@@ -31,6 +34,16 @@ func NewTagUpdateManager[EntityType any](
 	producer Producer, consumer Consumer[*redismq.Package],
 	fnHandleTagUpdate func(ctx context.Context, message TagUpdateMessage[EntityType]) error,
 ) *TagUpdateManager[EntityType] {
+	if producer == nil {
+		panic("producer cannot be nil")
+	}
+	if consumer == nil {
+		panic("consumer cannot be nil")
+	}
+	if fnHandleTagUpdate == nil {
+		panic("fnHandleTagUpdate cannot be nil")
+	}
+
 	return &TagUpdateManager[EntityType]{
 		producer:          producer,
 		consumer:          consumer,
@@ -87,21 +100,26 @@ func (m *TagUpdateManager[EntityType]) GetStatus() string {
 }
 
 func (m *TagUpdateManager[EntityType]) Put(ctx context.Context, message TagUpdateMessage[EntityType]) error {
+	log := wlog.ByCtx(ctx, "TagUpdateManager.Put")
 	data, err := json.Marshal(message)
 	if err != nil {
-		return irr.Wrap(err, "failed to marshal tag update message")
+		return irr.Wrap(err, "failed to marshal tag update message").LogError(log)
 	}
 
 	if err = m.producer.Put(ctx, string(data)); err != nil {
-		return irr.Wrap(err, "failed to enqueue tag update message")
+		return irr.Wrap(err, "failed to enqueue tag update message").LogError(log)
 	}
 
+	log.Infof("Successfully enqueued tag update message")
 	return nil
 }
 
 // run starts the tag update worker to process messages from the queue.
 func (m *TagUpdateManager[EntityType]) run(ctx context.Context) {
-	log := wlog.ByCtx(ctx, "TagUpdateWorker")
+	log, ctx := wlog.ByCtxAndCache(ctx, "TagUpdateWorker", uuid.NewString())
+	defer procast.Recover(func(err error) {
+		log.Errorf("recovered from panic: %v", m)
+	})
 
 	var (
 		packages []*redismq.Package
@@ -134,6 +152,15 @@ func (m *TagUpdateManager[EntityType]) run(ctx context.Context) {
 
 func (m *TagUpdateManager[EntityType]) HandlePackage(ctx context.Context, consumer Consumer[*redismq.Package], pkg *redismq.Package) error {
 	log := wlog.ByCtx(ctx, "HandlePackage")
+
+	// 添加空值检查
+	if consumer == nil {
+		return irr.Error("consumer is nil").LogError(log)
+	}
+	if pkg == nil {
+		return irr.Error("package is nil").LogError(log)
+	}
+
 	var message TagUpdateMessage[EntityType]
 	if err := json.Unmarshal([]byte(pkg.Payload), &message); err != nil {
 		if err = consumer.Fail(ctx, pkg); err != nil {

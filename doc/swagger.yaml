@@ -145,6 +145,7 @@ definitions:
       created_at:
         type: string
       description:
+        description: 对应 Item 的 content
         type: string
       difficulty:
         allOf:
@@ -160,6 +161,7 @@ definitions:
         - $ref: '#/definitions/def.ImportanceLevel'
         description: Item -> DungeonMonster 单向同步
       item_id:
+        description: 对应 Item 的 id
         type: integer
       name:
         type: string
