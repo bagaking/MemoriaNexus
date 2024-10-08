@@ -4,9 +4,10 @@ import (
 	"strconv"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/khicago/got/util/strs"
 
-	"github.com/bytedance/sonic"
 	"github.com/khicago/irr"
 )
 
@@ -49,7 +50,7 @@ func (p *Percentage) UnmarshalJSON(b []byte) error {
 	var strValue string
 
 	// Attempt to unmarshal as a string first to accommodate both quoted and non-quoted JSON numbers.
-	if err := sonic.Unmarshal(b, &strValue); err == nil {
+	if err := jsoniter.Unmarshal(b, &strValue); err == nil {
 		if strs.EndsWith(strValue, "%") {
 			strValue = strings.TrimRight(strValue, "%")
 		}

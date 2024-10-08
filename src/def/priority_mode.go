@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"errors"
 
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type (
@@ -45,10 +45,10 @@ func (r *PriorityMode) Scan(value any) error {
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
-	return sonic.Unmarshal(bytes, r)
+	return jsoniter.Unmarshal(bytes, r)
 }
 
 // Value 实现 driver.Valuer 接口
 func (r PriorityMode) Value() (driver.Value, error) {
-	return sonic.Marshal(r)
+	return jsoniter.Marshal(r)
 }

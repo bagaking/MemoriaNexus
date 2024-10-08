@@ -5,10 +5,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/bagaking/memorianexus/src/gw"
 	"io"
 	"net/http"
 	"os"
+
+	jsoniter "github.com/json-iterator/go"
+
+	"github.com/bagaking/memorianexus/src/gw"
 
 	"github.com/adjust/redismq"
 	"github.com/bagaking/memorianexus/src/model"
@@ -96,6 +99,7 @@ func main() {
 		MaxAge:     31,                    // 保存的旧日志文件的最大天数
 		Compress:   true,                  // 是否压缩归档的日志文件
 	}
+
 	defer func() {
 		if err := logRoller.Close(); err != nil {
 			fmt.Println("Failed to close log", err)
@@ -147,25 +151,55 @@ func mustInitDB() *gorm.DB {
 }
 
 func mustInitLogger(fileLogger io.Writer) {
+	// 创建error日志文件
+	errorLogRoller := &lumberjack.Logger{
+		Filename:   "./logs/memnexus.error.log",
+		MaxSize:    10,
+		MaxBackups: 31,
+		MaxAge:     31,
+		Compress:   true,
+	}
+
 	if utils.Env() == utils.RuntimeENVProd {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
-		logrus.SetLevel(logrus.InfoLevel) // 设置日志记录级别
+		logrus.SetLevel(logrus.InfoLevel)
 	} else {
 		logrus.SetFormatter(&logrus.JSONFormatter{
-			PrettyPrint: true, // 这会让 JSON 输出更易读
+			PrettyPrint: true,
 		})
-		logrus.SetLevel(logrus.TraceLevel) // 设置日志记录级别
+		logrus.SetLevel(logrus.TraceLevel)
 	}
-	multiLogger := io.MultiWriter(os.Stdout, fileLogger)
+
+	// 创建一个自定义的Writer,将error及以上级别的日志写入error日志文件
+	errorWriter := &logrusErrorWriter{errorLogRoller}
+
+	// 使用MultiWriter将日志同时输出到标准输出、普通日志文件和error日志文件
+	multiLogger := io.MultiWriter(os.Stdout, fileLogger, errorWriter)
 	logrus.SetOutput(multiLogger)
 
-	// Gin 设置
-	// gin.DisableConsoleColor()
 	gin.DefaultWriter = logrus.StandardLogger().Out
 
 	wlog.SetEntryGetter(func(ctx context.Context) *logrus.Entry {
 		return logrus.WithContext(ctx)
 	})
+}
+
+// logrusErrorWriter 是一个自定义的io.Writer,只写入error及以上级别的日志
+type logrusErrorWriter struct {
+	io.Writer
+}
+
+func (w *logrusErrorWriter) Write(p []byte) (n int, err error) {
+	entry := &logrus.Entry{}
+	err = jsoniter.Unmarshal(p, entry)
+	if err != nil {
+		return 0, err
+	}
+
+	if entry.Level <= logrus.ErrorLevel {
+		return w.Writer.Write(p)
+	}
+	return len(p), nil
 }
 
 // ginRecoveryWithLog 返回一个中间件，当程序发生 panic 时记录错误日志，并返回 HTTP 500 错误。

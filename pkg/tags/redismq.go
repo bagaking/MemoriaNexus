@@ -2,7 +2,6 @@ package tags
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/adjust/redismq"
 	"github.com/khicago/irr"
@@ -46,13 +45,9 @@ func NewRedisMQConsumer(queue *redismq.Queue, name string) (*RedisMQConsumer, er
 func (c *RedisMQConsumer) Get(ctx context.Context) (*redismq.Package, error) {
 	pkg, err := c.consumer.Get()
 	if err != nil {
-		return *new(*redismq.Package), irr.Wrap(err, "failed to get message")
+		return nil, irr.Wrap(err, "failed to get message")
 	}
-	var message *redismq.Package
-	if err = json.Unmarshal([]byte(pkg.Payload), &message); err != nil {
-		return *new(*redismq.Package), irr.Wrap(err, "failed to unmarshal message")
-	}
-	return message, nil
+	return pkg, nil
 }
 
 // MGet gets multiple pkgs from the queue.
@@ -61,13 +56,7 @@ func (c *RedisMQConsumer) MGet(ctx context.Context, count int) ([]*redismq.Packa
 	if err != nil {
 		return nil, irr.Wrap(err, "failed to get pkgs")
 	}
-	pkgs := make([]*redismq.Package, len(packages))
-	for i, pkg := range packages {
-		if err := json.Unmarshal([]byte(pkg.Payload), &pkgs[i]); err != nil {
-			return nil, irr.Wrap(err, "failed to unmarshal message")
-		}
-	}
-	return pkgs, nil
+	return packages, nil
 }
 
 // Ack acknowledges a pkg.
@@ -83,4 +72,13 @@ func (c *RedisMQConsumer) Fail(ctx context.Context, pkg *redismq.Package) error 
 // Requeue requeues a pkg.
 func (c *RedisMQConsumer) Requeue(ctx context.Context, pkg *redismq.Package) error {
 	return pkg.Requeue()
+}
+
+// GetUnacked gets an unacked package from the queue.
+func (c *RedisMQConsumer) GetUnacked(ctx context.Context) (*redismq.Package, error) {
+	unacked, err := c.consumer.GetUnacked()
+	if err != nil {
+		return nil, irr.Wrap(err, "获取未确认的包失败")
+	}
+	return unacked, nil
 }

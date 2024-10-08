@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/khicago/irr"
 	"github.com/khicago/irr/irc"
 	lark "github.com/larksuite/oapi-sdk-go/v3"
@@ -19,9 +20,7 @@ const (
 	BizError irc.Code = 400
 )
 
-var (
-	ErrOAPIBizError = BizError.Error("oapi biz error")
-)
+var ErrOAPIBizError = BizError.Error("oapi biz error")
 
 type (
 	LarkOAPIClient struct {
@@ -61,7 +60,7 @@ func main() {
 		Config(larkcard.NewMessageCardConfig().
 			WideScreenMode(true).
 			Build()).
-		//Header(larkcard.NewMessageCardHeader().
+		// Header(larkcard.NewMessageCardHeader().
 		//	Title(larkcard.NewMessageCardPlainText().Content("卡片标题").Build()).
 		//	Build()).
 		Elements([]larkcard.MessageCardElement{

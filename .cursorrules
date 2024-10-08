@@ -1,0 +1,75 @@
+# 项目架构
+- 分层架构: 
+  gw(网关) -> module(业务模块) -> core(核心逻辑) -> model(数据模型)
+  - gw: 处理HTTP请求,路由分发 (src/gw/gw.go, src/gw/routes.go)
+  - module: 实现具体业务逻辑 (src/module/*)
+  - core: 提供核心服务和通用逻辑 (src/core/*)
+  - model: 定义数据结构和数据库操作 (src/model/*)
+- 依赖注入: 
+  通过构造函数或Init方法实现,避免全局状态
+  例: src/core/init.go中的Init函数初始化核心服务
+- 缓存策略: 
+  使用Redis作为缓存,通过cachekey管理键
+  例: src/model/book.go中使用CKBook定义和管理缓存键
+- 异步处理: 
+  使用redismq进行异步任务处理(如标签更新)
+  实现: pkg/tags/async_updater.go和pkg/tags/redismq.go
+
+# 项目结构
+src/
+  core/ # 核心业务逻辑
+    analytics/ # 分析相关逻辑
+    handlers.go # API请求处理器
+    init.go # 初始化逻辑
+    interfaces/ # 接口定义
+    model/ # 数据模型
+    reminder/ # 提醒服务
+    review/ # 复习逻辑
+  def/ # 常量和枚举定义
+  gw/ # 网关和路由
+    event.go # 事件处理
+    gw.go # 网关主逻辑
+    routes.go # 路由定义
+    shorturl.go # 短URL服务
+  model/ # 数据模型定义
+    book.go # 书籍模型
+    dungeon.go # 地牢模型
+    item.go # 物品模型
+  module/ # 功能模块
+    achievement/ # 成就系统
+    analytic/ # 数据分析
+    book/ # 书籍管理
+    campaign/ # 活动管理
+    dungeon/ # 地牢(复习)系统
+    item/ # 物品管理
+    nft/ # NFT相关
+    operation/ # 运营管理
+    profile/ # 用户档案
+    system/ # 系统管理
+    tag/ # 标签管理
+pkg/ # 特殊功能包
+  tags/ # 标签相关功能
+    async_updater.go # 异步更新器
+    redismq.go # Redis消息队列
+    service.go # 标签服务
+    types.go # 类型定义
+
+# 规范
+- 文件名小写,下划线连接 (例: gw/short_url.go)
+- 结构体、接口、函数驼峰命名 (例: type UserProfile struct{}, func GetUserByID())
+- 常量全大写,下划线连接 (例: const MAX_RETRY_COUNT = 3)
+- 包级注释,导出项注释,复杂逻辑内联注释 (例: 见 pkg/tags/service.go)
+- 使用github.com/khicago/irr包装错误 (例: return irr.Wrap(err, "failed to create user"))
+- 使用github.com/bagaking/goulp/wlog记录日志 (例: wlog.ByCtx(ctx, "CreateUser").Info("User created successfully"))
+- GORM操作数据库,模型在model/目录 (例: 见 src/model/book.go)
+- github.com/khgame/memstore/cachekey管理缓存键 (例: 见 src/model/book.go 中的 CKBook)
+- gw/routes.go定义路由,使用中间件认证 (例: 见 src/gw/routes.go)
+- 环境变量管理配置,不硬编码敏感信息 (例: os.Getenv("DATABASE_URL"))
+- 构造函数或Init函数依赖注入 (例: 见 src/core/init.go)
+- 测试文件xxx_test.go,使用表驱动测试 (例: 见 pkg/tags/tags_test.go)
+- 语义化版本控制 (例: v1.2.3)
+- Swagger注解生成API文档 (例: 见 src/gw/routes.go 中的路由定义)
+
+# 特殊说明
+- pkg/tags: 使用redismq实现异步标签更新,提高系统响应速度和可靠性
+

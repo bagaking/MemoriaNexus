@@ -6,7 +6,8 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/khicago/irr"
 )
 
@@ -37,13 +38,13 @@ func (val *UInt64) Scan(value any) error {
 		*val = UInt64(v)
 	case []byte:
 		var parsed uint64
-		if err := sonic.Unmarshal(v, &parsed); err != nil {
+		if err := jsoniter.Unmarshal(v, &parsed); err != nil {
 			return err
 		}
 		*val = UInt64(parsed)
 	case string:
 		var parsed uint64
-		if err := sonic.Unmarshal([]byte(v), &parsed); err != nil {
+		if err := jsoniter.Unmarshal([]byte(v), &parsed); err != nil {
 			return err
 		}
 		*val = UInt64(parsed)
@@ -61,7 +62,7 @@ func (val UInt64) Value() (driver.Value, error) {
 
 // MarshalJSON serializes the UInt64 as a string to avoid precision loss in JavaScript.
 func (val *UInt64) MarshalJSON() ([]byte, error) {
-	bytes, err := sonic.Marshal(uint64(*val))
+	bytes, err := jsoniter.Marshal(uint64(*val))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (val *UInt64) UnmarshalJSON(b []byte) error {
 	var strValue string
 
 	// Attempt to unmarshal as a string first to accommodate both quoted and non-quoted JSON numbers.
-	if err := sonic.Unmarshal(b, &strValue); err == nil {
+	if err := jsoniter.Unmarshal(b, &strValue); err == nil {
 		idVal, err = strconv.ParseUint(strValue, 10, 64)
 		if err != nil {
 			return irr.Wrap(err, "parse string val failed")

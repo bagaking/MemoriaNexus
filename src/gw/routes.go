@@ -86,7 +86,6 @@ func RegisterCallbacks(router gin.IRouter) {
 // RegisterRoutes - routers all in one
 // todo: using rpc
 func RegisterRoutes(router gin.IRouter, db *gorm.DB, iamCli *authcli.Cli) {
-
 	// 用户账户服务路由组
 	svrProfile := profile.NewService(db)
 	g := router.Group("/profile")

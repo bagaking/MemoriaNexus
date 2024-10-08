@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type DungeonType uint8 // 0 ~ 255
@@ -42,7 +42,7 @@ func (dt *DungeonType) Valid() bool {
 // UnmarshalJSON custom unmarshaller to handle both strings and numbers
 func (dt *DungeonType) UnmarshalJSON(data []byte) error {
 	var value any
-	if err := sonic.Unmarshal(data, &value); err != nil {
+	if err := jsoniter.Unmarshal(data, &value); err != nil {
 		return err
 	}
 

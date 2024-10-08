@@ -1,0 +1,8 @@
+entry = [
+    "src/module/dto/*.go",
+]
+
+exclude = [
+    ".bundle.txt",
+    "./script"
+]

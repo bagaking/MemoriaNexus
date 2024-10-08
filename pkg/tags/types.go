@@ -27,6 +27,7 @@ type (
 	Consumer[MessageType any] interface {
 		Get(ctx context.Context) (MessageType, error)
 		MGet(ctx context.Context, count int) ([]MessageType, error)
+		GetUnacked(ctx context.Context) (MessageType, error)
 
 		Ack(ctx context.Context, pkg MessageType) error
 		Fail(ctx context.Context, pkg MessageType) error

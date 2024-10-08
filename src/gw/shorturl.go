@@ -19,9 +19,7 @@ const (
 	ShortURLRoute = "/utils/s/"
 )
 
-var (
-	shortURLCache sync.Map
-)
+var shortURLCache sync.Map
 
 type ShortURLEntry struct {
 	OriginalURL string

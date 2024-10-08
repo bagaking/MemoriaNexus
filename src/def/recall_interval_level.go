@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bagaking/memorianexus/internal/utils"
+	jsoniter "github.com/json-iterator/go"
 
-	"github.com/bytedance/sonic"
+	"github.com/bagaking/memorianexus/internal/utils"
 )
 
 var (
@@ -44,7 +44,7 @@ func (r *RecallIntervalLevel) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	var rawIntervals []string
-	if err := sonic.Unmarshal(data, &rawIntervals); err != nil {
+	if err := jsoniter.Unmarshal(data, &rawIntervals); err != nil {
 		return err
 	}
 
@@ -67,7 +67,7 @@ func (r RecallIntervalLevel) MarshalJSON() ([]byte, error) {
 		rawIntervals[i] = interval.String()
 	}
 
-	return sonic.Marshal(rawIntervals)
+	return jsoniter.Marshal(rawIntervals)
 }
 
 // Scan 实现 sql.Scanner 接口
@@ -77,12 +77,12 @@ func (r *RecallIntervalLevel) Scan(value any) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return sonic.Unmarshal(bytes, r)
+	return jsoniter.Unmarshal(bytes, r)
 }
 
 // Value 实现 driver.Valuer 接口
 func (r RecallIntervalLevel) Value() (driver.Value, error) {
-	return sonic.Marshal(r)
+	return jsoniter.Marshal(r)
 }
 
 // GetInterval 根据熟练度选择命中哪一个 interval 配置

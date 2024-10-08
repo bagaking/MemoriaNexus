@@ -1,7 +1,7 @@
 package def
 
 import (
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/khicago/irr"
 )
 
@@ -88,7 +88,7 @@ func (d *DifficultyLevel) String() string {
 // UnmarshalJSON unmarshal the enum from a json string or number
 func (d *DifficultyLevel) UnmarshalJSON(data []byte) error {
 	var value interface{}
-	if err := sonic.Unmarshal(data, &value); err != nil {
+	if err := jsoniter.Unmarshal(data, &value); err != nil {
 		return err
 	}
 
